@@ -514,13 +514,7 @@
       </div>
       <div class="modal-field">
         <label>Turno</label>
-        <select id="reporteTurno">
-          <option value="Primera Clase">Primera Clase</option>
-          <option value="Segunda Clase">Segunda Clase</option>
-          <option value="Tercera Clase">Tercera Clase</option>
-          <option value="Cuarta Clase">Cuarta Clase</option>
-          <option value="Quinta Clase">Quinta Clase</option>
-        </select>
+        <select id="reporteTurno"></select>
       </div>
     </div>
     <div class="modal-error" id="reporteEspecificoError"></div>
@@ -1363,7 +1357,7 @@ function abrirModalReporte() {
   reporteBoxEspecifico.classList.add('hidden');
   reporteEspecificoError.textContent = '';
   reporteFecha.value = hoyISO();
-  reporteTurno.selectedIndex = 0;
+  reporteTurno.innerHTML = opcionesTurno(null, false);
   modalReporte.classList.remove('hidden');
 }
 function cerrarModalReporte() {
