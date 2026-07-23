@@ -462,13 +462,11 @@
 
 <script src="codigos.js"></script>
 <script>
-// Los códigos de acceso (CODIGOS, NIVELES_ROL, rolAlcanza, NOMBRES_TODOS)
-// se cargan desde codigos.js — ese es el único lugar donde hay que
-// editarlos, se comparte con asistencias.html / capitanes.html / index.html.
+// Los códigos de acceso (CODIGOS, NIVELES_ROL, rolAlcanza, NOMBRES_TODOS,
+// NOMBRES_INSTRUCTORES, NOMBRES_EVALUADORES) se cargan desde codigos.js —
+// ese es el único lugar donde hay que editarlos, se comparte con
+// asistencias.html / capitanes.html / index.html.
 
-const NOMBRES_EVALUADORES = Object.values(CODIGOS)
-  .filter(u => rolAlcanza(u.rol, 'evaluador'))
-  .map(u => u.nombre);
 // restringir = true: si quien se identificó no es administrador, solo puede
 // elegir su propio nombre (no puede atribuirle el registro a otra persona).
 // Los administradores siempre ven la lista completa (por ejemplo, al editar

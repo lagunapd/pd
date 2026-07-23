@@ -911,6 +911,19 @@ h1 {
 .academia-map.active {
   display: block;
 }
+/* Cuando se abre el mapa: se oculta todo lo demás (banner, nav) y el
+   contenedor de Academia pasa a ocupar toda la pantalla, para que solo se
+   vea el mapa y el botón de "VOLVER". */
+body.mapa-fullscreen .pd-banner,
+body.mapa-fullscreen .main-nav {
+  display: none;
+}
+body.mapa-fullscreen .academia-placeholder {
+  border: none;
+  padding: 16px;
+  min-height: 100vh;
+  background: var(--bg);
+}
 .map-back-btn {
   position: relative;
   overflow: hidden;
@@ -1157,7 +1170,7 @@ h1 {
           <div class="turno-row"><b>Hora:</b> 17:00 - 19:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Drak Reem</div>
-          <div class="turno-row"><b>Auxiliar:</b>Por Definir</div>
+          <div class="turno-row"><b>Auxiliar:</b> Eliel Martinez</div>
           <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
@@ -1169,8 +1182,8 @@ h1 {
           <div class="turno-time">🕗 SEGUNDA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 20:00 - 22:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Por Definir</div>
-          <div class="turno-row"><b>Auxiliar:</b> Por Definir</div>
+          <div class="turno-row"><b>Instructor:</b> Goliat Carwley(Excepto Viernes)</div>
+          <div class="turno-row"><b>Auxiliar:</b> -</div>
           <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
@@ -1182,8 +1195,8 @@ h1 {
           <div class="turno-time">🕚 TERCERA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 23:00 - 01:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Goliat Crawley</div>
-          <div class="turno-row"><b>Auxiliar:</b> Axo Velasco</div>
+          <div class="turno-row"><b>Instructor:</b> Axo Velasco</div>
+          <div class="turno-row"><b>Auxiliar:</b> —</div>
           <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card" data-map="sala-revista">
@@ -1199,7 +1212,7 @@ h1 {
           <div class="turno-row"><b>Hora:</b> 05:00 - 07:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Por Definir</div>
-          <div class="turno-row"><b>Auxiliar:</b> Por Definir</div>
+          <div class="turno-row"><b>Auxiliar:</b> —</div>
           <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
       </div>
@@ -1234,11 +1247,11 @@ h1 {
           </div>
           <div class="roster-group">
             <div class="roster-role">Instructores</div>
-            <div class="roster-names">Goliat Crawley • Sr Chakalito • Axo Velasco • Eliel Martinez</div>
+            <div class="roster-names" id="rosterInstructores">—</div>
           </div>
           <div class="roster-group">
-            <div class="roster-role">Miembros a Prueba</div>
-            <div class="roster-names">Joyce Blaxland</div>
+            <div class="roster-role">Evaluadores</div>
+            <div class="roster-names" id="rosterEvaluadores">—</div>
           </div>
         </div>
       </div>
@@ -1777,6 +1790,22 @@ btnComoAgregarMacros.addEventListener('click', () => {
 let instruccionDesbloqueada = false;
 const SUB_INSTRUCCION = "Macros de Instrucción";
 
+// ---- Roster de Instructores/Evaluadores (se llena solo desde codigos.js) ----
+// Nota: "Evaluadores" acá muestra solo a quienes tienen ese rol exacto (no
+// a los administradores, que ya figuran arriba como Líder/Sublíder), para
+// no repetir nombres en dos categorías a la vez.
+(function poblarRosterAcademia() {
+  const rosterInstructoresEl = document.getElementById('rosterInstructores');
+  const rosterEvaluadoresEl = document.getElementById('rosterEvaluadores');
+  if (rosterInstructoresEl) {
+    rosterInstructoresEl.textContent = NOMBRES_INSTRUCTORES.length ? NOMBRES_INSTRUCTORES.join(' • ') : '—';
+  }
+  if (rosterEvaluadoresEl) {
+    const soloEvaluadores = Object.values(CODIGOS).filter(u => u.rol === 'evaluador').map(u => u.nombre);
+    rosterEvaluadoresEl.textContent = soloEvaluadores.length ? soloEvaluadores.join(' • ') : '—';
+  }
+})();
+
 function renderMacros() {
   const q = macroSearch.value.trim().toLowerCase();
   let filtered = macros;
@@ -1943,6 +1972,8 @@ function openMap(key) {
   academiaSchedule.style.display = 'none';
   academiaMap.classList.add('active');
   if (academiaBg) academiaBg.style.display = 'none';
+  if (academiaTwoCol) academiaTwoCol.style.display = 'none';
+  document.body.classList.add('mapa-fullscreen');
 }
 
 document.querySelectorAll('.turno-card[data-map]').forEach(card => {
@@ -1953,6 +1984,8 @@ closeMapBtn.addEventListener('click', () => {
   academiaMap.classList.remove('active');
   academiaSchedule.style.display = '';
   if (academiaBg) academiaBg.style.display = '';
+  if (academiaTwoCol) academiaTwoCol.style.display = '';
+  document.body.classList.remove('mapa-fullscreen');
 });
 
 /* ---- Lista de asistencias (iframe) ---- */

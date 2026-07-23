@@ -758,18 +758,16 @@
 
 <script src="codigos.js"></script>
 <script>
-// Los códigos de acceso (CODIGOS, NIVELES_ROL, rolAlcanza, NOMBRES_TODOS)
-// se cargan desde codigos.js — ese es el único lugar donde hay que
-// editarlos, se comparte con tenientes.html / capitanes.html / index.html.
+// Los códigos de acceso (CODIGOS, NIVELES_ROL, rolAlcanza, NOMBRES_TODOS,
+// NOMBRES_INSTRUCTORES, NOMBRES_EVALUADORES) se cargan desde codigos.js —
+// ese es el único lugar donde hay que editarlos, se comparte con
+// tenientes.html / capitanes.html / index.html.
 
 // La clase de Procedimientos es especial: cuenta para las 6 clases, pero es
 // obligatoria (sin ella no alcanza aunque haya 6 o más puntos) y solo la
 // pueden registrar evaluadores o administradores, no instructores comunes.
 const TURNO_PROCEDIMIENTOS = "Procedimientos";
 
-const NOMBRES_EVALUADORES = Object.values(CODIGOS)
-  .filter(u => rolAlcanza(u.rol, 'evaluador'))
-  .map(u => u.nombre);
 // restringir = true: si quien se identificó no es administrador, solo puede
 // elegir su propio nombre como evaluador (no puede atribuirle la evaluación
 // a otra persona). Los administradores siempre ven la lista completa.
@@ -961,6 +959,10 @@ const modalRegistro = document.getElementById('modalRegistro');
 const registradorInfo = document.getElementById('registradorInfo');
 const inputFecha = document.getElementById('inputFecha');
 const inputTurno = document.getElementById('inputTurno');
+inputTurno.addEventListener('change', () => {
+  actualizarEtiquetaVerde(btnTipoVerde, inputTurno.value === TURNO_PROCEDIMIENTOS);
+  renderMiniLista();
+});
 const inputInstructor = document.getElementById('inputInstructor');
 const inputNombre = document.getElementById('inputNombre');
 const listaNombres = document.getElementById('listaNombres');
@@ -970,6 +972,12 @@ const miniListaWrap = document.getElementById('miniListaWrap');
 const miniListaEmpty = document.getElementById('miniListaEmpty');
 const btnTipoVerde = document.getElementById('btnTipoVerde');
 const btnTipoAmarillo = document.getElementById('btnTipoAmarillo');
+// Cuando el turno elegido es Procedimientos, la opción "Verde" pasa a
+// mostrarse como el escudo 🛡️ en vez del punto genérico, en cualquiera de
+// los dos formularios que tienen selector de tipo + turno.
+function actualizarEtiquetaVerde(btnVerde, esProcedimientos) {
+  btnVerde.textContent = esProcedimientos ? '🛡️ Procedimientos' : '🟢 Verde';
+}
 
 let tipoSeleccionado = 'verde';
 let miniLista = []; // { nombre, tipo }
@@ -999,6 +1007,7 @@ function abrirModalRegistro() {
   tipoSeleccionado = 'verde';
   btnTipoVerde.classList.add('active');
   btnTipoAmarillo.classList.remove('active');
+  actualizarEtiquetaVerde(btnTipoVerde, inputTurno.value === TURNO_PROCEDIMIENTOS);
   miniLista = [];
   poblarListaNombres();
   renderMiniLista();
@@ -1018,10 +1027,11 @@ function renderMiniLista() {
   }
   miniListaWrap.style.display = 'block';
   miniListaEmpty.style.display = 'none';
+  const esProcedimientos = inputTurno.value === TURNO_PROCEDIMIENTOS;
   miniListaBody.innerHTML = miniLista.map((item, i) => `
     <tr>
       <td>${escapeHtml(item.nombre)}</td>
-      <td>${item.tipo === 'verde' ? '🟢 Verde' : '🟡 Amarillo'}</td>
+      <td>${item.tipo === 'verde' ? (esProcedimientos ? '🛡️ Procedimientos' : '🟢 Verde') : '🟡 Amarillo'}</td>
       <td><span class="quitar" data-idx="${i}">✕</span></td>
     </tr>
   `).join('');
@@ -1402,6 +1412,9 @@ function generarReporteEspecifico(fecha, turno) {
   const verdes = asistentes.filter(a => a.tipo === 'verde').length;
   const amarillos = asistentes.filter(a => a.tipo === 'amarillo').length;
 
+  const esProcedimientos = turno === TURNO_PROCEDIMIENTOS;
+  const emojiVerde = esProcedimientos ? '🛡️' : '🟢';
+
   const ahora = new Date();
   const lineas = [];
   lineas.push('REPORTE DE CLASE ESPECÍFICA — ACADEMIA LAGUNA PD');
@@ -1410,10 +1423,10 @@ function generarReporteEspecifico(fecha, turno) {
   lineas.push(`Turno: ${turno}`);
   lineas.push('');
   lineas.push('====================================');
-  lineas.push(`ASISTENTES (${asistentes.length}) — 🟢 ${verdes} · 🟡 ${amarillos}`);
+  lineas.push(`ASISTENTES (${asistentes.length}) — ${emojiVerde} ${verdes} · 🟡 ${amarillos}`);
   lineas.push('====================================');
   lineas.push(...(asistentes.length
-    ? asistentes.map(a => `${a.tipo === 'verde' ? '🟢' : '🟡'} ${a.nombre}`)
+    ? asistentes.map(a => `${a.tipo === 'verde' ? emojiVerde : '🟡'} ${a.nombre}`)
     : ['(nadie registrado en esta fecha/turno)']));
 
   const texto = lineas.join('\n');
@@ -1448,6 +1461,9 @@ const btnAbrirEvaluacion = document.getElementById('btnAbrirEvaluacion');
 const btnEvaluarVista = document.getElementById('btnEvaluarVista');
 const claseNuevaFecha = document.getElementById('claseNuevaFecha');
 const claseNuevaTurno = document.getElementById('claseNuevaTurno');
+claseNuevaTurno.addEventListener('change', () => {
+  actualizarEtiquetaVerde(document.getElementById('claseNuevaBtnVerde'), claseNuevaTurno.value === TURNO_PROCEDIMIENTOS);
+});
 const claseNuevaInstructor = document.getElementById('claseNuevaInstructor');
 const btnAgregarClase = document.getElementById('btnAgregarClase');
 
@@ -1455,8 +1471,6 @@ let clasesLocal = []; // copia editable de persona.registros mientras el modal e
 let claseNuevoTipo = 'verde';
 
 const TURNOS_CLASE = ["Primera Clase", "Segunda Clase", "Tercera Clase", "Cuarta Clase", "Quinta Clase", TURNO_PROCEDIMIENTOS];
-const INSTRUCTORES_CLASE = NOMBRES_TODOS; // viene de codigos.js — cualquiera de CODIGOS puede figurar como quien dictó una clase
-
 // restringir = true: si quien registra no llega a evaluador (es instructor
 // común), no puede elegir "Procedimientos" — esa clase solo la registran
 // evaluadores o administradores. Los administradores (por ejemplo, en el
@@ -1475,7 +1489,11 @@ function opcionesInstructor(seleccionado, restringir) {
   if (restringir && registradorActualRol && registradorActualRol !== 'administrador') {
     return `<option value="${escapeAttr(registradorActual)}" selected>${escapeHtml(registradorActual)}</option>`;
   }
-  return INSTRUCTORES_CLASE.map(n => `<option value="${escapeAttr(n)}" ${n === seleccionado ? 'selected' : ''}>${n}</option>`).join('');
+  // NOMBRES_INSTRUCTORES y NOMBRES_EVALUADORES vienen de codigos.js — se
+  // muestran en dos grupos separados para que quede claro quién es quién.
+  const opcion = n => `<option value="${escapeAttr(n)}" ${n === seleccionado ? 'selected' : ''}>${n}</option>`;
+  return `<optgroup label="Instructores">${NOMBRES_INSTRUCTORES.map(opcion).join('')}</optgroup>`
+    + `<optgroup label="Evaluadores">${NOMBRES_EVALUADORES.map(opcion).join('')}</optgroup>`;
 }
 
 function actualizarBotonEvaluacion() {
@@ -1514,7 +1532,7 @@ function renderClasesLista(editable) {
   clasesListaEmpty.style.display = 'none';
   clasesAccionHeader.textContent = editable ? '' : '';
   clasesListaBody.innerHTML = clasesLocal.map((r, i) => {
-    const emoji = r.tipo === 'amarillo' ? '🟡' : '🟢';
+    const emoji = r.tipo === 'amarillo' ? '🟡' : (r.turno === TURNO_PROCEDIMIENTOS ? '🛡️' : '🟢');
     const puntoCell = editable
       ? `<span class="clase-punto-toggle" data-idx="${i}" title="Tocá para cambiar">${emoji}</span>`
       : `<span>${emoji}</span>`;
@@ -1566,6 +1584,7 @@ function abrirModalEditar() {
     claseNuevoTipo = 'verde';
     document.getElementById('claseNuevaBtnVerde').classList.add('active');
     document.getElementById('claseNuevaBtnAmarillo').classList.remove('active');
+    actualizarEtiquetaVerde(document.getElementById('claseNuevaBtnVerde'), claseNuevaTurno.value === TURNO_PROCEDIMIENTOS);
   }
 
   renderClasesLista(editable);
@@ -1622,6 +1641,7 @@ clasesListaBody.addEventListener('change', e => {
   const turnoSelect = e.target.closest('.clase-campo-turno');
   if (turnoSelect) {
     clasesLocal[Number(turnoSelect.dataset.idx)].turno = turnoSelect.value;
+    renderClasesLista(true);
     return;
   }
   const instructorSelect = e.target.closest('.clase-campo-instructor');

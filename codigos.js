@@ -35,3 +35,14 @@ function rolAlcanza(rolActual, rolRequerido) {
 // Lista de todos los nombres (cualquier rol) - usada, por ejemplo, para
 // elegir quién dictó una clase en asistencias.html.
 const NOMBRES_TODOS = Object.values(CODIGOS).map(u => u.nombre);
+// Nombres separados por rol — instructores (rol exactamente "instructor")
+// y evaluadores (rol "evaluador" o "administrador", que también pueden
+// evaluar). Se usan, por ejemplo, para dividir el desplegable de
+// "Instructor" de asistencias.html en dos grupos, y para el select de
+// "Evaluador" en tenientes.html / capitanes.html.
+const NOMBRES_INSTRUCTORES = Object.values(CODIGOS)
+  .filter(u => u.rol === 'instructor')
+  .map(u => u.nombre);
+const NOMBRES_EVALUADORES = Object.values(CODIGOS)
+  .filter(u => rolAlcanza(u.rol, 'evaluador'))
+  .map(u => u.nombre);
