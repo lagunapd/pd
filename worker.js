@@ -1,20 +1,33 @@
-// Worker de Cloudflare para guardar la lista de asistencias Y la lista de
-// evaluaciones, compartidas entre todos. No requiere servidor propio: se
-// despliega gratis en Cloudflare.
+// Worker de Cloudflare para guardar, compartidas entre todos:
+//  - la lista de Asistencias (Uniformados)
+//  - la lista de Tenientes (mismo esquema que Asistencias, pero pidiendo
+//    3 clases en vez de 6)
+//  - la lista de Capitanes (por ahora sigue con el esquema de evaluación
+//    con historial, hasta que se convierta también)
+// No requiere servidor propio: se despliega gratis en Cloudflare.
 //
 // Recurso "asistencias" (comportamiento de siempre, sin cambios de URL):
 //   GET  /                        -> { asistencias: [...], ultimaActualizacion }
-//   POST / { entries: [...] }     -> agrega puntos
+//   POST / { entries: [...] }     -> agrega clases/puntos
 //   POST / { edit: {...} }        -> edita/renombra a una persona
 //   POST / { delete: {...} }      -> elimina a una persona
+//   POST / { evaluarAscenso: {...} } -> evalúa para pasar a Tenientes
 //
-// Recurso "evaluaciones" (nuevo):
-//   GET  /?recurso=evaluaciones                    -> { evaluaciones: [...], ultimaActualizacion }
-//   POST / { recurso:"evaluaciones", guardar: {...} }   -> crea o edita (cada guardado = un intento)
-//   POST / { recurso:"evaluaciones", eliminar: {...} }  -> elimina el registro de evaluación
+// Recurso "tenientes" (nuevo, mismo esquema que asistencias):
+//   GET  /?recurso=tenientes                          -> { tenientes: [...], ultimaActualizacion }
+//   POST / { recurso:"tenientes", entries: [...] }     -> agrega clases/puntos
+//   POST / { recurso:"tenientes", edit: {...} }        -> edita/renombra
+//   POST / { recurso:"tenientes", delete: {...} }      -> elimina
+//   POST / { recurso:"tenientes", evaluarAscenso: {...} } -> evalúa para pasar a Capitanes
+//
+// Recurso "capitanes" (todavía con el esquema viejo de evaluación/historial):
+//   GET  /?recurso=capitanes                        -> { capitanes: [...], ultimaActualizacion }
+//   POST / { recurso:"capitanes", agregarIntento: {...} } -> evalúa/ingresa
+//   POST / { recurso:"capitanes", arreglarErrores: {...} } -> admin corrige a mano
+//   POST / { recurso:"capitanes", eliminar: {...} }        -> elimina
 
 const KV_KEY_ASISTENCIAS = "asistencias";
-const KV_KEY_EVALUACIONES = "evaluaciones";
+const KV_KEY_EVALUACIONES = "evaluaciones"; // legacy, ya no lo usa nada activo
 
 // Por seguridad, cambiá esto por tu dominio real de GitHub Pages una vez
 // que lo tengas andando, ej: "https://tuusuario.github.io"
@@ -84,7 +97,9 @@ async function guardarLista(env, kvKey, campoLista, lista) {
   return estado;
 }
 
-// ==================== evaluaciones ====================
+// ==================== evaluaciones (legacy, orfanato) ====================
+// Nada en el sitio actual usa esto (era de evaluaciones.html, que ya no
+// está enlazado desde index.html). Se deja sin tocar por si hiciera falta.
 function limpiarEvaluacion(nombre, e) {
   return {
     nombre,
@@ -103,7 +118,6 @@ async function manejarEvaluaciones(request, env, payload) {
 
   const { lista: evaluaciones } = await cargarLista(env, KV_KEY_EVALUACIONES, "evaluaciones");
 
-  // ---- crear o editar (cada guardado cuenta como un intento) ----
   if (payload.guardar && payload.guardar.nombre) {
     const nombreLimpio = String(payload.guardar.nombre).trim();
     const datos = limpiarEvaluacion(nombreLimpio, payload.guardar);
@@ -129,7 +143,6 @@ async function manejarEvaluaciones(request, env, payload) {
     return json({ evaluaciones: estado.evaluaciones, ultimaActualizacion: estado.ultimaActualizacion });
   }
 
-  // ---- eliminar ----
   if (payload.eliminar && payload.eliminar.nombre) {
     const nombreLimpio = String(payload.eliminar.nombre).trim().toLowerCase();
     const idx = evaluaciones.findIndex((ev) => ev.nombre.toLowerCase() === nombreLimpio);
@@ -145,10 +158,8 @@ async function manejarEvaluaciones(request, env, payload) {
   return json({ error: "Acción de evaluaciones no reconocida" }, 400);
 }
 
-// ==================== escalafón (tenientes, capitanes, ...) ====================
-// "tenientes" reutiliza la misma KV key que ya usaba "evaluaciones" (no se
-// migran datos: la lista de evaluaciones actual ES la lista de tenientes).
-// Cada persona: { nombre, resultado, fecha, evaluador, observaciones, historial: [...] }
+// ==================== escalafón (capitanes, y en el futuro mayores) ====================
+// Cada persona: { nombre, rango, resultado, fecha, evaluador, observaciones, historial: [...] }
 // resultado = estado del ÚLTIMO intento en ESTA lista ('aprobado' | 'reprobado' | null = sin evaluar).
 // historial = TODA la carrera (todos los rangos), no se reinicia nunca.
 //
@@ -165,7 +176,6 @@ const RANGO_LABEL = {
 };
 
 const ESCALAFON_CONFIG = {
-  tenientes: { kvKey: "evaluaciones", siguiente: "capitanes" },
   capitanes: { kvKey: "capitanes", siguiente: "mayores" },
   // mayores: se agrega cuando exista ese escalón (Mayor es el techo por ahora)
 };
@@ -194,23 +204,18 @@ async function manejarEscalafon(request, env, payload, recurso) {
   // ---- agregar intento: evalúa (aprobado/reprobado), actualiza el estado
   // actual y suma una entrada al historial de carrera.
   //
-  // Regla nueva: la evaluación SIEMPRE hace avanzar a la persona a la
-  // siguiente lista, sea aprobada o reprobada, y se elimina de la lista en
-  // la que estaba. Si todavía no existe un escalón siguiente armado (por
-  // ahora, Capitanes es el techo: "mayores" no está construido), el
-  // registro se queda en esta lista con el resultado actualizado — así el
-  // botón "Agregar Intento" puede volver a usarse para reintentar. ----
+  // La evaluación SIEMPRE hace avanzar a la persona a la siguiente lista,
+  // sea aprobada o reprobada, y se elimina de la lista en la que estaba. Si
+  // todavía no existe un escalón siguiente armado (por ahora, Capitanes es
+  // el techo: "mayores" no está construido), el registro se queda en esta
+  // lista con el resultado actualizado — así el botón "Agregar Intento"
+  // puede volver a usarse para reintentar. ----
   if (payload.agregarIntento && payload.agregarIntento.nombre) {
     const nombreLimpio = String(payload.agregarIntento.nombre).trim();
     const datos = limpiarIntentoEscalafon(nombreLimpio, payload.agregarIntento);
     const soloRegistrar = payload.agregarIntento.soloRegistrar === true;
     const siguienteRecurso = config.siguiente;
 
-    // Si es solo registro (llegó del rango anterior, o se está reintentando
-    // ESTE rango), la evaluación es para el rango de ESTA lista. Si es una
-    // evaluación de ascenso, es para el rango SIGUIENTE (evaluar a un
-    // Teniente es "Evaluación de Capitán"; a un Capitán, "Evaluación de
-    // Mayor"), aunque esa lista todavía no exista armada.
     const rangoEvaluado = soloRegistrar ? recurso : (siguienteRecurso || recurso);
     const transicion = `Evaluación de ${RANGO_LABEL[rangoEvaluado] || rangoEvaluado}`;
 
@@ -219,12 +224,10 @@ async function manejarEscalafon(request, env, payload, recurso) {
     const intento = { fecha: datos.fecha, resultado: datos.resultado, evaluador: datos.evaluador, observaciones: datos.observaciones, transicion };
     const historialNuevo = [...historialPrevio, intento];
 
-    // El resultado de esta evaluación ES el estado del rango de ESTA lista
-    // (por ejemplo: evaluar en Asistencias es evaluar para Teniente, por eso
-    // se manda para allá). No queda "pendiente": apruebe o repruebe, ese es
-    // el estado real acá.
+    const rangoActual = (idx !== -1 && lista[idx].rango) || RANGO_LABEL[recurso] || recurso;
     const personaActualizada = {
       nombre: datos.nombre,
+      rango: rangoActual,
       resultado: datos.resultado,
       fecha: datos.fecha,
       evaluador: datos.evaluador,
@@ -232,21 +235,12 @@ async function manejarEscalafon(request, env, payload, recurso) {
       historial: historialNuevo,
     };
 
-    // soloRegistrar = true: esta llamada solo actualiza/ingresa el registro
-    // EN ESTA lista (ingreso desde la lista anterior, o reintento de la
-    // evaluación de este mismo rango). No ascciende de largo hacia el
-    // siguiente escalón.
     if (soloRegistrar) {
       if (idx !== -1) lista[idx] = personaActualizada; else lista.push(personaActualizada);
       const estado = await guardarLista(env, config.kvKey, recurso, lista);
       return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
     }
 
-    // Evaluación para el SIGUIENTE rango (por ejemplo, evaluar a un Teniente
-    // para Capitán): siempre avanza, apruebe o repruebe, y ese resultado
-    // queda tal cual como estado del rango en la lista destino. Si ese
-    // escalón todavía no está armado (por ahora: Mayores), el registro se
-    // queda acá con el intento igual sumado al historial.
     const siguienteConfig = siguienteRecurso ? ESCALAFON_CONFIG[siguienteRecurso] : null;
 
     if (siguienteConfig) {
@@ -257,6 +251,7 @@ async function manejarEscalafon(request, env, payload, recurso) {
       const idxDestino = listaDestino.findIndex((p) => p.nombre.toLowerCase() === personaActualizada.nombre.toLowerCase());
       const registroDestino = {
         nombre: personaActualizada.nombre,
+        rango: RANGO_LABEL[siguienteRecurso] || siguienteRecurso,
         resultado: personaActualizada.resultado,
         fecha: personaActualizada.fecha,
         evaluador: personaActualizada.evaluador,
@@ -269,38 +264,32 @@ async function manejarEscalafon(request, env, payload, recurso) {
       return json({ [recurso]: estadoOrigen[recurso], ultimaActualizacion: estadoOrigen.ultimaActualizacion });
     }
 
-    // No hay escalón siguiente todavía (tope actual): se queda acá.
     if (idx === -1) lista.push(personaActualizada); else lista[idx] = personaActualizada;
     const estado = await guardarLista(env, config.kvKey, recurso, lista);
     return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
   }
 
-  // ---- arreglar errores: corrige datos a mano (solo admin, del lado
-  // cliente). NO agrega intento al historial. ----
+  // ---- arreglar errores (admin: corrige a mano un registro existente) ----
   if (payload.arreglarErrores && payload.arreglarErrores.nombre) {
     const nombreLimpio = String(payload.arreglarErrores.nombre).trim();
-    const nombreNuevo = payload.arreglarErrores.nombreNuevo
-      ? String(payload.arreglarErrores.nombreNuevo).trim()
-      : nombreLimpio;
+    const idx = lista.findIndex((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
+    if (idx === -1) return json({ error: "No se encontró a esa persona en esta lista." }, 404);
 
-    const persona = lista.find((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
-    if (!persona) return json({ error: "No se encontró a esa persona en esta lista." }, 404);
-
-    persona.nombre = nombreNuevo || persona.nombre;
-    if (payload.arreglarErrores.resultado !== undefined) {
-      persona.resultado = payload.arreglarErrores.resultado === "reprobado"
-        ? "reprobado"
-        : (payload.arreglarErrores.resultado ? "aprobado" : null);
+    const datos = payload.arreglarErrores;
+    const persona = lista[idx];
+    if (datos.nombreNuevo) persona.nombre = String(datos.nombreNuevo).trim() || persona.nombre;
+    if (datos.resultado !== undefined) {
+      persona.resultado = datos.resultado === "reprobado" ? "reprobado" : (datos.resultado ? "aprobado" : null);
     }
-    if (payload.arreglarErrores.fecha !== undefined) persona.fecha = payload.arreglarErrores.fecha;
-    if (payload.arreglarErrores.evaluador !== undefined) persona.evaluador = payload.arreglarErrores.evaluador;
-    if (payload.arreglarErrores.observaciones !== undefined) persona.observaciones = payload.arreglarErrores.observaciones;
+    if (datos.fecha !== undefined) persona.fecha = datos.fecha || null;
+    if (datos.evaluador !== undefined) persona.evaluador = datos.evaluador || null;
+    if (datos.observaciones !== undefined) persona.observaciones = datos.observaciones || '';
 
     const estado = await guardarLista(env, config.kvKey, recurso, lista);
     return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
   }
 
-  // ---- eliminar: borra el registro completo (solo admin, del lado cliente) ----
+  // ---- eliminar ----
   if (payload.eliminar && payload.eliminar.nombre) {
     const nombreLimpio = String(payload.eliminar.nombre).trim().toLowerCase();
     const idx = lista.findIndex((p) => p.nombre.toLowerCase() === nombreLimpio);
@@ -316,17 +305,61 @@ async function manejarEscalafon(request, env, payload, recurso) {
   return json({ error: "Acción de escalafón no reconocida" }, 400);
 }
 
-// ==================== asistencias (comportamiento original) ====================
-async function manejarAsistencias(request, env, payload) {
-  if (request.method === "GET") {
-    const { lista, ultimaActualizacion } = await cargarLista(env, KV_KEY_ASISTENCIAS, "asistencias");
-    return json({ asistencias: lista, ultimaActualizacion });
+// ==================== listas de clases (Asistencias, Tenientes) ====================
+// Cada persona: { nombre, rango, registros: [{tipo, fecha, turno, instructor, registrador}] }
+//
+// rango: se asigna solo/a (rangoDefault) cuando la persona recién aparece en
+// esta lista, y NO se puede tocar desde acá — solo lo va a poder cambiar el
+// futuro panel de administración.
+//
+// evaluarAscenso: evalúa a la persona para el rango SIGUIENTE.
+//   - reprobado -> no pasa nada, se queda en esta lista (se puede
+//     reintentar cuando se quiera, no se guarda un "intento" aparte).
+//   - aprobado  -> se elimina de esta lista y se crea en la lista
+//     siguiente, ya con el rango nuevo asignado.
+const LISTAS_CLASES = {
+  asistencias: {
+    kvKey: KV_KEY_ASISTENCIAS,
+    rangoDefault: "Uniformado",
+    siguiente: { recurso: "tenientes", rango: "Tenientes", modelo: "clases" },
+  },
+  tenientes: {
+    kvKey: "tenientes",
+    rangoDefault: "Tenientes",
+    siguiente: { recurso: "capitanes", rango: "Capitanes", modelo: "escalafon" },
+  },
+};
+
+async function manejarListaClases(request, env, payload, recurso) {
+  const config = LISTAS_CLASES[recurso];
+  if (!config) return json({ error: `Recurso "${recurso}" no reconocido` }, 400);
+
+  const cargaInicial = await cargarLista(env, config.kvKey, recurso);
+  const lista = cargaInicial.lista;
+  let ultimaActualizacion = cargaInicial.ultimaActualizacion;
+
+  // ---- backfill: a quien le falte el rango (gente que ya estaba en la
+  // lista antes de que existiera este campo) se le asigna el rango por
+  // defecto de esta lista, una sola vez, y se guarda. ----
+  let necesitaGuardar = false;
+  for (const p of lista) {
+    if (!p.rango) {
+      p.rango = config.rangoDefault;
+      necesitaGuardar = true;
+    }
+  }
+  if (necesitaGuardar) {
+    const estadoBackfill = await guardarLista(env, config.kvKey, recurso, lista);
+    ultimaActualizacion = estadoBackfill.ultimaActualizacion;
   }
 
-  const { lista: asistencias } = await cargarLista(env, KV_KEY_ASISTENCIAS, "asistencias");
+  if (request.method === "GET") {
+    return json({ [recurso]: lista, ultimaActualizacion });
+  }
 
   // ---- editar: reemplaza la lista completa de clases de una persona,
-  // permite renombrarla vía nombreNuevo ----
+  // permite renombrarla vía nombreNuevo. El rango NO se toca acá todavía
+  // (va a ser editable desde el futuro panel de administración). ----
   if (payload.edit && payload.edit.nombre) {
     const nombreLimpio = String(payload.edit.nombre).trim();
     const nombreNuevo = payload.edit.nombreNuevo
@@ -334,13 +367,14 @@ async function manejarAsistencias(request, env, payload) {
       : nombreLimpio;
     const registrador = payload.edit.registrador || "Desconocido";
 
-    let persona = asistencias.find(
+    let persona = lista.find(
       (p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase()
     );
     if (!persona) {
-      persona = { nombre: nombreNuevo || nombreLimpio, registros: [] };
-      asistencias.push(persona);
+      persona = { nombre: nombreNuevo || nombreLimpio, rango: config.rangoDefault, registros: [] };
+      lista.push(persona);
     }
+    if (!persona.rango) persona.rango = config.rangoDefault;
 
     const registrosNuevos = Array.isArray(payload.edit.registros)
       ? payload.edit.registros.map((r) => {
@@ -355,24 +389,83 @@ async function manejarAsistencias(request, env, payload) {
     persona.nombre = nombreNuevo || persona.nombre;
     persona.registros = registrosNuevos;
 
-    const estado = await guardarLista(env, KV_KEY_ASISTENCIAS, "asistencias", asistencias);
-    return json({ asistencias: estado.asistencias, ultimaActualizacion: estado.ultimaActualizacion });
+    const estado = await guardarLista(env, config.kvKey, recurso, lista);
+    return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
   }
 
   // ---- eliminar: borra por completo el historial de una persona ----
   if (payload.delete && payload.delete.nombre) {
     const nombreLimpio = String(payload.delete.nombre).trim().toLowerCase();
-    const idx = asistencias.findIndex((p) => p.nombre.toLowerCase() === nombreLimpio);
+    const idx = lista.findIndex((p) => p.nombre.toLowerCase() === nombreLimpio);
     if (idx !== -1) {
-      asistencias.splice(idx, 1);
-      const estado = await guardarLista(env, KV_KEY_ASISTENCIAS, "asistencias", asistencias);
-      return json({ asistencias: estado.asistencias, ultimaActualizacion: estado.ultimaActualizacion });
+      lista.splice(idx, 1);
+      const estado = await guardarLista(env, config.kvKey, recurso, lista);
+      return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
     }
-    const actual = await cargarLista(env, KV_KEY_ASISTENCIAS, "asistencias");
-    return json({ asistencias: actual.lista, ultimaActualizacion: actual.ultimaActualizacion });
+    const actual = await cargarLista(env, config.kvKey, recurso);
+    return json({ [recurso]: actual.lista, ultimaActualizacion: actual.ultimaActualizacion });
   }
 
-  // ---- agregar entradas (registrar asistencia) ----
+  // ---- evaluarAscenso: evalúa para el rango siguiente ----
+  if (payload.evaluarAscenso && payload.evaluarAscenso.nombre) {
+    const nombreLimpio = String(payload.evaluarAscenso.nombre).trim();
+    const aprobado = payload.evaluarAscenso.resultado === "aprobado";
+
+    if (!aprobado) {
+      // Reprobado: no se mueve nada, se queda en esta lista tal cual para
+      // poder reintentar más adelante.
+      return json({ [recurso]: lista, ultimaActualizacion });
+    }
+
+    const idx = lista.findIndex((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
+    if (idx === -1) return json({ error: "No se encontró a esa persona en esta lista." }, 404);
+    const persona = lista[idx];
+
+    const siguiente = config.siguiente;
+    if (!siguiente) {
+      return json({ error: "Todavía no está armado el siguiente rango." }, 400);
+    }
+
+    lista.splice(idx, 1);
+    const estadoOrigen = await guardarLista(env, config.kvKey, recurso, lista);
+
+    if (siguiente.modelo === "clases") {
+      const siguienteConfig = LISTAS_CLASES[siguiente.recurso];
+      const { lista: listaDestino } = await cargarLista(env, siguienteConfig.kvKey, siguiente.recurso);
+      const yaEsta = listaDestino.find((p) => p.nombre.toLowerCase() === persona.nombre.toLowerCase());
+      if (!yaEsta) {
+        listaDestino.push({ nombre: persona.nombre, rango: siguiente.rango, registros: [] });
+        await guardarLista(env, siguienteConfig.kvKey, siguiente.recurso, listaDestino);
+      }
+    } else if (siguiente.modelo === "escalafon") {
+      const siguienteConfig = ESCALAFON_CONFIG[siguiente.recurso];
+      const { lista: listaDestino } = await cargarLista(env, siguienteConfig.kvKey, siguiente.recurso);
+      const yaEsta = listaDestino.find((p) => p.nombre.toLowerCase() === persona.nombre.toLowerCase());
+      if (!yaEsta) {
+        const transicion = `Evaluación de ${RANGO_LABEL[siguiente.recurso] || siguiente.recurso}`;
+        listaDestino.push({
+          nombre: persona.nombre,
+          rango: siguiente.rango,
+          resultado: "aprobado",
+          fecha: payload.evaluarAscenso.fecha || "—",
+          evaluador: payload.evaluarAscenso.evaluador || "—",
+          observaciones: payload.evaluarAscenso.observaciones || "",
+          historial: [{
+            fecha: payload.evaluarAscenso.fecha || "—",
+            resultado: "aprobado",
+            evaluador: payload.evaluarAscenso.evaluador || "—",
+            observaciones: payload.evaluarAscenso.observaciones || "",
+            transicion,
+          }],
+        });
+        await guardarLista(env, siguienteConfig.kvKey, siguiente.recurso, listaDestino);
+      }
+    }
+
+    return json({ [recurso]: estadoOrigen[recurso], ultimaActualizacion: estadoOrigen.ultimaActualizacion });
+  }
+
+  // ---- agregar entradas (registrar clases) ----
   const entries = Array.isArray(payload.entries) ? payload.entries : [];
 
   for (const entry of entries) {
@@ -380,18 +473,19 @@ async function manejarAsistencias(request, env, payload) {
     const nombreLimpio = String(entry.nombre).trim();
     if (!nombreLimpio) continue;
 
-    let persona = asistencias.find(
+    let persona = lista.find(
       (p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase()
     );
     if (!persona) {
-      persona = { nombre: nombreLimpio, registros: [] };
-      asistencias.push(persona);
+      persona = { nombre: nombreLimpio, rango: config.rangoDefault, registros: [] };
+      lista.push(persona);
     }
+    if (!persona.rango) persona.rango = config.rangoDefault;
     persona.registros.push(limpiarRegistro(entry));
   }
 
-  const estado = await guardarLista(env, KV_KEY_ASISTENCIAS, "asistencias", asistencias);
-  return json({ asistencias: estado.asistencias, ultimaActualizacion: estado.ultimaActualizacion });
+  const estado = await guardarLista(env, config.kvKey, recurso, lista);
+  return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
 }
 
 export default {
@@ -415,10 +509,13 @@ export default {
         if (recurso === "evaluaciones") {
           return await manejarEvaluaciones(request, env, {});
         }
+        if (recurso && LISTAS_CLASES[recurso]) {
+          return await manejarListaClases(request, env, {}, recurso);
+        }
         if (recurso && ESCALAFON_CONFIG[recurso]) {
           return await manejarEscalafon(request, env, {}, recurso);
         }
-        return await manejarAsistencias(request, env, {});
+        return await manejarListaClases(request, env, {}, "asistencias");
       }
 
       if (request.method === "POST") {
@@ -432,10 +529,13 @@ export default {
         if (payload.recurso === "evaluaciones") {
           return await manejarEvaluaciones(request, env, payload);
         }
+        if (payload.recurso && LISTAS_CLASES[payload.recurso]) {
+          return await manejarListaClases(request, env, payload, payload.recurso);
+        }
         if (payload.recurso && ESCALAFON_CONFIG[payload.recurso]) {
           return await manejarEscalafon(request, env, payload, payload.recurso);
         }
-        return await manejarAsistencias(request, env, payload);
+        return await manejarListaClases(request, env, payload, "asistencias");
       }
 
       return json({ error: "Método no soportado" }, 405);

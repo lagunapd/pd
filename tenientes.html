@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tenientes — Academia WSPD</title>
+<title>Lista de Tenientes — WSPD</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -17,8 +17,8 @@
     --accent: #d4922a;
     --accent2: #ffb84d;
     --green: #4ade80;
+    --yellow: #ffd94d;
     --red: #ff6b6b;
-    --violeta: #a78bfa;
   }
   * { box-sizing: border-box; }
   .hidden { display: none !important; }
@@ -46,13 +46,23 @@
     font-family: 'Bebas Neue', -apple-system, sans-serif;
     font-size: 1.8rem;
     letter-spacing: 0.04em;
-    color: var(--violeta);
+    color: var(--accent2);
     text-align: center;
     margin: 4px 0 2px 0;
   }
-  .subtitle { text-align: center; color: var(--muted); font-size: 0.78rem; margin-bottom: 14px; }
-  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-  .toolbar input {
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-bottom: 14px;
+  }
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .toolbar input, .toolbar select {
     background: var(--card);
     border: 1px solid var(--border);
     color: var(--text);
@@ -62,155 +72,468 @@
     font-size: 0.85rem;
   }
   .toolbar input[type="text"] { flex: 1; min-width: 140px; }
-  .toolbar input:focus { outline: none; border-color: var(--accent); }
+  .toolbar input:focus, .toolbar select:focus { outline: none; border-color: var(--accent); }
 
-  .accion-bar { display: flex; justify-content: flex-end; margin-bottom: 14px; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .accion-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 14px;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
   .modo-edicion-badge {
-    display: flex; align-items: center; gap: 8px;
-    background: #2a2416; border: 1px solid var(--accent); color: var(--accent2);
-    padding: 7px 12px; font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #2a2416;
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    padding: 7px 12px;
+    font-size: 0.75rem;
   }
   .modo-edicion-badge.hidden { display: none; }
   .modo-edicion-badge b { color: var(--text); }
   .btn-salir-edicion {
-    background: none; border: 1px solid var(--accent); color: var(--accent2);
-    padding: 3px 9px; font-size: 0.7rem; cursor: pointer;
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    padding: 3px 9px;
+    font-size: 0.7rem;
+    cursor: pointer;
   }
   .btn-salir-edicion:hover { background: var(--accent); color: #201400; }
   .btn {
-    border: 1px solid var(--border); background: var(--card); color: var(--text);
-    padding: 9px 16px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.02em;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    padding: 9px 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     cursor: pointer;
     clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   }
-  .btn-primario { background: var(--accent); border-color: var(--accent); color: #201400; }
+  .btn-primario {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #201400;
+  }
   .btn-primario:hover { background: var(--accent2); }
   .btn-secundario:hover { border-color: var(--muted); }
-  .btn-refrescar { background: var(--card); border-color: var(--border); color: var(--text); }
+  .btn-registrar {
+    background: #1e3a2e;
+    border-color: #3ea86b;
+    color: var(--green);
+  }
+  .btn-registrar:hover { background: #234a37; }
+  .btn-refrescar {
+    background: var(--card);
+    border-color: var(--border);
+    color: var(--text);
+  }
   .btn-refrescar:hover { border-color: var(--accent2); color: var(--accent2); }
-  .btn-editar-global { background: #2a2416; border-color: var(--accent); color: var(--accent2); }
+  .btn-editar-global {
+    background: #2a2416;
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
   .btn-editar-global:hover { background: #3a3320; }
   .btn-editar-global.hidden { display: none; }
-  .btn-peligro { background: #3a1414; border-color: var(--red); color: var(--red); }
-  .btn-peligro:hover { background: var(--red); color: #1a0505; }
-  .btn-intento { background: #1e3a2e; border-color: var(--green); color: var(--green); }
-  .btn-intento:hover { background: var(--green); color: #0a2015; }
-  .btn-arreglar { background: #2a2416; border-color: var(--accent2); color: var(--accent2); }
-  .btn-arreglar:hover { background: var(--accent2); color: #201400; }
-  .btn-ascender { background: #241a3a; border-color: var(--violeta); color: var(--violeta); }
-  .btn-ascender:hover { background: var(--violeta); color: #170f28; }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(0.5); }
-  .btn:disabled:hover { background: var(--card); color: var(--text); }
-  .btn-intento:disabled:hover { background: #1e3a2e; color: var(--green); }
-  .btn-arreglar:disabled:hover { background: #2a2416; color: var(--accent2); }
-  .btn-ascender:disabled:hover { background: #241a3a; color: var(--violeta); }
-  .btn-peligro:disabled:hover { background: #3a1414; color: var(--red); }
+  .btn-reporte {
+    background: #1a2a38;
+    border-color: #3e7ea8;
+    color: #7ec4f0;
+  }
+  .btn-reporte:hover { background: #20374a; }
 
-  table { width: 100%; border-collapse: collapse; background: rgba(26, 29, 36, 0.55); border: 1px solid var(--border); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(26, 29, 36, 0.55);
+    border: 1px solid var(--border);
+  }
   th {
-    text-align: left; padding: 9px 10px; background: #22252e; color: var(--muted);
-    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid var(--border);
+    text-align: left;
+    padding: 9px 10px;
+    background: #22252e;
+    color: var(--muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border);
   }
   th.num, td.num { text-align: center; }
-  td { padding: 9px 10px; border-top: 1px solid var(--border); font-size: 0.82rem; }
+  td {
+    padding: 9px 10px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+  }
   tr:hover td { background: #20232c; }
-  .rank { color: var(--muted); font-size: 0.72rem; width: 28px; }
+  .rank {
+    color: var(--muted);
+    font-size: 0.72rem;
+    width: 28px;
+  }
+  .puntos {
+    font-weight: 700;
+    color: var(--red);
+  }
+  tr.destacada td {
+    background: #1e3a2e;
+    border-top-color: #3ea86b;
+  }
+  tr.destacada:hover td { background: #234a37; }
+  tr.destacada .puntos { color: var(--green); }
+  tr.destacada td:first-child { border-left: 3px solid #3ea86b; }
+  .badge-lista {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 0.65rem;
+    color: var(--green);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
   .col-eliminar { display: none; }
   #tablaTenientes.modo-edicion .col-eliminar { display: table-cell; }
-  .btn-eliminar-fila { color: var(--red); font-weight: 700; cursor: pointer; font-size: 0.9rem; padding: 2px 10px; }
+  .btn-eliminar-fila {
+    color: var(--red);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 10px;
+  }
   .btn-eliminar-fila:hover { text-shadow: 0 0 6px var(--red); }
   .nombre-cell { cursor: pointer; }
   .nombre-cell:hover { color: var(--accent2); text-decoration: underline; }
-  .resultado-aprobado { color: var(--green); font-weight: 700; }
-  .resultado-reprobado { color: var(--red); font-weight: 700; }
-  .resultado-pendiente { color: var(--muted); }
-  .count { color: var(--muted); font-size: 0.75rem; margin: 8px 0; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
-  .empty-msg { text-align: center; color: var(--muted); padding: 30px; font-size: 0.85rem; }
-  .note {
-    margin-top: 16px; padding: 10px 12px; background: rgba(26, 29, 36, 0.55);
-    border: 1px solid var(--border); color: var(--muted); font-size: 0.72rem; line-height: 1.5;
+  .editar-valor {
+    flex: 1;
+    text-align: center;
+    padding: 9px 6px;
+    border: 1px solid var(--border);
+    background: #14161b;
+    font-weight: 700;
   }
+  .dot {
+    cursor: help;
+    font-size: 0.85rem;
+  }
+  .count-mobile { display: none; }
+  @media (max-width: 640px) {
+    .dots-desktop { display: none; }
+    .count-mobile {
+      display: inline-block;
+      white-space: nowrap;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .count-mobile.count-verde { color: var(--green); }
+    .count-mobile.count-amarillo { color: var(--yellow); }
+    .count-mobile.count-procedimientos { color: #4d9fff; }
+    td.col-verde, td.col-amarillo { width: 58px; text-align: center; }
+  }
+  #customTooltip {
+    position: fixed;
+    z-index: 300;
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 7px 11px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    max-width: 230px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    pointer-events: none;
+  }
+  #customTooltip .tt-tipo {
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  #customTooltip .tt-tipo.verde { color: var(--green); }
+  #customTooltip .tt-tipo.amarillo { color: var(--yellow); }
+  #customTooltip .tt-registrador { color: var(--accent2); }
+  #customTooltip .tt-detalle { color: var(--muted); }
+  .count {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .empty-msg {
+    text-align: center;
+    color: var(--muted);
+    padding: 30px;
+    font-size: 0.85rem;
+  }
+  .note {
+    margin-top: 16px;
+    padding: 10px 12px;
+    background: rgba(26, 29, 36, 0.55);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+  .note code { color: var(--accent2); }
   .banner-offline {
-    display: none; background: #3a2320; border: 1px solid var(--red); color: #ffb3b3;
-    padding: 8px 12px; font-size: 0.75rem; margin-bottom: 12px;
+    display: none;
+    background: #3a2320;
+    border: 1px solid var(--red);
+    color: #ffb3b3;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    margin-bottom: 12px;
   }
   .banner-offline.visible { display: block; }
 
+  /* ---------- modales ---------- */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-    display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
   }
   .modal-overlay.hidden { display: none; }
-  #modalCodigo { z-index: 110; }
   .modal-box {
-    background: var(--card); border: 1px solid var(--border); padding: 20px; width: 100%; max-width: 360px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
     clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
   }
   .modal-box-lg { max-width: 560px; }
-  .modal-box h2 { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.03em; color: var(--violeta); font-size: 1.3rem; margin: 0 0 6px 0; }
-  .modal-sub { color: var(--muted); font-size: 0.78rem; margin: 0 0 14px 0; line-height: 1.4; }
-  .modal-sub b { color: var(--accent2); }
-  .modal-box input[type="text"], .modal-box input[type="date"], .modal-box select, .modal-box textarea {
-    width: 100%; background: #14161b; border: 1px solid var(--border); color: var(--text);
-    padding: 9px 10px; font-size: 0.85rem; font-family: inherit;
+  .modal-box h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.03em;
+    color: var(--accent2);
+    font-size: 1.3rem;
+    margin: 0 0 6px 0;
   }
-  .modal-box input[type="date"] { color-scheme: dark; cursor: pointer; }
-  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.85); opacity: 1; cursor: pointer; padding: 4px; }
-  .modal-box input:focus, .modal-box select:focus, .modal-box textarea:focus { outline: none; border-color: var(--accent); }
-  .modal-error { color: var(--red); font-size: 0.75rem; min-height: 16px; margin-top: 6px; }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
-  .modal-actions-split { justify-content: space-between; flex-wrap: wrap; }
-  .modal-actions-right { display: flex; gap: 10px; flex-wrap: wrap; }
-  .modal-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-end; }
-  .modal-field { flex: 1; min-width: 120px; margin-bottom: 12px; }
-  .modal-field label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin-bottom: 4px; }
-  .tipo-selector { display: flex; gap: 6px; }
-  .tipo-btn { flex: 1; border: 1px solid var(--border); background: #14161b; color: var(--muted); padding: 9px 6px; font-size: 0.78rem; cursor: pointer; }
-  .tipo-btn.tipo-aprobado.active { background: #1e3a2e; border-color: var(--green); color: var(--green); }
-  .tipo-btn.tipo-reprobado.active { background: #3a1414; border-color: var(--red); color: var(--red); }
-
-  .detalle-campo { font-size: 0.85rem; margin-bottom: 10px; line-height: 1.5; }
-  .detalle-campo b { color: var(--muted); font-weight: 600; }
-  .detalle-intentos {
-    margin-top: 6px; font-size: 0.78rem; color: var(--violeta); cursor: pointer; text-decoration: underline; display: inline-block;
+  .modal-sub {
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin: 0 0 14px 0;
+    line-height: 1.4;
   }
-  .detalle-intentos:hover { color: var(--accent2); }
-  .detalle-subform {
-    margin-top: 14px; padding: 14px; border: 1px solid var(--border); background: rgba(20,22,27,0.6);
+  .modal-sub b { color: var(--green); }
+  .modal-box input[type="text"],
+  .modal-box input[type="date"],
+  .modal-box select,
+  .modal-box textarea {
+    width: 100%;
+    background: #14161b;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 10px;
+    font-size: 0.85rem;
   }
-  .detalle-subform-titulo { font-weight: 700; font-size: 0.8rem; color: var(--accent2); margin-bottom: 10px; }
-
-  .mini-lista-wrap { margin-top: 4px; max-height: 260px; overflow-y: auto; border: 1px solid var(--border); }
-  .mini-lista { width: 100%; border-collapse: collapse; }
-  .mini-lista th { position: sticky; top: 0; background: #22252e; color: var(--muted); font-size: 0.65rem; text-transform: uppercase; padding: 6px 8px; text-align: left; }
-  .mini-lista td { padding: 6px 8px; font-size: 0.8rem; border-top: 1px solid var(--border); }
-  .mini-lista-empty { text-align: center; color: var(--muted); font-size: 0.78rem; padding: 14px; border: 1px solid var(--border); border-top: none; }
-  .mini-lista .quitar { cursor: pointer; color: var(--red); font-weight: 700; font-size: 0.8rem; }
-  .btn-registrar { background: #1e3a2e; border-color: #3ea86b; color: var(--green); }
-  .btn-registrar:hover { background: #234a37; }
-  .btn-agregar-fila { align-self: flex-end; }
+  .modal-box textarea {
+    font-family: inherit;
+    resize: vertical;
+  }
+  .modal-box input[type="date"] {
+    color-scheme: dark;
+    -webkit-appearance: auto;
+    appearance: auto;
+    min-height: 38px;
+  }
+  .modal-box input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.6);
+    opacity: 1;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .modal-box input[type="date"]::-webkit-datetime-edit { cursor: pointer; }
+  .reporte-opciones {
+    flex-direction: column;
+    justify-content: stretch;
+  }
+  .reporte-opciones .btn { width: 100%; }
+  .clases-tabla th, .clases-tabla td {
+    font-size: 0.78rem;
+  }
+  .clase-punto-toggle {
+    cursor: pointer;
+    font-size: 1rem;
+    user-select: none;
+  }
+  .clase-quitar {
+    cursor: pointer;
+    color: var(--red);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .modal-box input:focus, .modal-box select:focus { outline: none; border-color: var(--accent); }
+  .modal-error {
+    color: var(--red);
+    font-size: 0.75rem;
+    min-height: 16px;
+    margin-top: 6px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .modal-actions-split {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .modal-actions-right {
+    display: flex;
+    gap: 10px;
+  }
+  .modal-actions-left {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-evaluacion {
+    background: #1a2a38;
+    border-color: #3e7ea8;
+    color: #7ec4f0;
+  }
+  .btn-evaluacion:hover { background: #20374a; }
+  .btn-evaluacion:disabled {
+    background: #1a1d24;
+    border-color: var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  .btn-evaluacion:disabled:hover { background: #1a1d24; }
+  .btn-peligro {
+    background: #3a1414;
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .btn-peligro:hover {
+    background: var(--red);
+    color: #1a0505;
+  }
+  .modal-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    align-items: flex-end;
+  }
+  .modal-field { flex: 1; min-width: 120px; }
   .modal-field.flex1 { flex: 2; min-width: 160px; }
+  .modal-field label {
+    display: block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .tipo-selector { display: flex; gap: 6px; }
+  .tipo-btn {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: #14161b;
+    color: var(--muted);
+    padding: 9px 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .tipo-btn.tipo-verde.active { background: #1e3a2e; border-color: var(--green); color: var(--green); }
+  .tipo-btn.tipo-amarillo.active { background: #3a3320; border-color: var(--yellow); color: var(--yellow); }
+  .btn-agregar-fila { align-self: flex-end; }
+  .mini-lista-wrap { margin-top: 4px; max-height: 220px; overflow-y: auto; border: 1px solid var(--border); }
+  .mini-lista { width: 100%; border-collapse: collapse; }
+  .mini-lista th {
+    position: sticky; top: 0;
+    background: #22252e; color: var(--muted);
+    font-size: 0.65rem; text-transform: uppercase;
+    padding: 6px 8px; text-align: left;
+  }
+  .mini-lista td { padding: 6px 8px; font-size: 0.8rem; border-top: 1px solid var(--border); }
+  .mini-lista .quitar {
+    cursor: pointer;
+    color: var(--red);
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+  .mini-lista-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-top: none;
+  }
 </style>
 </head>
 <body>
 
-<h1>🎖️ Tenientes</h1>
-<div class="subtitle">Academia de Policía — Departamento de Policía de Laguna</div>
+<h1>🎖️ Lista de Tenientes</h1>
+<div class="subtitle">Departamento de Policía de Laguna</div>
 
 <div class="accion-bar">
   <button class="btn btn-refrescar" id="btnRefrescarLista">🔄 Refrescar</button>
-  <button class="btn btn-registrar" id="btnAbrirCodigo">📝 Agregar Evaluación</button>
+  <button class="btn btn-registrar" id="btnAbrirCodigo">🟢 Registrar Clase</button>
   <button class="btn btn-editar-global" id="btnAbrirEdicionGlobal">✏️ Editar</button>
+  <button class="btn btn-reporte hidden" id="btnGenerarReporte">📄 Generar Reporte</button>
   <span id="modoEdicionBadge" class="modo-edicion-badge hidden">
     🔓 Modo edición: <b id="modoEdicionNombre"></b>
     <button class="btn-salir-edicion" id="btnSalirModoEdicion">Salir</button>
   </span>
 </div>
 
-<div class="banner-offline" id="bannerOffline">⚠ Sin conexión al servidor compartido — revisá API_URL en el script.</div>
+<div class="modal-overlay hidden" id="modalReporte">
+  <div class="modal-box" id="reporteBoxInicial">
+    <h2>Generar Reporte</h2>
+    <div class="modal-sub">Elegí qué tipo de reporte querés generar.</div>
+    <div class="modal-actions reporte-opciones">
+      <button class="btn btn-primario" id="btnReporteTotal">📊 Reporte Total</button>
+      <button class="btn btn-secundario" id="btnReporteEspecifico">📅 Reporte de Fecha/Clase Específica</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secundario" id="btnCancelarReporteInicial">Cancelar</button>
+    </div>
+  </div>
+  <div class="modal-box hidden" id="reporteBoxEspecifico">
+    <h2>Reporte de Clase Específica</h2>
+    <div class="modal-sub">Elegí la fecha y la clase para generar el reporte de esa sesión.</div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Fecha</label>
+        <input type="date" id="reporteFecha">
+      </div>
+      <div class="modal-field">
+        <label>Turno</label>
+        <select id="reporteTurno"></select>
+      </div>
+    </div>
+    <div class="modal-error" id="reporteEspecificoError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secundario" id="btnVolverReporteInicial">Volver</button>
+      <button class="btn btn-primario" id="btnGenerarReporteEspecifico">Generar</button>
+    </div>
+  </div>
+</div>
+
+<div class="banner-offline" id="bannerOffline">⚠ Sin conexión al servidor compartido — mostrando la lista base local. Revisá <code>API_URL</code> en el script (ver SETUP.md).</div>
 
 <div class="toolbar">
   <input type="text" id="search" placeholder="Buscar por nombre...">
+  <select id="orden">
+    <option value="alfabetico">Orden alfabético (A-Z)</option>
+    <option value="puntos">Mayor puntaje primero</option>
+  </select>
 </div>
 
 <div class="count" id="count"></div>
@@ -219,9 +542,9 @@
     <tr>
       <th class="rank">#</th>
       <th>Nombre</th>
-      <th>Estado</th>
-      <th>Fecha</th>
-      <th>Evaluador</th>
+      <th class="num">🟢</th>
+      <th class="num">🟡</th>
+      <th class="num">Clases</th>
       <th class="num col-eliminar"></th>
     </tr>
   </thead>
@@ -229,14 +552,14 @@
 </table>
 
 <div class="note">
-  Tocá el nombre de cualquier persona para ver su detalle: ahí el botón "📋 Evaluar" aparece cuando ya está <b>Aprobado/a</b> en este rango, y evalúa su ascenso a <b>Capitanes</b> — al guardar, pasa automáticamente a esa lista y se elimina de esta, sea cual sea el resultado. El botón "🎯 Agregar Intento" aparece en cambio cuando el resultado fue <b>Reprobado</b>, y sirve para reintentar la evaluación de este mismo rango sin moverla de lista. Ambos te van a pedir tu código de evaluador si no te identificaste todavía en esta página. El botón "📝 Agregar Evaluación" de arriba es distinto: es solo para <b>administradores</b>, y sirve para cargar a mano a alguien que todavía no está en esta lista. Tocá "✏️ Editar" e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para corregir sus datos a mano (sin que cuente como intento) o renombrarla, o la ✕ roja de su fila para eliminar el registro completo — sin volver a pedir el código hasta que toques "Salir".
+  Pasá el mouse sobre cualquier punto 🟢, 🟡 o 🛡️ para ver quién lo registró, en qué fecha, turno e instructor. El 🛡️ marca específicamente la clase de Procedimientos cumplida (en vez del punto verde genérico). Los que llegan a 3 clases <b>incluyendo Procedimientos</b> se marcan en verde y suben al principio de la lista — la clase de Procedimientos es obligatoria y solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases con la de Procedimientos incluida (y tiene el rango de Teniente asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Capitanes (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
 </div>
 
-<!-- Modal 1: código de evaluador (uso puntual, no persistente) -->
+<!-- Modal 1: código de registrador -->
 <div class="modal-overlay hidden" id="modalCodigo">
   <div class="modal-box">
-    <h2>Código de Evaluador</h2>
-    <div class="modal-sub">Ingresá tu código para identificarte antes de registrar una evaluación.</div>
+    <h2>Código de Registrador</h2>
+    <div class="modal-sub">Ingresá tu código para identificarte antes de registrar clases.</div>
     <input type="text" id="inputCodigo" placeholder="Código..." maxlength="12" autocomplete="off">
     <div class="modal-error" id="codigoError"></div>
     <div class="modal-actions">
@@ -246,10 +569,10 @@
   </div>
 </div>
 
-<!-- Modal 2: mini lista de registro de evaluaciones (varias personas a la vez) -->
+<!-- Modal 2: mini lista de registro -->
 <div class="modal-overlay hidden" id="modalRegistro">
   <div class="modal-box modal-box-lg">
-    <h2>Registrar Evaluaciones</h2>
+    <h2>Registrar Clases</h2>
     <div class="modal-sub" id="registradorInfo"></div>
 
     <div class="modal-row">
@@ -257,9 +580,13 @@
         <label>Fecha</label>
         <input type="date" id="inputFecha">
       </div>
-      <div class="modal-field flex1">
-        <label>Evaluador</label>
-        <select id="inputEvaluador"></select>
+      <div class="modal-field">
+        <label>Turno</label>
+        <select id="inputTurno"></select>
+      </div>
+      <div class="modal-field">
+        <label>Instructor</label>
+        <select id="inputInstructor"></select>
       </div>
     </div>
 
@@ -270,10 +597,10 @@
         <datalist id="listaNombres"></datalist>
       </div>
       <div class="modal-field">
-        <label>Resultado</label>
+        <label>Punto</label>
         <div class="tipo-selector">
-          <button type="button" class="tipo-btn tipo-aprobado active" data-resultado="aprobado" id="btnTipoAprobado">✅ Aprobado</button>
-          <button type="button" class="tipo-btn tipo-reprobado" data-resultado="reprobado" id="btnTipoReprobado">❌ Reprobado</button>
+          <button type="button" class="tipo-btn tipo-verde active" data-tipo="verde" id="btnTipoVerde">🟢 Verde</button>
+          <button type="button" class="tipo-btn tipo-amarillo" data-tipo="amarillo" id="btnTipoAmarillo">🟡 Amarillo</button>
         </div>
       </div>
       <button class="btn btn-primario btn-agregar-fila" id="btnAgregarFila">+ Agregar</button>
@@ -282,7 +609,7 @@
 
     <div class="mini-lista-wrap" id="miniListaWrap">
       <table class="mini-lista">
-        <thead><tr><th>Nombre</th><th>Resultado</th><th></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Punto</th><th></th></tr></thead>
         <tbody id="miniListaBody"></tbody>
       </table>
     </div>
@@ -295,11 +622,11 @@
   </div>
 </div>
 
-<!-- Modal 3: código de administrador (activa el modo edición persistente) -->
+<!-- Modal 3: código de edición -->
 <div class="modal-overlay hidden" id="modalCodigoEditar">
   <div class="modal-box">
     <h2>Código de Administrador</h2>
-    <div class="modal-sub">Ingresá tu código de administrador para editar o eliminar registros de esta lista.</div>
+    <div class="modal-sub">Ingresá tu código de administrador para editar el registro de cualquier persona.</div>
     <input type="text" id="inputCodigoEditar" placeholder="Código..." maxlength="12" autocomplete="off">
     <div class="modal-error" id="codigoEditarError"></div>
     <div class="modal-actions">
@@ -309,238 +636,216 @@
   </div>
 </div>
 
-<!-- Modal 4: editar registro (solo modo edición - administrador) -->
+<!-- Modal 4: editar valores -->
 <div class="modal-overlay hidden" id="modalEditar">
   <div class="modal-box modal-box-lg">
-    <h2>Editar Registro</h2>
+    <h2 id="clasesTitulo">Clases</h2>
     <div class="modal-sub" id="editarInfo"></div>
 
-    <div class="modal-row">
+    <div class="modal-row" id="clasesAgregarRow">
+      <div class="modal-field">
+        <label>Fecha</label>
+        <input type="date" id="claseNuevaFecha">
+      </div>
+      <div class="modal-field">
+        <label>Turno</label>
+        <select id="claseNuevaTurno"></select>
+      </div>
+      <div class="modal-field">
+        <label>Instructor</label>
+        <select id="claseNuevaInstructor"></select>
+      </div>
+    </div>
+    <div class="modal-row" id="clasesAgregarRow2">
+      <div class="modal-field">
+        <label>Punto</label>
+        <div class="tipo-selector">
+          <button type="button" class="tipo-btn tipo-verde active" data-tipo="verde" id="claseNuevaBtnVerde">🟢 Verde</button>
+          <button type="button" class="tipo-btn tipo-amarillo" data-tipo="amarillo" id="claseNuevaBtnAmarillo">🟡 Amarillo</button>
+        </div>
+      </div>
+      <button class="btn btn-primario btn-agregar-fila" id="btnAgregarClase">+ Agregar Clase</button>
+    </div>
+
+    <div class="mini-lista-wrap" id="clasesListaWrap">
+      <table class="mini-lista clases-tabla">
+        <thead><tr><th>Fecha</th><th>Turno</th><th>Instructor</th><th>Punto</th><th id="clasesAccionHeader"></th></tr></thead>
+        <tbody id="clasesListaBody"></tbody>
+      </table>
+    </div>
+    <div class="mini-lista-empty" id="clasesListaEmpty">Todavía no tiene clases registradas.</div>
+
+    <div class="modal-row" id="clasesRenombrarRow">
       <div class="modal-field flex1">
         <label>Nombre</label>
         <input type="text" id="inputEditarNombre" autocomplete="off">
       </div>
     </div>
-    <div class="modal-row">
-      <div class="modal-field">
-        <label>Estado</label>
-        <div class="tipo-selector">
-          <button type="button" class="tipo-btn tipo-aprobado" data-resultado="aprobado" id="btnEditarAprobado">✅ Aprobado</button>
-          <button type="button" class="tipo-btn tipo-reprobado" data-resultado="reprobado" id="btnEditarReprobado">❌ Reprobado</button>
-        </div>
-      </div>
-      <div class="modal-field">
-        <label>Fecha</label>
-        <input type="date" id="inputEditarFecha">
-      </div>
-      <div class="modal-field flex1">
-        <label>Evaluador</label>
-        <select id="inputEditarEvaluador"></select>
-      </div>
-    </div>
-    <div class="modal-field">
-      <label>Observaciones</label>
-      <textarea id="inputEditarObservaciones" rows="3"></textarea>
-    </div>
 
     <div class="modal-error" id="editarError"></div>
-    <div class="modal-actions modal-actions-split">
-      <button class="btn btn-peligro" id="btnEliminarRegistro">🗑 Eliminar Registro</button>
+
+    <div class="modal-actions modal-actions-split" id="clasesAccionesEdicion">
+      <div class="modal-actions-left">
+        <button class="btn btn-peligro" id="btnEliminarRegistro">🗑 Eliminar Registro</button>
+        <button class="btn btn-evaluacion" id="btnAbrirEvaluacion">📝 Evaluación</button>
+      </div>
       <div class="modal-actions-right">
         <button class="btn btn-secundario" id="btnCancelarEditar">Cancelar</button>
         <button class="btn btn-primario" id="btnGuardarEditar">Guardar</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- Modal 5: detalle (solo lectura, fuera de modo edición) -->
-<div class="modal-overlay hidden" id="modalDetalle">
-  <div class="modal-box modal-box-lg">
-    <h2 id="detalleTitulo">Teniente</h2>
-    <div class="modal-sub" id="detalleInfo"></div>
-
-    <div class="detalle-campo"><b>Estado:</b> <span id="verResultado"></span></div>
-    <div class="detalle-campo"><b>Fecha:</b> <span id="verFecha"></span></div>
-    <div class="detalle-campo"><b>Evaluador:</b> <span id="verEvaluador"></span></div>
-    <div class="detalle-campo"><b>Observaciones:</b><br><span id="verObservaciones"></span></div>
-    <div class="detalle-intentos" id="verIntentos"></div>
-
-    <div class="modal-error" id="detalleError"></div>
-    <div class="modal-actions">
-      <button class="btn btn-registrar hidden" id="btnMostrarEvaluar">📋 Evaluar</button>
-      <button class="btn btn-intento hidden" id="btnMostrarIntento">🎯 Agregar Intento</button>
-      <button class="btn btn-secundario" id="btnCerrarDetalle">Cerrar</button>
+    <div class="modal-actions" id="clasesAccionesVista">
+      <button class="btn btn-evaluacion" id="btnEvaluarVista">📝 Evaluación</button>
+      <button class="btn btn-secundario" id="btnCerrarVistaClases">Cerrar</button>
     </div>
   </div>
 </div>
 
-<!-- Modal 6: agregar intento individual (desde el detalle de una persona) -->
-<div class="modal-overlay hidden" id="modalIntento">
+<!-- Modal 4b: código de evaluador (para evaluar sin necesitar modo admin) -->
+<div class="modal-overlay hidden" id="modalCodigoEvaluar">
   <div class="modal-box">
-    <h2>Agregar Intento</h2>
-    <div class="modal-sub" id="intentoInfo"></div>
-    <div class="modal-field">
-      <label>Resultado</label>
-      <div class="tipo-selector">
-        <button type="button" class="tipo-btn tipo-aprobado active" data-resultado="aprobado" id="btnIntentoAprobado">✅ Aprobado</button>
-        <button type="button" class="tipo-btn tipo-reprobado" data-resultado="reprobado" id="btnIntentoReprobado">❌ Reprobado</button>
+    <h2>Código de Evaluador</h2>
+    <div class="modal-sub">Ingresá tu código de evaluador o administrador para evaluar a esta persona.</div>
+    <input type="text" id="inputCodigoEvaluar" placeholder="Código..." maxlength="12" autocomplete="off">
+    <div class="modal-error" id="codigoEvaluarError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secundario" id="btnCancelarCodigoEvaluar">Cancelar</button>
+      <button class="btn btn-primario" id="btnContinuarCodigoEvaluar">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 5: enviar a evaluación -->
+<div class="modal-overlay hidden" id="modalEvaluacion">
+  <div class="modal-box">
+    <h2>Registrar Evaluación</h2>
+    <div class="modal-sub" id="evaluacionInfo"></div>
+    <div class="modal-row">
+      <div class="modal-field flex1">
+        <label>Resultado</label>
+        <div class="tipo-selector">
+          <button type="button" class="tipo-btn tipo-verde active" data-resultado="aprobado" id="btnResultadoAprobado">✅ Aprobado</button>
+          <button type="button" class="tipo-btn tipo-amarillo" data-resultado="reprobado" id="btnResultadoReprobado">❌ Reprobado</button>
+        </div>
       </div>
     </div>
     <div class="modal-row">
-      <div class="modal-field">
-        <label>Fecha</label>
-        <input type="date" id="intentoFecha">
-      </div>
       <div class="modal-field flex1">
         <label>Evaluador</label>
-        <select id="intentoEvaluador"></select>
-      </div>
-    </div>
-    <div class="modal-field">
-      <label>Observaciones</label>
-      <textarea id="intentoObservaciones" rows="3"></textarea>
-    </div>
-    <div class="modal-error" id="intentoError"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secundario" id="btnCancelarIntento">Cancelar</button>
-      <button class="btn btn-intento" id="btnGuardarIntento">Guardar Intento</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal 6b: evaluar para el siguiente rango (desde el detalle de una persona) -->
-<div class="modal-overlay hidden" id="modalPromo">
-  <div class="modal-box">
-    <h2 id="promoTitulo">Evaluar</h2>
-    <div class="modal-sub" id="promoInfo"></div>
-    <div class="modal-field">
-      <label>Resultado</label>
-      <div class="tipo-selector">
-        <button type="button" class="tipo-btn tipo-aprobado active" data-resultado="aprobado" id="btnPromoAprobado">✅ Aprobado</button>
-        <button type="button" class="tipo-btn tipo-reprobado" data-resultado="reprobado" id="btnPromoReprobado">❌ Reprobado</button>
+        <select id="evaluacionEvaluador"></select>
       </div>
     </div>
     <div class="modal-row">
-      <div class="modal-field">
-        <label>Fecha</label>
-        <input type="date" id="promoFecha">
-      </div>
       <div class="modal-field flex1">
-        <label>Evaluador</label>
-        <select id="promoEvaluador"></select>
+        <label>Observaciones</label>
+        <textarea id="evaluacionObservaciones" rows="3" placeholder="Notas de la evaluación (opcional)..."></textarea>
       </div>
     </div>
-    <div class="modal-field">
-      <label>Observaciones</label>
-      <textarea id="promoObservaciones" rows="3"></textarea>
-    </div>
-    <div class="modal-error" id="promoError"></div>
+    <div class="modal-error" id="evaluacionError"></div>
     <div class="modal-actions">
-      <button class="btn btn-secundario" id="btnCancelarPromo">Cancelar</button>
-      <button class="btn btn-registrar" id="btnGuardarPromo">Guardar Evaluación</button>
+      <button class="btn btn-secundario" id="btnCancelarEvaluacion">Cancelar</button>
+      <button class="btn btn-evaluacion" id="btnGuardarEvaluacion">Enviar a Capitanes</button>
     </div>
   </div>
 </div>
 
-<!-- Modal 7: historial (solo lectura) -->
-<div class="modal-overlay hidden" id="modalHistorial">
-  <div class="modal-box modal-box-lg">
-    <h2>Historial de Carrera</h2>
-    <div class="modal-sub" id="historialInfo"></div>
-    <div class="mini-lista-wrap">
-      <table class="mini-lista">
-        <thead><tr><th>#</th><th>Transición</th><th>Fecha</th><th>Resultado</th><th>Evaluador</th></tr></thead>
-        <tbody id="historialBody"></tbody>
-      </table>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secundario" id="btnCerrarHistorial">Cerrar</button>
-    </div>
-  </div>
-</div>
+<div id="customTooltip"></div>
 
 <script src="codigos.js"></script>
 <script>
 // Los códigos de acceso (CODIGOS, NIVELES_ROL, rolAlcanza, NOMBRES_TODOS,
 // NOMBRES_INSTRUCTORES, NOMBRES_EVALUADORES) se cargan desde codigos.js —
 // ese es el único lugar donde hay que editarlos, se comparte con
-// asistencias.html / capitanes.html / index.html.
+// tenientes.html / capitanes.html / index.html.
+
+// La clase de Procedimientos es especial: cuenta para las 3 clases, pero es
+// obligatoria (sin ella no alcanza aunque haya 3 o más puntos) y solo la
+// pueden registrar evaluadores o administradores, no instructores comunes.
+const TURNO_PROCEDIMIENTOS = "Procedimientos";
 
 // restringir = true: si quien se identificó no es administrador, solo puede
-// elegir su propio nombre (no puede atribuirle el registro a otra persona).
-// Los administradores siempre ven la lista completa (por ejemplo, al editar
-// el registro de otra persona en modo edición).
-function opcionesEvaluador(seleccionado, restringir) {
-  if (restringir && evaluadorActualRol && evaluadorActualRol !== 'administrador') {
-    return `<option value="${escapeAttr(evaluadorActual)}" selected>${escapeHtml(evaluadorActual)}</option>`;
+// elegir su propio nombre como evaluador (no puede atribuirle la evaluación
+// a otra persona). Los administradores siempre ven la lista completa.
+function opcionesEvaluadorAsistencia(seleccionado, restringir) {
+  if (restringir && evaluadorIdentificadoRol && evaluadorIdentificadoRol !== 'administrador') {
+    return `<option value="${escapeAttr(evaluadorIdentificado)}" selected>${escapeHtml(evaluadorIdentificado)}</option>`;
   }
-  return NOMBRES_EVALUADORES.map(n => `<option value="${n}"${n === seleccionado ? ' selected' : ''}>${n}</option>`).join('');
+  return NOMBRES_EVALUADORES.map(n => `<option value="${escapeAttr(n)}" ${n === seleccionado ? 'selected' : ''}>${n}</option>`).join('');
 }
 
-const RECURSO = 'tenientes';
-const SIGUIENTE_LABEL = 'Capitán';
+const STORAGE_KEY = 'wspd_tenientes_v1'; // ya no se usa para guardar, solo como respaldo local si el servidor falla
 
-// ⚠️ Mismo Worker que asistencias.html / capitanes.html.
+// ⚠️ Reemplazá esto por la URL de tu Worker (ver SETUP.md)
 const API_URL = "https://asistencia-lagunapd.popj951203.workers.dev/";
 
-function urlConRecurso() {
-  return API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=' + RECURSO;
-}
-
-function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
-function escapeHtml(s) { return escapeAttr(s); }
-
-function hoyISO() {
-  const d = new Date();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${m}-${day}`;
-}
-
-function fmtFecha(iso) {
-  if (!iso || iso === '—') return '—';
-  const partes = String(iso).split('-');
-  if (partes.length !== 3) return iso;
-  return `${partes[2]}/${partes[1]}/${partes[0]}`;
-}
-
-let lista = [];
+let tenientes = []; // se llena SOLO desde el servidor (KV) — no hay siembra automática
 let servidorConectado = false;
-let ultimaActualizacion = null;
+let ultimaActualizacion = null; // ISO que manda el servidor (hora real de la última escritura)
 
+// Normaliza la respuesta del Worker: soporta tanto el formato nuevo
+// { tenientes, ultimaActualizacion } como, por las dudas, un array pelado.
 function aplicarEstado(data) {
-  if (data && Array.isArray(data[RECURSO])) {
-    lista = data[RECURSO];
+  if (data && Array.isArray(data.tenientes)) {
+    tenientes = data.tenientes;
     if (data.ultimaActualizacion) ultimaActualizacion = data.ultimaActualizacion;
+  } else if (Array.isArray(data)) {
+    tenientes = data;
   }
 }
 
+// Extrae un mensaje de error legible de una respuesta no-ok del Worker.
 async function errorDe(resp) {
   try {
     const body = await resp.json();
     if (body && body.error) return body.error;
   } catch (e) { /* no era JSON */ }
-  return 'No se pudo conectar con el servidor. Intentá de nuevo.';
+  return 'status ' + resp.status;
 }
 
 async function cargarDatosServidor() {
   if (!API_URL || API_URL.includes('PEGA_AQUI')) {
+    console.warn('Falta configurar API_URL en tenientes.html — usando datos locales sin guardar.');
     servidorConectado = false;
     render();
     return;
   }
   try {
-    const resp = await fetch(urlConRecurso(), { method: 'GET' });
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=tenientes', { method: 'GET' });
     if (!resp.ok) throw new Error(await errorDe(resp));
     aplicarEstado(await resp.json());
     servidorConectado = true;
   } catch (e) {
+    console.error('No se pudo conectar con el servidor de tenientes:', e);
     servidorConectado = false;
   }
   render();
 }
 
+// -------------------- helpers --------------------
+function verdesDe(p) { return p.registros.filter(r => r.tipo === 'verde').length; }
+function amarillosDe(p) { return p.registros.filter(r => r.tipo === 'amarillo').length; }
+function puntos(p) { return verdesDe(p) * 1 + amarillosDe(p) * 0.5; }
+function fmtPuntos(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+function tieneProcedimientos(p) { return p.registros.some(r => r.turno === TURNO_PROCEDIMIENTOS); }
+// Cumple los requisitos para evaluar: 3 clases (o más), una de ellas
+// sea la clase de Procedimientos (es obligatoria, no alcanza con las otras).
+function cumpleRequisitos(p) { return puntos(p) >= 3 && tieneProcedimientos(p) && p.rango === 'Tenientes'; }
+function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function escapeHtml(s) { return escapeAttr(s); }
+
+function dotsFor(persona, tipo, emoji) {
+  const regs = persona.registros.filter(r => r.tipo === tipo);
+  if (!regs.length) return '<span style="color:var(--muted)">—</span>';
+  return regs.map(r => {
+    // La clase de Procedimientos se marca con un escudo en vez del punto
+    // verde normal, para poder distinguirla de un vistazo en la columna.
+    const emojiUsar = (tipo === 'verde' && r.turno === TURNO_PROCEDIMIENTOS) ? '🛡️' : emoji;
+    return `<span class="dot" data-tipo="${tipo}" data-registrador="${escapeAttr(r.registrador)}" data-fecha="${escapeAttr(r.fecha)}" data-turno="${escapeAttr(r.turno)}" data-instructor="${escapeAttr(r.instructor || '—')}">${emojiUsar}</span>`;
+  }).join('');
+}
+
+// El servidor guarda ultimaActualizacion en UTC (ISO); acá se formatea
+// automáticamente en la hora local del navegador de quien la está mirando.
 function fmtUltimaActualizacion() {
   if (!ultimaActualizacion) return 'Última actualización: —';
   const d = new Date(ultimaActualizacion);
@@ -553,60 +858,283 @@ function fmtUltimaActualizacion() {
   return `Última actualización: ${dd}/${mm}/${yyyy} ${hh}:${min}`;
 }
 
-function estadoTexto(resultado) {
-  if (resultado === 'aprobado') return '<span class="resultado-aprobado">✅ Aprobado</span>';
-  if (resultado === 'reprobado') return '<span class="resultado-reprobado">❌ Reprobado</span>';
-  return '<span class="resultado-pendiente">— Sin evaluar</span>';
-}
-
-function encontrar(nombre) {
-  return lista.find(p => p.nombre.toLowerCase() === String(nombre).toLowerCase());
-}
-
 // -------------------- render tabla principal --------------------
 const tbody = document.getElementById('tbody');
 const search = document.getElementById('search');
+const orden = document.getElementById('orden');
 const countEl = document.getElementById('count');
-const bannerOffline = document.getElementById('bannerOffline');
 
 function render() {
-  bannerOffline.classList.toggle('visible', !servidorConectado);
+  document.getElementById('bannerOffline').classList.toggle('visible', !servidorConectado);
   const q = search.value.trim().toLowerCase();
-  const filtered = lista
-    .filter(p => !q || p.nombre.toLowerCase().includes(q))
-    .slice()
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  const filtered = tenientes.filter(a => !q || a.nombre.toLowerCase().includes(q));
 
-  countEl.innerHTML = `<span>${filtered.length} registro${filtered.length !== 1 ? 's' : ''}</span><span>${fmtUltimaActualizacion()}</span>`;
+  const sortFn = orden.value === 'puntos'
+    ? (a, b) => puntos(b) - puntos(a) || a.nombre.localeCompare(b.nombre, 'es')
+    : (a, b) => a.nombre.localeCompare(b.nombre, 'es');
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-msg">${lista.length === 0 ? 'Todavía no hay nadie en esta lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
+  const destacados = filtered.filter(a => cumpleRequisitos(a)).slice().sort(sortFn);
+  const resto = filtered.filter(a => !cumpleRequisitos(a)).slice().sort(sortFn);
+  const ordenados = [...destacados, ...resto];
+
+  countEl.innerHTML = `<span>${filtered.length} persona${filtered.length !== 1 ? 's' : ''}</span><span>${fmtUltimaActualizacion()}</span>`;
+
+  if (ordenados.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-msg">${tenientes.length === 0 ? 'Todavía no hay nadie en la lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
     return;
   }
 
-  tbody.innerHTML = filtered.map((p, i) => `
-    <tr>
+  tbody.innerHTML = ordenados.map((a, i) => {
+    const top = cumpleRequisitos(a);
+    return `
+    <tr class="${top ? 'destacada' : ''}">
       <td class="rank">${i + 1}</td>
-      <td class="nombre-cell" data-nombre="${escapeAttr(p.nombre)}">${escapeHtml(p.nombre)}</td>
-      <td>${estadoTexto(p.resultado)}</td>
-      <td>${fmtFecha(p.fecha)}</td>
-      <td>${escapeHtml(p.evaluador || '—')}</td>
-      <td class="num col-eliminar"><span class="btn-eliminar-fila" data-nombre="${escapeAttr(p.nombre)}" title="Eliminar registro">✕</span></td>
+      <td class="nombre-cell" data-nombre="${escapeAttr(a.nombre)}">${escapeHtml(a.nombre)}${top ? '<span class="badge-lista">✔ LISTO PARA EVALUAR</span>' : ''}</td>
+      <td class="num col-verde">
+        <span class="dots-desktop">${dotsFor(a, 'verde', '🟢')}</span>
+        <span class="count-mobile ${tieneProcedimientos(a) ? 'count-procedimientos' : 'count-verde'}">${verdesDe(a)}</span>
+      </td>
+      <td class="num col-amarillo">
+        <span class="dots-desktop">${dotsFor(a, 'amarillo', '🟡')}</span>
+        <span class="count-mobile count-amarillo">${amarillosDe(a)}</span>
+      </td>
+      <td class="num puntos">${fmtPuntos(puntos(a))}</td>
+      <td class="num col-eliminar"><span class="btn-eliminar-fila" data-nombre="${escapeAttr(a.nombre)}" title="Eliminar registro">✕</span></td>
+    </tr>
+  `;
+  }).join('');
+}
+
+search.addEventListener('input', render);
+orden.addEventListener('change', render);
+
+// -------------------- modal 1: código --------------------
+const modalCodigo = document.getElementById('modalCodigo');
+const inputCodigo = document.getElementById('inputCodigo');
+const codigoError = document.getElementById('codigoError');
+
+let registradorActual = null;
+let registradorActualRol = null;
+
+function abrirModalCodigo() {
+  inputCodigo.value = '';
+  codigoError.textContent = '';
+  modalCodigo.classList.remove('hidden');
+  setTimeout(() => inputCodigo.focus(), 50);
+}
+function cerrarModalCodigo() {
+  modalCodigo.classList.add('hidden');
+}
+
+document.getElementById('btnAbrirCodigo').addEventListener('click', abrirModalCodigo);
+document.getElementById('btnCancelarCodigo').addEventListener('click', cerrarModalCodigo);
+
+function validarCodigo() {
+  const code = inputCodigo.value.trim();
+  const usuario = CODIGOS[code];
+  if (!usuario) {
+    codigoError.textContent = 'Código inválido. Probá de nuevo.';
+    return;
+  }
+  if (!rolAlcanza(usuario.rol, 'instructor')) {
+    codigoError.textContent = 'Ese código no tiene permisos para registrar clases.';
+    return;
+  }
+  registradorActual = usuario.nombre;
+  registradorActualRol = usuario.rol;
+  cerrarModalCodigo();
+  abrirModalRegistro();
+}
+
+document.getElementById('btnContinuarCodigo').addEventListener('click', validarCodigo);
+inputCodigo.addEventListener('keydown', e => { if (e.key === 'Enter') validarCodigo(); });
+
+// -------------------- modal 2: mini lista de registro --------------------
+const modalRegistro = document.getElementById('modalRegistro');
+const registradorInfo = document.getElementById('registradorInfo');
+const inputFecha = document.getElementById('inputFecha');
+const inputTurno = document.getElementById('inputTurno');
+inputTurno.addEventListener('change', () => {
+  actualizarEtiquetaVerde(btnTipoVerde, inputTurno.value === TURNO_PROCEDIMIENTOS);
+  renderMiniLista();
+});
+const inputInstructor = document.getElementById('inputInstructor');
+const inputNombre = document.getElementById('inputNombre');
+const listaNombres = document.getElementById('listaNombres');
+const nombreError = document.getElementById('nombreError');
+const miniListaBody = document.getElementById('miniListaBody');
+const miniListaWrap = document.getElementById('miniListaWrap');
+const miniListaEmpty = document.getElementById('miniListaEmpty');
+const btnTipoVerde = document.getElementById('btnTipoVerde');
+const btnTipoAmarillo = document.getElementById('btnTipoAmarillo');
+// Cuando el turno elegido es Procedimientos, la opción "Verde" pasa a
+// mostrarse como el escudo 🛡️ en vez del punto genérico, en cualquiera de
+// los dos formularios que tienen selector de tipo + turno.
+function actualizarEtiquetaVerde(btnVerde, esProcedimientos) {
+  btnVerde.textContent = esProcedimientos ? '🛡️ Procedimientos' : '🟢 Verde';
+}
+
+let tipoSeleccionado = 'verde';
+let miniLista = []; // { nombre, tipo }
+
+function hoyISO() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function poblarListaNombres() {
+  listaNombres.innerHTML = tenientes
+    .slice()
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+    .map(a => `<option value="${escapeAttr(a.nombre)}">`)
+    .join('');
+}
+
+function abrirModalRegistro() {
+  registradorInfo.innerHTML = `Registrando como: <b>${escapeHtml(registradorActual)}</b>`;
+  inputFecha.value = hoyISO();
+  inputTurno.innerHTML = opcionesTurno(null, true);
+  inputInstructor.innerHTML = opcionesInstructor(registradorActual, true);
+  inputNombre.value = '';
+  nombreError.textContent = '';
+  tipoSeleccionado = 'verde';
+  btnTipoVerde.classList.add('active');
+  btnTipoAmarillo.classList.remove('active');
+  actualizarEtiquetaVerde(btnTipoVerde, inputTurno.value === TURNO_PROCEDIMIENTOS);
+  miniLista = [];
+  poblarListaNombres();
+  renderMiniLista();
+  modalRegistro.classList.remove('hidden');
+  setTimeout(() => inputNombre.focus(), 50);
+}
+
+function cerrarModalRegistro() {
+  modalRegistro.classList.add('hidden');
+}
+
+function renderMiniLista() {
+  if (miniLista.length === 0) {
+    miniListaWrap.style.display = 'none';
+    miniListaEmpty.style.display = 'block';
+    return;
+  }
+  miniListaWrap.style.display = 'block';
+  miniListaEmpty.style.display = 'none';
+  const esProcedimientos = inputTurno.value === TURNO_PROCEDIMIENTOS;
+  miniListaBody.innerHTML = miniLista.map((item, i) => `
+    <tr>
+      <td>${escapeHtml(item.nombre)}</td>
+      <td>${item.tipo === 'verde' ? (esProcedimientos ? '🛡️ Procedimientos' : '🟢 Verde') : '🟡 Amarillo'}</td>
+      <td><span class="quitar" data-idx="${i}">✕</span></td>
     </tr>
   `).join('');
 }
-search.addEventListener('input', render);
 
-/* ============================================================
-   MODO EDICIÓN (administrador) — igual que asistencias.html
-   ============================================================ */
+btnTipoVerde.addEventListener('click', () => {
+  tipoSeleccionado = 'verde';
+  btnTipoVerde.classList.add('active');
+  btnTipoAmarillo.classList.remove('active');
+});
+btnTipoAmarillo.addEventListener('click', () => {
+  tipoSeleccionado = 'amarillo';
+  btnTipoAmarillo.classList.add('active');
+  btnTipoVerde.classList.remove('active');
+});
+
+function agregarFila() {
+  const nombre = inputNombre.value.trim();
+  if (!nombre) {
+    nombreError.textContent = 'Escribí o elegí un nombre primero.';
+    return;
+  }
+  nombreError.textContent = '';
+  miniLista.push({ nombre, tipo: tipoSeleccionado });
+  inputNombre.value = '';
+  inputNombre.focus();
+  renderMiniLista();
+}
+
+document.getElementById('btnAgregarFila').addEventListener('click', agregarFila);
+inputNombre.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarFila(); } });
+
+miniListaBody.addEventListener('click', e => {
+  const el = e.target.closest('.quitar');
+  if (!el) return;
+  const idx = Number(el.dataset.idx);
+  miniLista.splice(idx, 1);
+  renderMiniLista();
+});
+
+document.getElementById('btnCancelarRegistro').addEventListener('click', () => {
+  miniLista = [];
+  cerrarModalRegistro();
+});
+
+const btnConfirmarRegistro = document.getElementById('btnConfirmarRegistro');
+
+btnConfirmarRegistro.addEventListener('click', async () => {
+  if (miniLista.length === 0) {
+    cerrarModalRegistro();
+    return;
+  }
+  const fecha = inputFecha.value || hoyISO();
+  const turno = inputTurno.value;
+  const instructor = inputInstructor.value;
+
+  const entries = miniLista.map(item => ({
+    nombre: item.nombre,
+    tipo: item.tipo,
+    fecha: fecha,
+    turno: turno,
+    instructor: instructor,
+    registrador: registradorActual,
+  }));
+
+  if (!API_URL || API_URL.includes('PEGA_AQUI')) {
+    nombreError.textContent = 'Falta configurar el servidor (API_URL). Revisá SETUP.md.';
+    return;
+  }
+
+  nombreError.textContent = '';
+  btnConfirmarRegistro.disabled = true;
+  btnConfirmarRegistro.textContent = 'Guardando...';
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recurso: 'tenientes', entries }),
+    });
+    if (!resp.ok) throw new Error(await errorDe(resp));
+    aplicarEstado(await resp.json());
+    servidorConectado = true;
+    miniLista = [];
+    render();
+    cerrarModalRegistro();
+  } catch (e) {
+    nombreError.textContent = 'No se pudo guardar en el servidor. Revisá tu conexión e intentá de nuevo.';
+  } finally {
+    btnConfirmarRegistro.disabled = false;
+    btnConfirmarRegistro.textContent = 'Agregar';
+  }
+});
+
+// -------------------- modal 3: código de edición --------------------
+const modalCodigoEditar = document.getElementById('modalCodigoEditar');
+const inputCodigoEditar = document.getElementById('inputCodigoEditar');
+const codigoEditarError = document.getElementById('codigoEditarError');
+
+let personaEditando = null;
+let editorActual = null;
+let modoEdicionActivo = false;
+
 const modoEdicionBadge = document.getElementById('modoEdicionBadge');
 const modoEdicionNombre = document.getElementById('modoEdicionNombre');
 const btnAbrirEdicionGlobal = document.getElementById('btnAbrirEdicionGlobal');
-const tablaTenientes = document.getElementById('tablaTenientes');
-
-let editorActual = null;
-let modoEdicionActivo = false;
+const btnGenerarReporte = document.getElementById('btnGenerarReporte');
+const tablaAsistencias = document.getElementById('tablaTenientes');
 
 function activarModoEdicion(nombreAdmin) {
   modoEdicionActivo = true;
@@ -614,20 +1142,20 @@ function activarModoEdicion(nombreAdmin) {
   modoEdicionNombre.textContent = nombreAdmin;
   modoEdicionBadge.classList.remove('hidden');
   btnAbrirEdicionGlobal.classList.add('hidden');
-  tablaTenientes.classList.add('modo-edicion');
+  btnGenerarReporte.classList.remove('hidden');
+  tablaAsistencias.classList.add('modo-edicion');
 }
+
 function salirModoEdicion() {
   modoEdicionActivo = false;
   editorActual = null;
   modoEdicionBadge.classList.add('hidden');
   btnAbrirEdicionGlobal.classList.remove('hidden');
-  tablaTenientes.classList.remove('modo-edicion');
+  btnGenerarReporte.classList.add('hidden');
+  tablaAsistencias.classList.remove('modo-edicion');
 }
-document.getElementById('btnSalirModoEdicion').addEventListener('click', salirModoEdicion);
 
-const modalCodigoEditar = document.getElementById('modalCodigoEditar');
-const inputCodigoEditar = document.getElementById('inputCodigoEditar');
-const codigoEditarError = document.getElementById('codigoEditarError');
+document.getElementById('btnSalirModoEdicion').addEventListener('click', salirModoEdicion);
 
 function abrirModalCodigoEditar() {
   inputCodigoEditar.value = '';
@@ -635,7 +1163,9 @@ function abrirModalCodigoEditar() {
   modalCodigoEditar.classList.remove('hidden');
   setTimeout(() => inputCodigoEditar.focus(), 50);
 }
-function cerrarModalCodigoEditar() { modalCodigoEditar.classList.add('hidden'); }
+function cerrarModalCodigoEditar() {
+  modalCodigoEditar.classList.add('hidden');
+}
 
 btnAbrirEdicionGlobal.addEventListener('click', abrirModalCodigoEditar);
 document.getElementById('btnCancelarCodigoEditar').addEventListener('click', cerrarModalCodigoEditar);
@@ -654,92 +1184,637 @@ function validarCodigoEditar() {
   activarModoEdicion(usuario.nombre);
   cerrarModalCodigoEditar();
 }
+
 document.getElementById('btnContinuarCodigoEditar').addEventListener('click', validarCodigoEditar);
 inputCodigoEditar.addEventListener('keydown', e => { if (e.key === 'Enter') validarCodigoEditar(); });
 
-// -------------------- eliminar --------------------
-async function eliminarRegistro(nombre) {
-  const confirmado = confirm(`¿Seguro que querés eliminar el registro de "${nombre}"? No se puede deshacer.`);
+// -------------------- eliminar persona (reutilizable: fila con ✕ o popup de editar) --------------------
+async function eliminarPersona(nombre) {
+  const confirmado = confirm(`¿Seguro que querés eliminar TODO el registro de "${nombre}"? Esto borra todos sus puntos verdes y amarillos, y no se puede deshacer.`);
   if (!confirmado) return false;
+
+  if (!API_URL || API_URL.includes('PEGA_AQUI')) {
+    alert('Falta configurar el servidor (API_URL). Revisá SETUP.md.');
+    return false;
+  }
+
   try {
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recurso: RECURSO, eliminar: { nombre } }),
+      body: JSON.stringify({ recurso: 'tenientes', delete: { nombre, registrador: editorActual } }),
     });
     if (!resp.ok) throw new Error(await errorDe(resp));
-    aplicarEstado(await resp.json());
+    const data = await resp.json();
+    const lista = Array.isArray(data) ? data : (Array.isArray(data.tenientes) ? data.tenientes : []);
+    const sigueExistiendo = lista.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+    if (sigueExistiendo) {
+      alert('El servidor no eliminó a la persona. Es probable que falte volver a desplegar worker.js en Cloudflare (Edit code → pegar el archivo actualizado → Deploy).');
+      return false;
+    }
+    aplicarEstado(data);
     servidorConectado = true;
     render();
     return true;
   } catch (e) {
-    alert('No se pudo eliminar en el servidor. Intentá de nuevo.');
+    alert('No se pudo eliminar en el servidor. Revisá tu conexión e intentá de nuevo.');
     return false;
   }
 }
 
+// delegación: click en el nombre (abre editar) o en la ✕ roja (elimina), solo en modo edición
 tbody.addEventListener('click', async e => {
   const delBtn = e.target.closest('.btn-eliminar-fila');
   if (delBtn) {
     if (!modoEdicionActivo) return;
-    await eliminarRegistro(delBtn.dataset.nombre);
+    await eliminarPersona(delBtn.dataset.nombre);
     return;
   }
   const nombreCell = e.target.closest('.nombre-cell');
   if (nombreCell) {
-    if (modoEdicionActivo) abrirModalEditar(nombreCell.dataset.nombre);
-    else abrirDetalle(nombreCell.dataset.nombre);
+    personaEditando = nombreCell.dataset.nombre;
+    abrirModalEditar();
   }
 });
 
-/* ============================================================
-   MODAL EDITAR (solo administrador, modo edición)
-   ============================================================ */
+// -------------------- refrescar solo la lista --------------------
+const btnRefrescarLista = document.getElementById('btnRefrescarLista');
+btnRefrescarLista.addEventListener('click', async () => {
+  btnRefrescarLista.disabled = true;
+  const textoOriginal = btnRefrescarLista.textContent;
+  btnRefrescarLista.textContent = '🔄 Refrescando...';
+  await cargarDatosServidor();
+  btnRefrescarLista.disabled = false;
+  btnRefrescarLista.textContent = textoOriginal;
+});
+
+// -------------------- generar reporte de texto --------------------
+// Solo cuenta como "fecha real" un valor tipo YYYY-MM-DD. Los puntos
+// cargados a mano desde el popup de editar quedan con fecha "—" (no se
+// sabe cuándo fue esa clase), así que esas personas no entran en el
+// grupo de "sin asistir hace más de 1 semana" — van al resto de la lista.
+function fechaValidaDe(fechaStr) {
+  if (!fechaStr || !/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) return null;
+  const d = new Date(fechaStr + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function ultimaClaseDe(persona) {
+  let ultima = null;
+  persona.registros.forEach(r => {
+    const d = fechaValidaDe(r.fecha);
+    if (d && (!ultima || d > ultima)) ultima = d;
+  });
+  return ultima;
+}
+
+function fmtFechaCorta(d) {
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function generarReporte() {
+  const ahora = new Date();
+  const haceUnaSemana = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const completaron = [];
+  const faltaProcedimientos = [];
+  const inactivos = [];
+  const resto = [];
+
+  tenientes.forEach(p => {
+    if (cumpleRequisitos(p)) { completaron.push(p); return; }
+    if (puntos(p) >= 2 && !tieneProcedimientos(p)) { faltaProcedimientos.push(p); return; }
+    const ultima = ultimaClaseDe(p);
+    if (ultima && ultima < haceUnaSemana) { inactivos.push({ persona: p, ultima }); return; }
+    resto.push(p);
+  });
+
+  const alfa = (a, b) => a.nombre.localeCompare(b.nombre, 'es');
+  completaron.sort(alfa);
+  faltaProcedimientos.sort((a, b) => puntos(b) - puntos(a) || alfa(a, b));
+  inactivos.sort((a, b) => a.ultima - b.ultima || alfa(a.persona, b.persona));
+  resto.sort((a, b) => puntos(b) - puntos(a) || alfa(a, b));
+
+  const lineas = [];
+  lineas.push('REPORTE DE TENIENTES — LAGUNA PD');
+  lineas.push(`Generado: ${ahora.toLocaleDateString('es-AR')} ${ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
+  lineas.push('');
+
+  lineas.push('====================================');
+  lineas.push(`YA COMPLETARON LOS REQUISITOS (3 CLASES + PROCEDIMIENTOS) (${completaron.length})`);
+  lineas.push('====================================');
+  lineas.push(...(completaron.length
+    ? completaron.map((p, i) => `${i + 1}. ${p.nombre} — ${fmtPuntos(puntos(p))} clases`)
+    : ['(nadie todavía)']));
+  lineas.push('');
+
+  lineas.push('====================================');
+  lineas.push(`TIENEN 2 CLASES O MÁS PERO LES FALTA PROCEDIMIENTOS (${faltaProcedimientos.length})`);
+  lineas.push('====================================');
+  lineas.push(...(faltaProcedimientos.length
+    ? faltaProcedimientos.map((p, i) => `${i + 1}. ${p.nombre} — ${fmtPuntos(puntos(p))} clases (falta Procedimientos)`)
+    : ['(nadie en esta situación)']));
+  lineas.push('');
+
+  lineas.push('====================================');
+  lineas.push(`SIN ASISTIR HACE MÁS DE 1 SEMANA (${inactivos.length})`);
+  lineas.push('====================================');
+  lineas.push(...(inactivos.length
+    ? inactivos.map(({ persona, ultima }) => `${persona.nombre} — última clase: ${fmtFechaCorta(ultima)} (${fmtPuntos(puntos(persona))} clases)`)
+    : ['(nadie en esta situación)']));
+  lineas.push('');
+
+  lineas.push('====================================');
+  lineas.push(`RESTO DE LA LISTA — por clases, alfabético en empate (${resto.length})`);
+  lineas.push('====================================');
+  lineas.push(...(resto.length
+    ? resto.map((p, i) => `${i + 1}. ${p.nombre} — ${fmtPuntos(puntos(p))} clases`)
+    : ['(sin más gente)']));
+  lineas.push('');
+  lineas.push('Nota: las personas con puntos cargados/editados manualmente sin fecha ("—") no se pueden ubicar en "sin asistir hace más de 1 semana" porque no se sabe cuándo fue su última clase real; quedan en el resto de la lista.');
+
+  const texto = lineas.join('\n');
+  const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `reporte-tenientes-${ahora.toISOString().slice(0, 10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// -------------------- modal: elegir tipo de reporte --------------------
+const modalReporte = document.getElementById('modalReporte');
+const reporteBoxInicial = document.getElementById('reporteBoxInicial');
+const reporteBoxEspecifico = document.getElementById('reporteBoxEspecifico');
+const reporteFecha = document.getElementById('reporteFecha');
+const reporteTurno = document.getElementById('reporteTurno');
+const reporteEspecificoError = document.getElementById('reporteEspecificoError');
+
+function abrirModalReporte() {
+  reporteBoxInicial.classList.remove('hidden');
+  reporteBoxEspecifico.classList.add('hidden');
+  reporteEspecificoError.textContent = '';
+  reporteFecha.value = hoyISO();
+  reporteTurno.innerHTML = opcionesTurno(null, false);
+  modalReporte.classList.remove('hidden');
+}
+function cerrarModalReporte() {
+  modalReporte.classList.add('hidden');
+}
+
+document.getElementById('btnReporteTotal').addEventListener('click', () => {
+  cerrarModalReporte();
+  generarReporte();
+});
+document.getElementById('btnCancelarReporteInicial').addEventListener('click', cerrarModalReporte);
+document.getElementById('btnReporteEspecifico').addEventListener('click', () => {
+  reporteBoxInicial.classList.add('hidden');
+  reporteBoxEspecifico.classList.remove('hidden');
+});
+document.getElementById('btnVolverReporteInicial').addEventListener('click', () => {
+  reporteBoxEspecifico.classList.add('hidden');
+  reporteBoxInicial.classList.remove('hidden');
+});
+document.getElementById('btnGenerarReporteEspecifico').addEventListener('click', () => {
+  const fecha = reporteFecha.value;
+  const turno = reporteTurno.value;
+  if (!fecha) {
+    reporteEspecificoError.textContent = 'Elegí una fecha.';
+    return;
+  }
+  reporteEspecificoError.textContent = '';
+  cerrarModalReporte();
+  generarReporteEspecifico(fecha, turno);
+});
+modalReporte.addEventListener('click', e => { if (e.target === modalReporte) cerrarModalReporte(); });
+
+document.getElementById('btnGenerarReporte').addEventListener('click', abrirModalReporte);
+
+function generarReporteEspecifico(fecha, turno) {
+  const asistentes = [];
+  tenientes.forEach(p => {
+    p.registros.forEach(r => {
+      if (r.fecha === fecha && r.turno === turno) {
+        asistentes.push({ nombre: p.nombre, tipo: r.tipo, instructor: r.instructor || '—' });
+      }
+    });
+  });
+
+  asistentes.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  const verdes = asistentes.filter(a => a.tipo === 'verde').length;
+  const amarillos = asistentes.filter(a => a.tipo === 'amarillo').length;
+
+  const esProcedimientos = turno === TURNO_PROCEDIMIENTOS;
+  const emojiVerde = esProcedimientos ? '🛡️' : '🟢';
+
+  const ahora = new Date();
+  const lineas = [];
+  lineas.push('REPORTE DE CLASE ESPECÍFICA — TENIENTES, LAGUNA PD');
+  lineas.push(`Generado: ${ahora.toLocaleDateString('es-AR')} ${ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
+  lineas.push(`Fecha de la clase: ${fecha}`);
+  lineas.push(`Turno: ${turno}`);
+  lineas.push('');
+  lineas.push('====================================');
+  lineas.push(`ASISTENTES (${asistentes.length}) — ${emojiVerde} ${verdes} · 🟡 ${amarillos}`);
+  lineas.push('====================================');
+  lineas.push(...(asistentes.length
+    ? asistentes.map(a => `${a.tipo === 'verde' ? emojiVerde : '🟡'} ${a.nombre}`)
+    : ['(nadie registrado en esta fecha/turno)']));
+
+  const texto = lineas.join('\n');
+  const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `reporte-${fecha}-${turno.replace(/\s+/g, '-')}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// -------------------- modal 4: editar valores --------------------
 const modalEditar = document.getElementById('modalEditar');
 const editarInfo = document.getElementById('editarInfo');
-const inputEditarNombre = document.getElementById('inputEditarNombre');
-const inputEditarFecha = document.getElementById('inputEditarFecha');
-const inputEditarEvaluador = document.getElementById('inputEditarEvaluador');
-const inputEditarObservaciones = document.getElementById('inputEditarObservaciones');
-const btnEditarAprobado = document.getElementById('btnEditarAprobado');
-const btnEditarReprobado = document.getElementById('btnEditarReprobado');
 const editarError = document.getElementById('editarError');
 const btnGuardarEditar = document.getElementById('btnGuardarEditar');
-const btnEliminarRegistro = document.getElementById('btnEliminarRegistro');
-let personaEditando = null;
-let editarResultado = null;
+const inputEditarNombre = document.getElementById('inputEditarNombre');
+const clasesTitulo = document.getElementById('clasesTitulo');
+const clasesListaBody = document.getElementById('clasesListaBody');
+const clasesListaWrap = document.getElementById('clasesListaWrap');
+const clasesListaEmpty = document.getElementById('clasesListaEmpty');
+const clasesAgregarRow = document.getElementById('clasesAgregarRow');
+const clasesAgregarRow2 = document.getElementById('clasesAgregarRow2');
+const clasesRenombrarRow = document.getElementById('clasesRenombrarRow');
+const clasesAccionesEdicion = document.getElementById('clasesAccionesEdicion');
+const clasesAccionesVista = document.getElementById('clasesAccionesVista');
+const clasesAccionHeader = document.getElementById('clasesAccionHeader');
+const btnAbrirEvaluacion = document.getElementById('btnAbrirEvaluacion');
+const btnEvaluarVista = document.getElementById('btnEvaluarVista');
+const claseNuevaFecha = document.getElementById('claseNuevaFecha');
+const claseNuevaTurno = document.getElementById('claseNuevaTurno');
+claseNuevaTurno.addEventListener('change', () => {
+  actualizarEtiquetaVerde(document.getElementById('claseNuevaBtnVerde'), claseNuevaTurno.value === TURNO_PROCEDIMIENTOS);
+});
+const claseNuevaInstructor = document.getElementById('claseNuevaInstructor');
+const btnAgregarClase = document.getElementById('btnAgregarClase');
 
-function abrirModalEditar(nombre) {
-  const p = encontrar(nombre);
-  if (!p) return;
-  personaEditando = p.nombre;
-  editarInfo.innerHTML = `Editando como: <b>${escapeHtml(editorActual)}</b>`;
-  inputEditarNombre.value = p.nombre;
-  editarResultado = p.resultado || null;
-  btnEditarAprobado.classList.toggle('active', editarResultado === 'aprobado');
-  btnEditarReprobado.classList.toggle('active', editarResultado === 'reprobado');
-  inputEditarFecha.value = (p.fecha && p.fecha !== '—') ? p.fecha : hoyISO();
-  inputEditarEvaluador.innerHTML = opcionesEvaluador(p.evaluador, false);
-  inputEditarObservaciones.value = p.observaciones || '';
+let clasesLocal = []; // copia editable de persona.registros mientras el modal está abierto
+let claseNuevoTipo = 'verde';
+
+const TURNOS_CLASE = ["Primera Clase", "Segunda Clase", "Tercera Clase", "Cuarta Clase", "Quinta Clase", TURNO_PROCEDIMIENTOS];
+// restringir = true: si quien registra no llega a evaluador (es instructor
+// común), no puede elegir "Procedimientos" — esa clase solo la registran
+// evaluadores o administradores. Los administradores (por ejemplo, en el
+// modo edición) siempre ven la lista completa.
+function opcionesTurno(seleccionado, restringir) {
+  const disponibles = (restringir && !rolAlcanza(registradorActualRol, 'evaluador'))
+    ? TURNOS_CLASE.filter(t => t !== TURNO_PROCEDIMIENTOS)
+    : TURNOS_CLASE;
+  return disponibles.map(t => `<option value="${escapeAttr(t)}" ${t === seleccionado ? 'selected' : ''}>${t}</option>`).join('');
+}
+// restringir = true: si quien registra no es administrador, solo puede
+// elegir su propio nombre como instructor (no puede atribuirle la clase a
+// otra persona). Los administradores (por ejemplo, en el modo edición)
+// siempre ven la lista completa.
+function opcionesInstructor(seleccionado, restringir) {
+  if (restringir && registradorActualRol && registradorActualRol !== 'administrador') {
+    return `<option value="${escapeAttr(registradorActual)}" selected>${escapeHtml(registradorActual)}</option>`;
+  }
+  // NOMBRES_INSTRUCTORES y NOMBRES_EVALUADORES vienen de codigos.js — se
+  // muestran en dos grupos separados para que quede claro quién es quién.
+  const opcion = n => `<option value="${escapeAttr(n)}" ${n === seleccionado ? 'selected' : ''}>${n}</option>`;
+  return `<optgroup label="Instructores">${NOMBRES_INSTRUCTORES.map(opcion).join('')}</optgroup>`
+    + `<optgroup label="Evaluadores">${NOMBRES_EVALUADORES.map(opcion).join('')}</optgroup>`;
+}
+
+function actualizarBotonEvaluacion() {
+  const personaLocal = { registros: clasesLocal };
+  const puntosActuales = puntos(personaLocal);
+  const tieneProc = tieneProcedimientos(personaLocal);
+  const personaReal = tenientes.find(p => p.nombre.toLowerCase() === (personaEditando || '').toLowerCase());
+  const esRangoTenientes = !personaReal || personaReal.rango === 'Tenientes'; // por si el rango ya se cambió a mano
+  const cumple = puntosActuales >= 3 && tieneProc && esRangoTenientes;
+  let tituloBoton = '';
+  if (!cumple) {
+    if (!esRangoTenientes) {
+      tituloBoton = `Esta persona no tiene el rango de Tenientes (tiene "${personaReal.rango || '—'}"), no se puede evaluar acá.`;
+    } else if (puntosActuales < 3 && !tieneProc) {
+      tituloBoton = `Necesita 3 clases (lleva ${fmtPuntos(puntosActuales)}) y la clase de Procedimientos para poder evaluar.`;
+    } else if (puntosActuales < 3) {
+      tituloBoton = `Necesita 3 clases para poder evaluar (lleva ${fmtPuntos(puntosActuales)}).`;
+    } else {
+      tituloBoton = 'Le falta la clase de Procedimientos para poder evaluar.';
+    }
+  }
+  if (btnAbrirEvaluacion) {
+    btnAbrirEvaluacion.disabled = !cumple;
+    btnAbrirEvaluacion.title = tituloBoton;
+  }
+  if (btnEvaluarVista) {
+    btnEvaluarVista.disabled = !cumple;
+    btnEvaluarVista.title = tituloBoton;
+  }
+}
+
+function renderClasesLista(editable) {
+  actualizarBotonEvaluacion();
+  if (clasesLocal.length === 0) {
+    clasesListaWrap.style.display = 'none';
+    clasesListaEmpty.style.display = 'block';
+    return;
+  }
+  clasesListaWrap.style.display = 'block';
+  clasesListaEmpty.style.display = 'none';
+  clasesAccionHeader.textContent = editable ? '' : '';
+  clasesListaBody.innerHTML = clasesLocal.map((r, i) => {
+    const emoji = r.tipo === 'amarillo' ? '🟡' : (r.turno === TURNO_PROCEDIMIENTOS ? '🛡️' : '🟢');
+    const puntoCell = editable
+      ? `<span class="clase-punto-toggle" data-idx="${i}" title="Tocá para cambiar">${emoji}</span>`
+      : `<span>${emoji}</span>`;
+    const accionCell = editable
+      ? `<span class="clase-quitar" data-idx="${i}">✕</span>`
+      : '';
+    const fechaVal = r.fecha && r.fecha !== '—' ? r.fecha : '';
+    const fechaCell = editable
+      ? `<input type="date" class="clase-campo-fecha" data-idx="${i}" value="${escapeAttr(fechaVal)}">`
+      : escapeHtml(r.fecha || '—');
+    const turnoCell = editable
+      ? `<select class="clase-campo-turno" data-idx="${i}">${opcionesTurno(r.turno, false)}</select>`
+      : escapeHtml(r.turno || '—');
+    const instructorCell = editable
+      ? `<select class="clase-campo-instructor" data-idx="${i}">${opcionesInstructor(r.instructor, false)}</select>`
+      : escapeHtml(r.instructor || '—');
+    return `<tr>
+      <td>${fechaCell}</td>
+      <td>${turnoCell}</td>
+      <td>${instructorCell}</td>
+      <td>${puntoCell}</td>
+      <td>${accionCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+function abrirModalEditar() {
+  const persona = tenientes.find(a => a.nombre.toLowerCase() === personaEditando.toLowerCase());
+  clasesLocal = persona ? persona.registros.slice() : [];
+
+  const editable = modoEdicionActivo;
+  clasesTitulo.textContent = editable ? `Editar clases de ${personaEditando}` : `Clases de ${personaEditando}`;
+  editarInfo.innerHTML = editable
+    ? `Administrador: <b>${escapeHtml(editorActual)}</b>`
+    : `Historial de clases (solo lectura).`;
   editarError.textContent = '';
+
+  clasesAgregarRow.classList.toggle('hidden', !editable);
+  clasesAgregarRow2.classList.toggle('hidden', !editable);
+  clasesRenombrarRow.classList.toggle('hidden', !editable);
+  clasesAccionesEdicion.classList.toggle('hidden', !editable);
+  clasesAccionesVista.classList.toggle('hidden', editable);
+
+  if (editable) {
+    inputEditarNombre.value = personaEditando;
+    claseNuevaFecha.value = hoyISO();
+    claseNuevaTurno.innerHTML = opcionesTurno(null, false);
+    claseNuevaInstructor.innerHTML = opcionesInstructor(null, false);
+    claseNuevoTipo = 'verde';
+    document.getElementById('claseNuevaBtnVerde').classList.add('active');
+    document.getElementById('claseNuevaBtnAmarillo').classList.remove('active');
+    actualizarEtiquetaVerde(document.getElementById('claseNuevaBtnVerde'), claseNuevaTurno.value === TURNO_PROCEDIMIENTOS);
+  }
+
+  renderClasesLista(editable);
   modalEditar.classList.remove('hidden');
 }
-function cerrarModalEditar() { modalEditar.classList.add('hidden'); }
+function cerrarModalEditar() {
+  modalEditar.classList.add('hidden');
+}
+
+document.getElementById('claseNuevaBtnVerde').addEventListener('click', () => {
+  claseNuevoTipo = 'verde';
+  document.getElementById('claseNuevaBtnVerde').classList.add('active');
+  document.getElementById('claseNuevaBtnAmarillo').classList.remove('active');
+});
+document.getElementById('claseNuevaBtnAmarillo').addEventListener('click', () => {
+  claseNuevoTipo = 'amarillo';
+  document.getElementById('claseNuevaBtnAmarillo').classList.add('active');
+  document.getElementById('claseNuevaBtnVerde').classList.remove('active');
+});
+
+btnAgregarClase.addEventListener('click', () => {
+  clasesLocal.push({
+    tipo: claseNuevoTipo,
+    fecha: claseNuevaFecha.value || hoyISO(),
+    turno: claseNuevaTurno.value,
+    instructor: claseNuevaInstructor.value,
+    registrador: `Agregado por ${editorActual}`,
+  });
+  renderClasesLista(true);
+});
+
+clasesListaBody.addEventListener('click', e => {
+  const toggle = e.target.closest('.clase-punto-toggle');
+  if (toggle) {
+    const idx = Number(toggle.dataset.idx);
+    clasesLocal[idx].tipo = clasesLocal[idx].tipo === 'verde' ? 'amarillo' : 'verde';
+    renderClasesLista(true);
+    return;
+  }
+  const quitar = e.target.closest('.clase-quitar');
+  if (quitar) {
+    const idx = Number(quitar.dataset.idx);
+    clasesLocal.splice(idx, 1);
+    renderClasesLista(true);
+  }
+});
+
+clasesListaBody.addEventListener('change', e => {
+  const fechaInput = e.target.closest('.clase-campo-fecha');
+  if (fechaInput) {
+    clasesLocal[Number(fechaInput.dataset.idx)].fecha = fechaInput.value || '—';
+    return;
+  }
+  const turnoSelect = e.target.closest('.clase-campo-turno');
+  if (turnoSelect) {
+    clasesLocal[Number(turnoSelect.dataset.idx)].turno = turnoSelect.value;
+    renderClasesLista(true);
+    return;
+  }
+  const instructorSelect = e.target.closest('.clase-campo-instructor');
+  if (instructorSelect) {
+    clasesLocal[Number(instructorSelect.dataset.idx)].instructor = instructorSelect.value;
+  }
+});
+
+document.getElementById('btnCerrarVistaClases').addEventListener('click', cerrarModalEditar);
 document.getElementById('btnCancelarEditar').addEventListener('click', cerrarModalEditar);
 
-btnEditarAprobado.addEventListener('click', () => {
-  editarResultado = 'aprobado';
-  btnEditarAprobado.classList.add('active');
-  btnEditarReprobado.classList.remove('active');
+const btnEliminarRegistro = document.getElementById('btnEliminarRegistro');
+btnEliminarRegistro.addEventListener('click', async () => {
+  btnEliminarRegistro.disabled = true;
+  btnGuardarEditar.disabled = true;
+  btnEliminarRegistro.textContent = 'Eliminando...';
+  const ok = await eliminarPersona(personaEditando);
+  btnEliminarRegistro.disabled = false;
+  btnGuardarEditar.disabled = false;
+  btnEliminarRegistro.textContent = '🗑 Eliminar Registro';
+  if (ok) cerrarModalEditar();
 });
-btnEditarReprobado.addEventListener('click', () => {
-  editarResultado = 'reprobado';
-  btnEditarReprobado.classList.add('active');
-  btnEditarAprobado.classList.remove('active');
+
+// cerrar modales tocando el fondo oscuro (ya existen las 4 variables acá)
+[modalCodigo, modalRegistro, modalCodigoEditar, modalEditar].forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+});
+
+// -------------------- modal 5: enviar a evaluación --------------------
+const modalEvaluacion = document.getElementById('modalEvaluacion');
+const evaluacionInfo = document.getElementById('evaluacionInfo');
+const evaluacionEvaluador = document.getElementById('evaluacionEvaluador');
+const evaluacionObservaciones = document.getElementById('evaluacionObservaciones');
+const evaluacionError = document.getElementById('evaluacionError');
+const btnResultadoAprobado = document.getElementById('btnResultadoAprobado');
+const btnResultadoReprobado = document.getElementById('btnResultadoReprobado');
+const btnGuardarEvaluacion = document.getElementById('btnGuardarEvaluacion');
+let resultadoEvaluacion = 'aprobado';
+let evaluadorIdentificado = null;
+let evaluadorIdentificadoRol = null;
+
+btnResultadoAprobado.addEventListener('click', () => {
+  resultadoEvaluacion = 'aprobado';
+  btnResultadoAprobado.classList.add('active');
+  btnResultadoReprobado.classList.remove('active');
+});
+btnResultadoReprobado.addEventListener('click', () => {
+  resultadoEvaluacion = 'reprobado';
+  btnResultadoReprobado.classList.add('active');
+  btnResultadoAprobado.classList.remove('active');
+});
+
+function abrirModalEvaluacion() {
+  evaluacionInfo.innerHTML = `Evaluando a <b>${escapeHtml(personaEditando)}</b>`;
+  resultadoEvaluacion = 'aprobado';
+  btnResultadoAprobado.classList.add('active');
+  btnResultadoReprobado.classList.remove('active');
+  evaluacionEvaluador.innerHTML = opcionesEvaluadorAsistencia(evaluadorIdentificado, true);
+  evaluacionObservaciones.value = '';
+  evaluacionError.textContent = '';
+  modalEvaluacion.classList.remove('hidden');
+}
+function cerrarModalEvaluacion() {
+  modalEvaluacion.classList.add('hidden');
+}
+
+// -------------------- modal 4b: código de evaluador --------------------
+const modalCodigoEvaluar = document.getElementById('modalCodigoEvaluar');
+const inputCodigoEvaluar = document.getElementById('inputCodigoEvaluar');
+const codigoEvaluarError = document.getElementById('codigoEvaluarError');
+
+function abrirModalCodigoEvaluar() {
+  inputCodigoEvaluar.value = '';
+  codigoEvaluarError.textContent = '';
+  modalCodigoEvaluar.classList.remove('hidden');
+  setTimeout(() => inputCodigoEvaluar.focus(), 50);
+}
+function cerrarModalCodigoEvaluar() {
+  modalCodigoEvaluar.classList.add('hidden');
+}
+
+function validarCodigoEvaluar() {
+  const code = inputCodigoEvaluar.value.trim();
+  const usuario = CODIGOS[code];
+  if (!usuario) {
+    codigoEvaluarError.textContent = 'Código inválido. Probá de nuevo.';
+    return;
+  }
+  if (!rolAlcanza(usuario.rol, 'evaluador')) {
+    codigoEvaluarError.textContent = 'Ese código no tiene permisos para evaluar.';
+    return;
+  }
+  evaluadorIdentificado = usuario.nombre;
+  evaluadorIdentificadoRol = usuario.rol;
+  cerrarModalCodigoEvaluar();
+  abrirModalEvaluacion();
+}
+
+document.getElementById('btnContinuarCodigoEvaluar').addEventListener('click', validarCodigoEvaluar);
+document.getElementById('btnCancelarCodigoEvaluar').addEventListener('click', cerrarModalCodigoEvaluar);
+inputCodigoEvaluar.addEventListener('keydown', e => { if (e.key === 'Enter') validarCodigoEvaluar(); });
+modalCodigoEvaluar.addEventListener('click', e => { if (e.target === modalCodigoEvaluar) cerrarModalCodigoEvaluar(); });
+
+// Desde la vista de solo lectura (evaluadores), pide código antes de evaluar.
+// Si ya estás en modo edición de administrador, va directo al formulario.
+if (btnEvaluarVista) {
+  btnEvaluarVista.addEventListener('click', () => {
+    if (modoEdicionActivo) {
+      evaluadorIdentificado = editorActual;
+      evaluadorIdentificadoRol = 'administrador';
+      abrirModalEvaluacion();
+    } else {
+      abrirModalCodigoEvaluar();
+    }
+  });
+}
+
+document.getElementById('btnAbrirEvaluacion').addEventListener('click', () => {
+  evaluadorIdentificado = editorActual;
+  evaluadorIdentificadoRol = 'administrador';
+  abrirModalEvaluacion();
+});
+document.getElementById('btnCancelarEvaluacion').addEventListener('click', cerrarModalEvaluacion);
+modalEvaluacion.addEventListener('click', e => { if (e.target === modalEvaluacion) cerrarModalEvaluacion(); });
+
+btnGuardarEvaluacion.addEventListener('click', async () => {
+  if (!API_URL || API_URL.includes('PEGA_AQUI')) {
+    evaluacionError.textContent = 'Falta configurar el servidor (API_URL). Revisá SETUP.md.';
+    return;
+  }
+  evaluacionError.textContent = '';
+  btnGuardarEvaluacion.disabled = true;
+  btnGuardarEvaluacion.textContent = 'Enviando...';
+  const nombreEvaluado = personaEditando;
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recurso: 'tenientes',
+        evaluarAscenso: {
+          nombre: nombreEvaluado,
+          resultado: resultadoEvaluacion,
+          evaluador: evaluacionEvaluador.value,
+          observaciones: evaluacionObservaciones.value.trim(),
+          fecha: hoyISO(),
+        },
+      }),
+    });
+    if (!resp.ok) throw new Error(await errorDe(resp));
+    aplicarEstado(await resp.json());
+
+    servidorConectado = true;
+    render();
+    cerrarModalEvaluacion();
+    cerrarModalEditar();
+    if (resultadoEvaluacion === 'aprobado') {
+      alert(`${nombreEvaluado} fue aprobado/a y pasó a la lista de Capitanes (con el rango de Capitanes asignado automáticamente).`);
+    } else {
+      alert(`${nombreEvaluado} fue reprobado/a: se queda en Tenientes y se le puede volver a evaluar más adelante.`);
+    }
+  } catch (e) {
+    evaluacionError.textContent = e && e.message ? e.message : 'No se pudo enviar la evaluación. Intentá de nuevo.';
+  } finally {
+    btnGuardarEvaluacion.disabled = false;
+    btnGuardarEvaluacion.textContent = 'Enviar a Capitanes';
+  }
 });
 
 btnGuardarEditar.addEventListener('click', async () => {
-  if (!personaEditando) return;
+  if (!API_URL || API_URL.includes('PEGA_AQUI')) {
+    editarError.textContent = 'Falta configurar el servidor (API_URL). Revisá SETUP.md.';
+    return;
+  }
   const nombreNuevo = inputEditarNombre.value.trim();
   if (!nombreNuevo) {
     editarError.textContent = 'El nombre no puede quedar vacío.';
@@ -753,524 +1828,98 @@ btnGuardarEditar.addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        recurso: RECURSO,
-        arreglarErrores: {
+        recurso: 'tenientes',
+        edit: {
           nombre: personaEditando,
-          nombreNuevo,
-          resultado: editarResultado,
-          fecha: inputEditarFecha.value || null,
-          evaluador: inputEditarEvaluador.value,
-          observaciones: inputEditarObservaciones.value.trim(),
+          nombreNuevo: nombreNuevo,
+          registros: clasesLocal,
+          registrador: editorActual,
         },
       }),
     });
     if (!resp.ok) throw new Error(await errorDe(resp));
     aplicarEstado(await resp.json());
     servidorConectado = true;
+    personaEditando = nombreNuevo;
     render();
     cerrarModalEditar();
   } catch (e) {
-    editarError.textContent = e && e.message ? e.message : 'No se pudo guardar. Intentá de nuevo.';
+    editarError.textContent = e && e.message ? e.message : 'No se pudo guardar en el servidor. Intentá de nuevo.';
   } finally {
     btnGuardarEditar.disabled = false;
     btnGuardarEditar.textContent = 'Guardar';
   }
 });
 
-btnEliminarRegistro.addEventListener('click', async () => {
-  if (!personaEditando) return;
-  btnEliminarRegistro.disabled = true;
-  btnEliminarRegistro.textContent = 'Eliminando...';
-  const ok = await eliminarRegistro(personaEditando);
-  btnEliminarRegistro.disabled = false;
-  btnEliminarRegistro.textContent = '🗑 Eliminar Registro';
-  if (ok) cerrarModalEditar();
-});
+// -------------------- tooltip con el tema de la página --------------------
+const customTooltip = document.getElementById('customTooltip');
 
-/* ============================================================
-   DETALLE (solo lectura, fuera de modo edición)
-   ============================================================ */
-const modalDetalle = document.getElementById('modalDetalle');
-const detalleTitulo = document.getElementById('detalleTitulo');
-const detalleInfo = document.getElementById('detalleInfo');
-const detalleError = document.getElementById('detalleError');
-const btnMostrarIntento = document.getElementById('btnMostrarIntento');
-let personaActual = null;
-
-function abrirDetalle(nombre) {
-  const p = encontrar(nombre);
-  if (!p) return;
-  personaActual = p.nombre;
-  detalleTitulo.textContent = p.nombre;
-  detalleError.textContent = '';
-  detalleInfo.innerHTML = '';
-
-  document.getElementById('verResultado').innerHTML = estadoTexto(p.resultado);
-  document.getElementById('verFecha').textContent = fmtFecha(p.fecha);
-  document.getElementById('verEvaluador').textContent = p.evaluador || '—';
-  document.getElementById('verObservaciones').textContent = p.observaciones || '—';
-  const intentos = Array.isArray(p.historial) ? p.historial.length : 0;
-  const verIntentos = document.getElementById('verIntentos');
-  verIntentos.textContent = `Intentos: ${intentos}`;
-  verIntentos.onclick = () => abrirHistorial(p.nombre);
-
-  // El botón "Evaluar" (para el siguiente rango) aparece cuando ya está
-  // aprobado/a en este rango. El botón de Agregar Intento (reintento) solo
-  // aparece si el resultado fue reprobado.
-  btnMostrarEvaluar.classList.toggle('hidden', p.resultado !== 'aprobado');
-  btnMostrarIntento.classList.toggle('hidden', p.resultado !== 'reprobado');
-
-  modalDetalle.classList.remove('hidden');
-}
-function cerrarModalDetalle() { modalDetalle.classList.add('hidden'); }
-document.getElementById('btnCerrarDetalle').addEventListener('click', cerrarModalDetalle);
-
-/* ============================================================
-   AGREGAR INTENTO INDIVIDUAL (desde el detalle de una persona)
-   ============================================================ */
-const modalCodigo = document.getElementById('modalCodigo');
-const inputCodigo = document.getElementById('inputCodigo');
-const codigoError = document.getElementById('codigoError');
-let evaluadorActual = null;
-let evaluadorActualRol = null;
-let accionPendienteCodigo = null; // 'bulk' | 'intento' | 'promo'
-
-function abrirModalCodigo() {
-  inputCodigo.value = '';
-  codigoError.textContent = '';
-  const esAdmin = accionPendienteCodigo === 'bulk';
-  modalCodigo.querySelector('h2').textContent = esAdmin ? 'Código de Administrador' : 'Código de Evaluador';
-  modalCodigo.querySelector('.modal-sub').textContent = esAdmin
-    ? 'Esta acción es solo para administradores: sirve para agregar evaluaciones de personas que todavía no están en esta lista.'
-    : 'Ingresá tu código para identificarte antes de registrar una evaluación.';
-  modalCodigo.classList.remove('hidden');
-  setTimeout(() => inputCodigo.focus(), 50);
-}
-function cerrarModalCodigo() { modalCodigo.classList.add('hidden'); }
-document.getElementById('btnCancelarCodigo').addEventListener('click', () => {
-  accionPendienteCodigo = null;
-  cerrarModalCodigo();
-});
-
-function validarCodigo() {
-  const code = inputCodigo.value.trim();
-  const usuario = CODIGOS[code];
-  if (!usuario) {
-    codigoError.textContent = 'Código inválido. Probá de nuevo.';
-    return;
-  }
-  // "📝 Agregar Evaluación" (barra de arriba) es solo para administradores:
-  // sirve para cargar a mano a alguien que no está en esta lista todavía.
-  // Evaluar el ascenso o reintentar (desde el detalle de una persona que
-  // YA está en la lista) alcanza con el código de evaluador.
-  const rolNecesario = accionPendienteCodigo === 'bulk' ? 'administrador' : 'evaluador';
-  if (!rolAlcanza(usuario.rol, rolNecesario)) {
-    codigoError.textContent = rolNecesario === 'administrador'
-      ? 'Ese código no tiene permisos de administrador.'
-      : 'Ese código no tiene permisos para evaluar.';
-    return;
-  }
-  evaluadorActual = usuario.nombre;
-  evaluadorActualRol = usuario.rol;
-  cerrarModalCodigo();
-  if (accionPendienteCodigo === 'bulk') {
-    abrirModalRegistro();
-  } else if (accionPendienteCodigo === 'intento') {
-    abrirModalIntento();
-  } else if (accionPendienteCodigo === 'promo') {
-    abrirModalPromo();
-  }
-  accionPendienteCodigo = null;
-}
-document.getElementById('btnContinuarCodigo').addEventListener('click', validarCodigo);
-inputCodigo.addEventListener('keydown', e => { if (e.key === 'Enter') validarCodigo(); });
-
-document.getElementById('btnAbrirCodigo').addEventListener('click', () => {
-  accionPendienteCodigo = 'bulk';
-  abrirModalCodigo();
-});
-
-const modalIntento = document.getElementById('modalIntento');
-const intentoInfo = document.getElementById('intentoInfo');
-const intentoFecha = document.getElementById('intentoFecha');
-const intentoEvaluador = document.getElementById('intentoEvaluador');
-const intentoObservaciones = document.getElementById('intentoObservaciones');
-const intentoError = document.getElementById('intentoError');
-const btnIntentoAprobado = document.getElementById('btnIntentoAprobado');
-const btnIntentoReprobado = document.getElementById('btnIntentoReprobado');
-const btnGuardarIntento = document.getElementById('btnGuardarIntento');
-let intentoResultado = 'aprobado';
-
-function abrirModalIntento() {
-  intentoInfo.innerHTML = `Evaluando a <b>${escapeHtml(personaActual)}</b> — identificado/a como <b>${escapeHtml(evaluadorActual)}</b>`;
-  intentoResultado = 'aprobado';
-  btnIntentoAprobado.classList.add('active');
-  btnIntentoReprobado.classList.remove('active');
-  intentoFecha.value = hoyISO();
-  intentoEvaluador.innerHTML = opcionesEvaluador(evaluadorActual, true);
-  intentoObservaciones.value = '';
-  intentoError.textContent = '';
-  modalIntento.classList.remove('hidden');
-}
-function cerrarModalIntento() { modalIntento.classList.add('hidden'); }
-document.getElementById('btnCancelarIntento').addEventListener('click', cerrarModalIntento);
-btnIntentoAprobado.addEventListener('click', () => {
-  intentoResultado = 'aprobado';
-  btnIntentoAprobado.classList.add('active');
-  btnIntentoReprobado.classList.remove('active');
-});
-btnIntentoReprobado.addEventListener('click', () => {
-  intentoResultado = 'reprobado';
-  btnIntentoReprobado.classList.add('active');
-  btnIntentoAprobado.classList.remove('active');
-});
-
-// Desde el detalle: si ya te identificaste como evaluador en esta página,
-// va directo al formulario; si no, primero pide el código (igual que en
-// asistencias.html).
-btnMostrarIntento.addEventListener('click', () => {
-  if (evaluadorActual) {
-    abrirModalIntento();
-  } else {
-    accionPendienteCodigo = 'intento';
-    abrirModalCodigo();
-  }
-});
-
-btnGuardarIntento.addEventListener('click', async () => {
-  if (!personaActual) return;
-  intentoError.textContent = '';
-  btnGuardarIntento.disabled = true;
-  btnGuardarIntento.textContent = 'Guardando...';
-  try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        recurso: RECURSO,
-        agregarIntento: {
-          nombre: personaActual,
-          resultado: intentoResultado,
-          fecha: intentoFecha.value || hoyISO(),
-          evaluador: intentoEvaluador.value,
-          observaciones: intentoObservaciones.value.trim(),
-          soloRegistrar: true,
-        },
-      }),
-    });
-    if (!resp.ok) throw new Error(await errorDe(resp));
-    aplicarEstado(await resp.json());
-    servidorConectado = true;
-    render();
-    cerrarModalIntento();
-    cerrarModalDetalle();
-  } catch (e) {
-    intentoError.textContent = e && e.message ? e.message : 'No se pudo guardar. Intentá de nuevo.';
-  } finally {
-    btnGuardarIntento.disabled = false;
-    btnGuardarIntento.textContent = 'Guardar Intento';
-  }
-});
-
-/* ============================================================
-   EVALUAR PARA EL SIGUIENTE RANGO (desde el detalle de una persona)
-   — a diferencia de "Agregar Intento", esta SÍ hace avanzar a la
-   persona a la siguiente lista (o se queda con el resultado
-   actualizado si todavía no hay escalón siguiente armado).
-   ============================================================ */
-const modalPromo = document.getElementById('modalPromo');
-const promoTitulo = document.getElementById('promoTitulo');
-const promoInfo = document.getElementById('promoInfo');
-const promoFecha = document.getElementById('promoFecha');
-const promoEvaluador = document.getElementById('promoEvaluador');
-const promoObservaciones = document.getElementById('promoObservaciones');
-const promoError = document.getElementById('promoError');
-const btnPromoAprobado = document.getElementById('btnPromoAprobado');
-const btnPromoReprobado = document.getElementById('btnPromoReprobado');
-const btnGuardarPromo = document.getElementById('btnGuardarPromo');
-const btnMostrarEvaluar = document.getElementById('btnMostrarEvaluar');
-let promoResultado = 'aprobado';
-
-promoTitulo.textContent = `Evaluar para ${SIGUIENTE_LABEL}`;
-
-function abrirModalPromo() {
-  promoInfo.innerHTML = `Evaluando a <b>${escapeHtml(personaActual)}</b> para <b>${SIGUIENTE_LABEL}</b> — identificado/a como <b>${escapeHtml(evaluadorActual)}</b>`;
-  promoResultado = 'aprobado';
-  btnPromoAprobado.classList.add('active');
-  btnPromoReprobado.classList.remove('active');
-  promoFecha.value = hoyISO();
-  promoEvaluador.innerHTML = opcionesEvaluador(evaluadorActual, true);
-  promoObservaciones.value = '';
-  promoError.textContent = '';
-  modalPromo.classList.remove('hidden');
-}
-function cerrarModalPromo() { modalPromo.classList.add('hidden'); }
-document.getElementById('btnCancelarPromo').addEventListener('click', cerrarModalPromo);
-btnPromoAprobado.addEventListener('click', () => {
-  promoResultado = 'aprobado';
-  btnPromoAprobado.classList.add('active');
-  btnPromoReprobado.classList.remove('active');
-});
-btnPromoReprobado.addEventListener('click', () => {
-  promoResultado = 'reprobado';
-  btnPromoReprobado.classList.add('active');
-  btnPromoAprobado.classList.remove('active');
-});
-
-btnMostrarEvaluar.addEventListener('click', () => {
-  if (evaluadorActual) {
-    abrirModalPromo();
-  } else {
-    accionPendienteCodigo = 'promo';
-    abrirModalCodigo();
-  }
-});
-
-btnGuardarPromo.addEventListener('click', async () => {
-  if (!personaActual) return;
-  promoError.textContent = '';
-  btnGuardarPromo.disabled = true;
-  btnGuardarPromo.textContent = 'Guardando...';
-  try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        recurso: RECURSO,
-        agregarIntento: {
-          nombre: personaActual,
-          resultado: promoResultado,
-          fecha: promoFecha.value || hoyISO(),
-          evaluador: promoEvaluador.value,
-          observaciones: promoObservaciones.value.trim(),
-          // sin soloRegistrar: esta evaluación SÍ hace avanzar de lista.
-        },
-      }),
-    });
-    if (!resp.ok) throw new Error(await errorDe(resp));
-    aplicarEstado(await resp.json());
-    servidorConectado = true;
-    render();
-    cerrarModalPromo();
-    cerrarModalDetalle();
-  } catch (e) {
-    promoError.textContent = e && e.message ? e.message : 'No se pudo guardar. Intentá de nuevo.';
-  } finally {
-    btnGuardarPromo.disabled = false;
-    btnGuardarPromo.textContent = 'Guardar Evaluación';
-  }
-});
-
-/* ============================================================
-   AGREGAR EVALUACIÓN (varias personas a la vez, desde la barra superior)
-   ============================================================ */
-const modalRegistro = document.getElementById('modalRegistro');
-const registradorInfo = document.getElementById('registradorInfo');
-const inputFecha = document.getElementById('inputFecha');
-const inputEvaluador = document.getElementById('inputEvaluador');
-const inputNombre = document.getElementById('inputNombre');
-const listaNombres = document.getElementById('listaNombres');
-const nombreError = document.getElementById('nombreError');
-const miniListaBody = document.getElementById('miniListaBody');
-const miniListaWrap = document.getElementById('miniListaWrap');
-const miniListaEmpty = document.getElementById('miniListaEmpty');
-const btnTipoAprobado = document.getElementById('btnTipoAprobado');
-const btnTipoReprobado = document.getElementById('btnTipoReprobado');
-
-let resultadoSeleccionado = 'aprobado';
-let miniLista = []; // { nombre, resultado }
-
-function poblarListaNombres() {
-  listaNombres.innerHTML = lista
-    .slice()
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-    .map(p => `<option value="${escapeAttr(p.nombre)}">`)
-    .join('');
+function posicionarTooltip(e) {
+  const pad = 14;
+  const anchoTip = 230;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  if (x + anchoTip > window.innerWidth) x = e.clientX - anchoTip - pad;
+  if (y + 80 > window.innerHeight) y = e.clientY - 80 - pad;
+  customTooltip.style.left = Math.max(4, x) + 'px';
+  customTooltip.style.top = Math.max(4, y) + 'px';
 }
 
-function abrirModalRegistro() {
-  registradorInfo.innerHTML = `Evaluando como: <b>${escapeHtml(evaluadorActual)}</b>`;
-  inputFecha.value = hoyISO();
-  inputEvaluador.innerHTML = opcionesEvaluador(evaluadorActual, false);
-  inputNombre.value = '';
-  nombreError.textContent = '';
-  resultadoSeleccionado = 'aprobado';
-  btnTipoAprobado.classList.add('active');
-  btnTipoReprobado.classList.remove('active');
-  miniLista = [];
-  poblarListaNombres();
-  renderMiniLista();
-  modalRegistro.classList.remove('hidden');
-  setTimeout(() => inputNombre.focus(), 50);
-}
-function cerrarModalRegistro() { modalRegistro.classList.add('hidden'); }
-
-function renderMiniLista() {
-  if (miniLista.length === 0) {
-    miniListaWrap.style.display = 'none';
-    miniListaEmpty.style.display = 'block';
-    return;
-  }
-  miniListaWrap.style.display = 'block';
-  miniListaEmpty.style.display = 'none';
-  miniListaBody.innerHTML = miniLista.map((item, i) => `
-    <tr>
-      <td>${escapeHtml(item.nombre)}</td>
-      <td>${item.resultado === 'aprobado' ? '✅ Aprobado' : '❌ Reprobado'}</td>
-      <td><span class="quitar" data-idx="${i}">✕</span></td>
-    </tr>
-  `).join('');
-}
-
-btnTipoAprobado.addEventListener('click', () => {
-  resultadoSeleccionado = 'aprobado';
-  btnTipoAprobado.classList.add('active');
-  btnTipoReprobado.classList.remove('active');
+document.addEventListener('mouseover', e => {
+  const dot = e.target.closest('.dot');
+  if (!dot) return;
+  const tipo = dot.dataset.tipo;
+  const esProcedimientos = dot.dataset.turno === TURNO_PROCEDIMIENTOS;
+  const etiqueta = esProcedimientos
+    ? '🛡️ Procedimientos'
+    : (tipo === 'verde' ? '🟢 Verde' : '🟡 Amarillo');
+  customTooltip.innerHTML = `
+    <div class="tt-tipo ${tipo}">${etiqueta}</div>
+    <div class="tt-registrador">Registró: ${escapeHtml(dot.dataset.registrador)}</div>
+    <div class="tt-detalle">${escapeHtml(dot.dataset.fecha)} · ${escapeHtml(dot.dataset.turno)}</div>
+    <div class="tt-detalle">Instructor: ${escapeHtml(dot.dataset.instructor)}</div>
+  `;
+  customTooltip.style.display = 'block';
+  posicionarTooltip(e);
 });
-btnTipoReprobado.addEventListener('click', () => {
-  resultadoSeleccionado = 'reprobado';
-  btnTipoReprobado.classList.add('active');
-  btnTipoAprobado.classList.remove('active');
+document.addEventListener('mousemove', e => {
+  if (customTooltip.style.display === 'block') posicionarTooltip(e);
 });
-
-function agregarFila() {
-  const nombre = inputNombre.value.trim();
-  if (!nombre) {
-    nombreError.textContent = 'Escribí o elegí un nombre primero.';
-    return;
-  }
-  nombreError.textContent = '';
-  miniLista.push({ nombre, resultado: resultadoSeleccionado });
-  inputNombre.value = '';
-  inputNombre.focus();
-  renderMiniLista();
-}
-document.getElementById('btnAgregarFila').addEventListener('click', agregarFila);
-inputNombre.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarFila(); } });
-
-miniListaBody.addEventListener('click', e => {
-  const el = e.target.closest('.quitar');
-  if (!el) return;
-  const idx = Number(el.dataset.idx);
-  miniLista.splice(idx, 1);
-  renderMiniLista();
-});
-
-document.getElementById('btnCancelarRegistro').addEventListener('click', () => {
-  miniLista = [];
-  cerrarModalRegistro();
-});
-
-const btnConfirmarRegistro = document.getElementById('btnConfirmarRegistro');
-btnConfirmarRegistro.addEventListener('click', async () => {
-  if (miniLista.length === 0) {
-    cerrarModalRegistro();
-    return;
-  }
-  const fecha = inputFecha.value || hoyISO();
-  const evaluador = inputEvaluador.value;
-
-  nombreError.textContent = '';
-  btnConfirmarRegistro.disabled = true;
-  btnConfirmarRegistro.textContent = 'Guardando...';
-
-  try {
-    // El Worker recibe las evaluaciones de a una por vez; se envían en
-    // orden y se espera cada respuesta antes de mandar la siguiente.
-    for (const item of miniLista) {
-      const resp = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recurso: RECURSO,
-          agregarIntento: {
-            nombre: item.nombre,
-            resultado: item.resultado,
-            fecha: fecha,
-            evaluador: evaluador,
-            soloRegistrar: true,
-          },
-        }),
-      });
-      if (!resp.ok) throw new Error(await errorDe(resp));
-      aplicarEstado(await resp.json());
-    }
-    servidorConectado = true;
-    miniLista = [];
-    render();
-    cerrarModalRegistro();
-  } catch (e) {
-    nombreError.textContent = 'No se pudo guardar en el servidor. Revisá tu conexión e intentá de nuevo.';
-  } finally {
-    btnConfirmarRegistro.disabled = false;
-    btnConfirmarRegistro.textContent = 'Agregar';
-  }
-});
-
-/* ============================================================
-   HISTORIAL (solo lectura)
-   ============================================================ */
-const modalHistorial = document.getElementById('modalHistorial');
-const historialInfo = document.getElementById('historialInfo');
-const historialBody = document.getElementById('historialBody');
-
-function abrirHistorial(nombre) {
-  const p = encontrar(nombre);
-  if (!p) return;
-  historialInfo.innerHTML = `Historial de carrera de <b>${escapeHtml(p.nombre)}</b>`;
-  const historial = Array.isArray(p.historial) ? p.historial : [];
-  if (historial.length === 0) {
-    historialBody.innerHTML = `<tr><td colspan="5"><div class="empty-msg">Sin intentos registrados.</div></td></tr>`;
-  } else {
-    historialBody.innerHTML = historial.map((h, i) => `
-      <tr>
-        <td>${i + 1}</td>
-        <td>${escapeHtml(h.transicion || '—')}</td>
-        <td>${fmtFecha(h.fecha)}</td>
-        <td class="${h.resultado === 'reprobado' ? 'resultado-reprobado' : 'resultado-aprobado'}">${h.resultado === 'reprobado' ? '❌ Reprobado' : '✅ Aprobado'}</td>
-        <td>${escapeHtml(h.evaluador || '—')}</td>
-      </tr>
-    `).join('');
-  }
-  modalHistorial.classList.remove('hidden');
-}
-document.getElementById('btnCerrarHistorial').addEventListener('click', () => modalHistorial.classList.add('hidden'));
-
-// -------------------- refrescar --------------------
-const btnRefrescarLista = document.getElementById('btnRefrescarLista');
-btnRefrescarLista.addEventListener('click', async () => {
-  btnRefrescarLista.disabled = true;
-  const textoOriginal = btnRefrescarLista.textContent;
-  btnRefrescarLista.textContent = '🔄 Refrescando...';
-  await cargarDatosServidor();
-  btnRefrescarLista.disabled = false;
-  btnRefrescarLista.textContent = textoOriginal;
-});
-
-// cerrar modales tocando el fondo oscuro
-const modalesTodos = [modalCodigo, modalRegistro, modalCodigoEditar, modalEditar, modalDetalle, modalIntento, modalPromo, modalHistorial];
-modalesTodos.forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+document.addEventListener('mouseout', e => {
+  if (e.target.closest('.dot')) customTooltip.style.display = 'none';
 });
 
 // -------------------- avisarle al padre (iframe) la altura real --------------------
+const modalesTodos = [modalCodigo, modalRegistro, modalCodigoEditar, modalEditar, modalReporte, modalCodigoEvaluar, modalEvaluacion];
+
 function avisarAltura() {
   if (window.parent === window) return;
   let alto = document.documentElement.scrollHeight;
+
+  // Los modales son position:fixed, así que no afectan el scrollHeight del body.
+  // Si hay uno abierto, medimos su caja real y le sumamos margen del overlay.
   const modalAbierto = modalesTodos.find(m => m && !m.classList.contains('hidden'));
   if (modalAbierto) {
     const caja = modalAbierto.querySelector('.modal-box');
-    if (caja) alto = Math.max(alto, caja.scrollHeight + 70);
+    if (caja) {
+      alto = Math.max(alto, caja.scrollHeight + 70);
+    }
   }
+
   window.parent.postMessage({ tipo: 'asistencias-alto', alto: alto }, '*');
 }
+
 const alturaObserver = new ResizeObserver(() => avisarAltura());
 alturaObserver.observe(document.body);
 
+// Detecta cuándo se abre/cierra cualquier modal (cambia la clase "hidden")
+// para recalcular la altura, incluso cuando se cierra tocando el fondo.
 const modalObserver = new MutationObserver(() => {
   avisarAltura();
   const modalAbierto = modalesTodos.find(m => m && !m.classList.contains('hidden'));
   if (modalAbierto) {
+    // Esperamos un frame para que el padre ya haya aplicado el nuevo alto del iframe
+    // antes de pedirle que centre el scroll en el popup.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         window.parent.postMessage({ tipo: 'asistencias-centrar' }, '*');
@@ -1278,18 +1927,25 @@ const modalObserver = new MutationObserver(() => {
     });
   }
 });
-modalesTodos.forEach(m => { if (m) modalObserver.observe(m, { attributes: true, attributeFilter: ['class'] }); });
-
-document.addEventListener('click', (e) => {
-  const el = e.target.closest('input[type="date"]');
-  if (el && typeof el.showPicker === 'function') {
-    try { el.showPicker(); } catch (err) { /* ya estaba abierto o no soportado */ }
-  }
+modalesTodos.forEach(m => {
+  if (m) modalObserver.observe(m, { attributes: true, attributeFilter: ['class'] });
 });
+
+// Fuerza el selector nativo de fecha con un click (por si el ícono no
+// responde en algún navegador/versión de escritorio).
+function habilitarPickerNativo(input) {
+  if (!input) return;
+  input.addEventListener('click', () => {
+    if (typeof input.showPicker === 'function') {
+      try { input.showPicker(); } catch (e) { /* requiere gesto directo del usuario; si falla, no rompe nada */ }
+    }
+  });
+}
+[inputFecha, claseNuevaFecha, reporteFecha].forEach(habilitarPickerNativo);
 
 cargarDatosServidor();
 window.addEventListener('load', avisarAltura);
-setInterval(cargarDatosServidor, 20000);
+setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros de otras personas
 </script>
 
 </body>

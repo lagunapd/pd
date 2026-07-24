@@ -229,6 +229,7 @@
     }
     .count-mobile.count-verde { color: var(--green); }
     .count-mobile.count-amarillo { color: var(--yellow); }
+    .count-mobile.count-procedimientos { color: #4d9fff; }
     td.col-verde, td.col-amarillo { width: 58px; text-align: center; }
   }
   #customTooltip {
@@ -551,7 +552,7 @@
 </table>
 
 <div class="note">
-  Pasá el mouse sobre cualquier punto 🟢, 🟡 o 🛡️ para ver quién lo registró, en qué fecha, turno e instructor. El 🛡️ marca específicamente la clase de Procedimientos cumplida (en vez del punto verde genérico). Los que llegan a 6 clases <b>incluyendo Procedimientos</b> se marcan en verde y suben al principio de la lista — la clase de Procedimientos es obligatoria y solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 6 clases con la de Procedimientos incluida. Al guardar la evaluación (apruebe o repruebe), la persona pasa a la lista de Tenientes y se elimina automáticamente de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
+  Pasá el mouse sobre cualquier punto 🟢, 🟡 o 🛡️ para ver quién lo registró, en qué fecha, turno e instructor. El 🛡️ marca específicamente la clase de Procedimientos cumplida (en vez del punto verde genérico). Los que llegan a 6 clases <b>incluyendo Procedimientos</b> se marcan en verde y suben al principio de la lista — la clase de Procedimientos es obligatoria y solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 6 clases con la de Procedimientos incluida. Al guardar la evaluación: si <b>reprueba</b>, se queda en Asistencias y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Tenientes (con el rango de Tenientes asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
 </div>
 
 <!-- Modal 1: código de registrador -->
@@ -891,7 +892,7 @@ function render() {
       <td class="nombre-cell" data-nombre="${escapeAttr(a.nombre)}">${escapeHtml(a.nombre)}${top ? '<span class="badge-lista">✔ LISTO PARA EVALUAR</span>' : ''}</td>
       <td class="num col-verde">
         <span class="dots-desktop">${dotsFor(a, 'verde', '🟢')}</span>
-        <span class="count-mobile count-verde">${verdesDe(a)}</span>
+        <span class="count-mobile ${tieneProcedimientos(a) ? 'count-procedimientos' : 'count-verde'}">${verdesDe(a)}</span>
       </td>
       <td class="num col-amarillo">
         <span class="dots-desktop">${dotsFor(a, 'amarillo', '🟡')}</span>
@@ -1769,46 +1770,33 @@ btnGuardarEvaluacion.addEventListener('click', async () => {
   evaluacionError.textContent = '';
   btnGuardarEvaluacion.disabled = true;
   btnGuardarEvaluacion.textContent = 'Enviando...';
+  const nombreEvaluado = personaEditando;
   try {
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        recurso: 'tenientes',
-        agregarIntento: {
-          nombre: personaEditando,
+        evaluarAscenso: {
+          nombre: nombreEvaluado,
           resultado: resultadoEvaluacion,
           evaluador: evaluacionEvaluador.value,
           observaciones: evaluacionObservaciones.value.trim(),
           fecha: hoyISO(),
-          soloRegistrar: true,
         },
       }),
     });
     if (!resp.ok) throw new Error(await errorDe(resp));
-    await resp.json();
-
-    // La persona ya pasó a Tenientes (apruebe o repruebe): ahora se elimina
-    // de la lista de asistencias, porque ya no pertenece acá.
-    const nombreEnviado = personaEditando;
-    try {
-      const respDelete = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ delete: { nombre: nombreEnviado } }),
-      });
-      if (respDelete.ok) aplicarEstado(await respDelete.json());
-    } catch (e2) {
-      // Si falla el borrado, igual la evaluación ya quedó guardada en
-      // Tenientes; un refresco posterior va a mostrar la inconsistencia y
-      // se puede eliminar a mano desde el modo edición.
-    }
+    aplicarEstado(await resp.json());
 
     servidorConectado = true;
     render();
     cerrarModalEvaluacion();
     cerrarModalEditar();
-    alert(`${nombreEnviado} fue evaluado/a y pasó a la lista de Tenientes (se eliminó de Asistencias).`);
+    if (resultadoEvaluacion === 'aprobado') {
+      alert(`${nombreEvaluado} fue aprobado/a y pasó a la lista de Tenientes (con el rango de Tenientes asignado automáticamente).`);
+    } else {
+      alert(`${nombreEvaluado} fue reprobado/a: se queda en Asistencias y se le puede volver a evaluar más adelante.`);
+    }
   } catch (e) {
     evaluacionError.textContent = e && e.message ? e.message : 'No se pudo enviar la evaluación. Intentá de nuevo.';
   } finally {
