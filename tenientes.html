@@ -1561,12 +1561,13 @@ function renderClasesLista(editable) {
 function abrirModalEditar() {
   const persona = tenientes.find(a => a.nombre.toLowerCase() === personaEditando.toLowerCase());
   clasesLocal = persona ? persona.registros.slice() : [];
+  const rangoTexto = (persona && persona.rango) || '—';
 
   const editable = modoEdicionActivo;
   clasesTitulo.textContent = editable ? `Editar clases de ${personaEditando}` : `Clases de ${personaEditando}`;
   editarInfo.innerHTML = editable
-    ? `Administrador: <b>${escapeHtml(editorActual)}</b>`
-    : `Historial de clases (solo lectura).`;
+    ? `Administrador: <b>${escapeHtml(editorActual)}</b> · Rango: <b>${escapeHtml(rangoTexto)}</b>`
+    : `Historial de clases (solo lectura) · Rango: <b>${escapeHtml(rangoTexto)}</b>`;
   editarError.textContent = '';
 
   clasesAgregarRow.classList.toggle('hidden', !editable);
