@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lista de Capitanes — WSPD</title>
+<title>Lista de Mayores — WSPD</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -195,7 +195,7 @@
     letter-spacing: 0.02em;
   }
   .col-eliminar { display: none; }
-  #tablaCapitanes.modo-edicion .col-eliminar { display: table-cell; }
+  #tablaMayores.modo-edicion .col-eliminar { display: table-cell; }
   .btn-eliminar-fila {
     color: var(--red);
     font-weight: 700;
@@ -479,7 +479,7 @@
 </head>
 <body>
 
-<h1>🎖️ Lista de Capitanes</h1>
+<h1>🎖️ Lista de Mayores</h1>
 <div class="subtitle">Departamento de Policía de Laguna</div>
 
 <div class="accion-bar">
@@ -537,7 +537,7 @@
 </div>
 
 <div class="count" id="count"></div>
-<table id="tablaCapitanes">
+<table id="tablaMayores">
   <thead>
     <tr>
       <th class="rank">#</th>
@@ -552,7 +552,7 @@
 </table>
 
 <div class="note">
-  Pasá el mouse sobre cualquier punto 🟢, 🟡 o 🛡️ para ver quién lo registró, en qué fecha, turno e instructor. El 🛡️ marca específicamente la clase de Procedimientos cumplida (en vez del punto verde genérico). Los que llegan a 3 clases <b>incluyendo Procedimientos</b> se marcan en verde y suben al principio de la lista — la clase de Procedimientos es obligatoria y solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases con la de Procedimientos incluida (y tiene el rango de Capitán asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Mayores (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
+  Pasá el mouse sobre cualquier punto 🟢, 🟡 o 🛡️ para ver quién lo registró, en qué fecha, turno e instructor. El 🛡️ marca específicamente la clase de Procedimientos cumplida (en vez del punto verde genérico). Mayor es el rango más alto armado por ahora (todavía no hay un rango siguiente configurado), así que acá no hay botón de evaluación — esta lista es solo para llevar el registro de clases de quienes ya llegaron a Mayor. Los que llegan a 3 clases <b>incluyendo Procedimientos</b> se marcan en verde y suben al principio de la lista — la clase de Procedimientos sigue siendo obligatoria y solo la pueden registrar evaluadores o administradores. Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". El botón "📄 Generar Reporte" descarga un archivo de texto con la lista completa ordenada por cantidad de clases.
 </div>
 
 <!-- Modal 1: código de registrador -->
@@ -687,7 +687,7 @@
     <div class="modal-actions modal-actions-split" id="clasesAccionesEdicion">
       <div class="modal-actions-left">
         <button class="btn btn-peligro" id="btnEliminarRegistro">🗑 Eliminar Registro</button>
-        <button class="btn btn-evaluacion" id="btnAbrirEvaluacion">📝 Evaluación</button>
+        <button class="btn btn-evaluacion hidden" id="btnAbrirEvaluacion">📝 Evaluación</button>
       </div>
       <div class="modal-actions-right">
         <button class="btn btn-secundario" id="btnCancelarEditar">Cancelar</button>
@@ -695,7 +695,7 @@
       </div>
     </div>
     <div class="modal-actions" id="clasesAccionesVista">
-      <button class="btn btn-evaluacion" id="btnEvaluarVista">📝 Evaluación</button>
+      <button class="btn btn-evaluacion hidden" id="btnEvaluarVista">📝 Evaluación</button>
       <button class="btn btn-secundario" id="btnCerrarVistaClases">Cerrar</button>
     </div>
   </div>
@@ -773,23 +773,23 @@ function opcionesEvaluadorAsistencia(seleccionado, restringir) {
   return NOMBRES_EVALUADORES.map(n => `<option value="${escapeAttr(n)}" ${n === seleccionado ? 'selected' : ''}>${n}</option>`).join('');
 }
 
-const STORAGE_KEY = 'wspd_capitanes_v1'; // ya no se usa para guardar, solo como respaldo local si el servidor falla
+const STORAGE_KEY = 'wspd_mayores_v1'; // ya no se usa para guardar, solo como respaldo local si el servidor falla
 
 // ⚠️ Reemplazá esto por la URL de tu Worker (ver SETUP.md)
 const API_URL = "https://asistencia-lagunapd.popj951203.workers.dev/";
 
-let capitanes = []; // se llena SOLO desde el servidor (KV) — no hay siembra automática
+let mayores = []; // se llena SOLO desde el servidor (KV) — no hay siembra automática
 let servidorConectado = false;
 let ultimaActualizacion = null; // ISO que manda el servidor (hora real de la última escritura)
 
 // Normaliza la respuesta del Worker: soporta tanto el formato nuevo
-// { capitanes, ultimaActualizacion } como, por las dudas, un array pelado.
+// { mayores, ultimaActualizacion } como, por las dudas, un array pelado.
 function aplicarEstado(data) {
-  if (data && Array.isArray(data.capitanes)) {
-    capitanes = data.capitanes;
+  if (data && Array.isArray(data.mayores)) {
+    mayores = data.mayores;
     if (data.ultimaActualizacion) ultimaActualizacion = data.ultimaActualizacion;
   } else if (Array.isArray(data)) {
-    capitanes = data;
+    mayores = data;
   }
 }
 
@@ -804,18 +804,18 @@ async function errorDe(resp) {
 
 async function cargarDatosServidor() {
   if (!API_URL || API_URL.includes('PEGA_AQUI')) {
-    console.warn('Falta configurar API_URL en capitanes.html — usando datos locales sin guardar.');
+    console.warn('Falta configurar API_URL en mayores.html — usando datos locales sin guardar.');
     servidorConectado = false;
     render();
     return;
   }
   try {
-    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=capitanes', { method: 'GET' });
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=mayores', { method: 'GET' });
     if (!resp.ok) throw new Error(await errorDe(resp));
     aplicarEstado(await resp.json());
     servidorConectado = true;
   } catch (e) {
-    console.error('No se pudo conectar con el servidor de capitanes:', e);
+    console.error('No se pudo conectar con el servidor de mayores:', e);
     servidorConectado = false;
   }
   render();
@@ -829,7 +829,7 @@ function fmtPuntos(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
 function tieneProcedimientos(p) { return p.registros.some(r => r.turno === TURNO_PROCEDIMIENTOS); }
 // Cumple los requisitos para evaluar: 3 clases (o más), una de ellas
 // sea la clase de Procedimientos (es obligatoria, no alcanza con las otras).
-function cumpleRequisitos(p) { return puntos(p) >= 3 && tieneProcedimientos(p) && p.rango === 'Capitanes'; }
+function cumpleRequisitos(p) { return puntos(p) >= 3 && tieneProcedimientos(p); } // Mayor es el techo: no hace falta chequear rango siguiente
 function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 function escapeHtml(s) { return escapeAttr(s); }
 
@@ -867,7 +867,7 @@ const countEl = document.getElementById('count');
 function render() {
   document.getElementById('bannerOffline').classList.toggle('visible', !servidorConectado);
   const q = search.value.trim().toLowerCase();
-  const filtered = capitanes.filter(a => !q || a.nombre.toLowerCase().includes(q));
+  const filtered = mayores.filter(a => !q || a.nombre.toLowerCase().includes(q));
 
   const sortFn = orden.value === 'puntos'
     ? (a, b) => puntos(b) - puntos(a) || a.nombre.localeCompare(b.nombre, 'es')
@@ -880,7 +880,7 @@ function render() {
   countEl.innerHTML = `<span>${filtered.length} persona${filtered.length !== 1 ? 's' : ''}</span><span>${fmtUltimaActualizacion()}</span>`;
 
   if (ordenados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-msg">${capitanes.length === 0 ? 'Todavía no hay nadie en la lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-msg">${mayores.length === 0 ? 'Todavía no hay nadie en la lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
     return;
   }
 
@@ -985,7 +985,7 @@ function hoyISO() {
 }
 
 function poblarListaNombres() {
-  listaNombres.innerHTML = capitanes
+  listaNombres.innerHTML = mayores
     .slice()
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
     .map(a => `<option value="${escapeAttr(a.nombre)}">`)
@@ -1105,7 +1105,7 @@ btnConfirmarRegistro.addEventListener('click', async () => {
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recurso: 'capitanes', entries }),
+      body: JSON.stringify({ recurso: 'mayores', entries }),
     });
     if (!resp.ok) throw new Error(await errorDe(resp));
     aplicarEstado(await resp.json());
@@ -1134,7 +1134,7 @@ const modoEdicionBadge = document.getElementById('modoEdicionBadge');
 const modoEdicionNombre = document.getElementById('modoEdicionNombre');
 const btnAbrirEdicionGlobal = document.getElementById('btnAbrirEdicionGlobal');
 const btnGenerarReporte = document.getElementById('btnGenerarReporte');
-const tablaAsistencias = document.getElementById('tablaCapitanes');
+const tablaAsistencias = document.getElementById('tablaMayores');
 
 function activarModoEdicion(nombreAdmin) {
   modoEdicionActivo = true;
@@ -1202,11 +1202,11 @@ async function eliminarPersona(nombre) {
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recurso: 'capitanes', delete: { nombre, registrador: editorActual } }),
+      body: JSON.stringify({ recurso: 'mayores', delete: { nombre, registrador: editorActual } }),
     });
     if (!resp.ok) throw new Error(await errorDe(resp));
     const data = await resp.json();
-    const lista = Array.isArray(data) ? data : (Array.isArray(data.capitanes) ? data.capitanes : []);
+    const lista = Array.isArray(data) ? data : (Array.isArray(data.mayores) ? data.mayores : []);
     const sigueExistiendo = lista.some(p => p.nombre.toLowerCase() === nombre.toLowerCase());
     if (sigueExistiendo) {
       alert('El servidor no eliminó a la persona. Es probable que falte volver a desplegar worker.js en Cloudflare (Edit code → pegar el archivo actualizado → Deploy).');
@@ -1281,7 +1281,7 @@ function generarReporte() {
   const inactivos = [];
   const resto = [];
 
-  capitanes.forEach(p => {
+  mayores.forEach(p => {
     if (cumpleRequisitos(p)) { completaron.push(p); return; }
     if (puntos(p) >= 2 && !tieneProcedimientos(p)) { faltaProcedimientos.push(p); return; }
     const ultima = ultimaClaseDe(p);
@@ -1296,7 +1296,7 @@ function generarReporte() {
   resto.sort((a, b) => puntos(b) - puntos(a) || alfa(a, b));
 
   const lineas = [];
-  lineas.push('REPORTE DE CAPITANES — LAGUNA PD');
+  lineas.push('REPORTE DE MAYORES — LAGUNA PD');
   lineas.push(`Generado: ${ahora.toLocaleDateString('es-AR')} ${ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
   lineas.push('');
 
@@ -1338,7 +1338,7 @@ function generarReporte() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `reporte-capitanes-${ahora.toISOString().slice(0, 10)}.txt`;
+  a.download = `reporte-mayores-${ahora.toISOString().slice(0, 10)}.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1395,7 +1395,7 @@ document.getElementById('btnGenerarReporte').addEventListener('click', abrirModa
 
 function generarReporteEspecifico(fecha, turno) {
   const asistentes = [];
-  capitanes.forEach(p => {
+  mayores.forEach(p => {
     p.registros.forEach(r => {
       if (r.fecha === fecha && r.turno === turno) {
         asistentes.push({ nombre: p.nombre, tipo: r.tipo, instructor: r.instructor || '—' });
@@ -1412,7 +1412,7 @@ function generarReporteEspecifico(fecha, turno) {
 
   const ahora = new Date();
   const lineas = [];
-  lineas.push('REPORTE DE CLASE ESPECÍFICA — CAPITANES, LAGUNA PD');
+  lineas.push('REPORTE DE CLASE ESPECÍFICA — MAYORES, LAGUNA PD');
   lineas.push(`Generado: ${ahora.toLocaleDateString('es-AR')} ${ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
   lineas.push(`Fecha de la clase: ${fecha}`);
   lineas.push(`Turno: ${turno}`);
@@ -1492,31 +1492,17 @@ function opcionesInstructor(seleccionado, restringir) {
 }
 
 function actualizarBotonEvaluacion() {
-  const personaLocal = { registros: clasesLocal };
-  const puntosActuales = puntos(personaLocal);
-  const tieneProc = tieneProcedimientos(personaLocal);
-  const personaReal = capitanes.find(p => p.nombre.toLowerCase() === (personaEditando || '').toLowerCase());
-  const esRangoCorrecto = !personaReal || personaReal.rango === 'Capitanes'; // por si el rango ya se cambió a mano
-  const cumple = puntosActuales >= 3 && tieneProc && esRangoCorrecto;
-  let tituloBoton = '';
-  if (!cumple) {
-    if (!esRangoCorrecto) {
-      tituloBoton = `Esta persona no tiene el rango de Capitanes (tiene "${personaReal.rango || '—'}"), no se puede evaluar acá.`;
-    } else if (puntosActuales < 3 && !tieneProc) {
-      tituloBoton = `Necesita 3 clases (lleva ${fmtPuntos(puntosActuales)}) y la clase de Procedimientos para poder evaluar.`;
-    } else if (puntosActuales < 3) {
-      tituloBoton = `Necesita 3 clases para poder evaluar (lleva ${fmtPuntos(puntosActuales)}).`;
-    } else {
-      tituloBoton = 'Le falta la clase de Procedimientos para poder evaluar.';
-    }
-  }
+  // Mayor es el rango más alto armado por ahora: no hay un rango siguiente
+  // configurado, así que acá no existe la acción de evaluar para ascender.
   if (btnAbrirEvaluacion) {
-    btnAbrirEvaluacion.disabled = !cumple;
-    btnAbrirEvaluacion.title = tituloBoton;
+    btnAbrirEvaluacion.disabled = true;
+    btnAbrirEvaluacion.classList.add('hidden');
+    btnAbrirEvaluacion.title = 'Mayor es el rango más alto por ahora: no hay evaluación de ascenso acá.';
   }
   if (btnEvaluarVista) {
-    btnEvaluarVista.disabled = !cumple;
-    btnEvaluarVista.title = tituloBoton;
+    btnEvaluarVista.disabled = true;
+    btnEvaluarVista.classList.add('hidden');
+    btnEvaluarVista.title = 'Mayor es el rango más alto por ahora: no hay evaluación de ascenso acá.';
   }
 }
 
@@ -1559,7 +1545,7 @@ function renderClasesLista(editable) {
 }
 
 function abrirModalEditar() {
-  const persona = capitanes.find(a => a.nombre.toLowerCase() === personaEditando.toLowerCase());
+  const persona = mayores.find(a => a.nombre.toLowerCase() === personaEditando.toLowerCase());
   clasesLocal = persona ? persona.registros.slice() : [];
   const rangoTexto = (persona && persona.rango) || '—';
 
@@ -1781,7 +1767,7 @@ btnGuardarEvaluacion.addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        recurso: 'capitanes',
+        recurso: 'mayores',
         evaluarAscenso: {
           nombre: nombreEvaluado,
           resultado: resultadoEvaluacion,
@@ -1801,7 +1787,7 @@ btnGuardarEvaluacion.addEventListener('click', async () => {
     if (resultadoEvaluacion === 'aprobado') {
       alert(`${nombreEvaluado} fue aprobado/a y pasó a la lista de Mayores (con el rango de Mayores asignado automáticamente).`);
     } else {
-      alert(`${nombreEvaluado} fue reprobado/a: se queda en Capitanes y se le puede volver a evaluar más adelante.`);
+      alert(`${nombreEvaluado} fue reprobado/a: se queda en Mayores y se le puede volver a evaluar más adelante.`);
     }
   } catch (e) {
     evaluacionError.textContent = e && e.message ? e.message : 'No se pudo enviar la evaluación. Intentá de nuevo.';
@@ -1829,7 +1815,7 @@ btnGuardarEditar.addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        recurso: 'capitanes',
+        recurso: 'mayores',
         edit: {
           nombre: personaEditando,
           nombreNuevo: nombreNuevo,

@@ -1171,9 +1171,7 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Drak Reem</div>
           <div class="turno-row"><b>Auxiliar:</b> Eliel Martinez</div>
-          <div class="turno-row turno-days"><b>Martes:</b> 📚 Módulo C</div>
-          <div class="turno-row turno-days"><b>Miércoles:</b> 📚 Módulo B</div>
-          <div class="turno-row turno-days"><b>Viernes:</b> 📚 Módulo C</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
           <div class="turno-time">🎯 RECLUTAMIENTO</div>
@@ -1186,9 +1184,7 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Goliat Carwley(Excepto Viernes)</div>
           <div class="turno-row"><b>Auxiliar:</b> -</div>
-          <div class="turno-row turno-days"><b>Martes:</b> 📚 Módulo A</div>
-          <div class="turno-row turno-days"><b>Miércoles:</b> 📚 Módulo A</div>
-          <div class="turno-row turno-days"><b>Viernes:</b> 📚 Módulo A</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
           <div class="turno-time">🎯 RECLUTAMIENTO</div>
@@ -1201,9 +1197,7 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Axo Velasco</div>
           <div class="turno-row"><b>Auxiliar:</b> —</div>
-          <div class="turno-row turno-days"><b>Martes:</b> 📚 Módulo A</div>
-          <div class="turno-row turno-days"><b>Miércoles:</b> 📚 Módulo A</div>
-          <div class="turno-row turno-days"><b>Viernes:</b> 📚 Módulo A</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card" data-map="sala-revista">
           <div class="turno-time">🕑 CUARTA CLASE</div>
@@ -1211,9 +1205,7 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Lilith Black</div>
           <div class="turno-row"><b>Auxiliar:</b> Sr Chakalito</div>
-          <div class="turno-row turno-days"><b>Martes:</b> 📚 Módulo D</div>
-          <div class="turno-row turno-days"><b>Miércoles:</b> 📚 Módulo C</div>
-          <div class="turno-row turno-days"><b>Viernes:</b> 📚 Módulo D</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card" data-map="sala-revista">
           <div class="turno-time">🕔 QUINTA CLASE</div>
@@ -1221,9 +1213,7 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Por Definir</div>
           <div class="turno-row"><b>Auxiliar:</b> —</div>
-          <div class="turno-row turno-days"><b>Martes:</b> Por Definir</div>
-          <div class="turno-row turno-days"><b>Miércoles:</b> Por Definir</div>
-          <div class="turno-row turno-days"><b>Viernes:</b> Por Definir</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
       </div>
       <div class="academia-updated" id="academiaUpdated">Última actualización: 18 de julio de 2026 · 01:00 hrs</div>
@@ -1263,6 +1253,10 @@ body.mapa-fullscreen .academia-placeholder {
             <div class="roster-role">Evaluadores</div>
             <div class="roster-names" id="rosterEvaluadores">—</div>
           </div>
+          <div class="roster-group">
+            <div class="roster-role">Miembros a Prueba</div>
+            <div class="roster-names">Joyce Blaxland</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1274,6 +1268,12 @@ body.mapa-fullscreen .academia-placeholder {
 
     <div class="academia-map" id="academiaAttendance">
       <button class="map-back-btn" id="closeAttendanceBtn">← VOLVER</button>
+      <div class="evaluaciones-tabs">
+        <button class="eval-tab active" data-lista="asistencias.html">Asistencias</button>
+        <button class="eval-tab" data-lista="tenientes.html">Tenientes</button>
+        <button class="eval-tab" data-lista="capitanes.html">Capitanes</button>
+        <button class="eval-tab" data-lista="mayores.html">Mayores</button>
+      </div>
       <div class="map-frame attendance-frame">
         <iframe src="asistencias.html" class="attendance-iframe"></iframe>
       </div>
@@ -1281,12 +1281,8 @@ body.mapa-fullscreen .academia-placeholder {
 
     <div class="academia-map" id="academiaEvaluaciones">
       <button class="map-back-btn" id="closeEvaluacionesBtn">← VOLVER</button>
-      <div class="evaluaciones-tabs">
-        <button class="eval-tab active" data-rango="tenientes.html">Tenientes</button>
-        <button class="eval-tab" data-rango="capitanes.html">Capitanes</button>
-      </div>
       <div class="map-frame attendance-frame">
-        <iframe src="tenientes.html" class="evaluaciones-iframe"></iframe>
+        <iframe src="evaluaciones.html" class="evaluaciones-iframe"></iframe>
       </div>
     </div>
   </div>
@@ -1776,7 +1772,7 @@ const macroSearch = document.getElementById('macroSearch');
 const macroCountEl = document.getElementById('macroCount');
 
 // ---- "¿Cómo agregar macros?" — video de ayuda (placeholder por ahora) ----
-const MACRO_HELP_VIDEO_URL = "https://www.youtube.com/embed/0000Up5vJ1Hryk"; // TODO: reemplazar por el video real cuando esté listo
+const MACRO_HELP_VIDEO_URL = "https://www.youtube.com/embed/0Up5vJ1Hryk"; // TODO: reemplazar por el video real cuando esté listo
 const btnComoAgregarMacros = document.getElementById('btnComoAgregarMacros');
 const macroHelpPanel = document.getElementById('macroHelpPanel');
 const macroHelpFrame = document.querySelector('.macro-help-frame');
@@ -1998,19 +1994,20 @@ closeMapBtn.addEventListener('click', () => {
   document.body.classList.remove('mapa-fullscreen');
 });
 
-/* ---- Lista de asistencias (iframe) ---- */
+/* ---- Lista de asistencias (iframe con pestañas Asistencias/Tenientes/Capitanes/Mayores) ---- */
 const academiaAttendance = document.getElementById('academiaAttendance');
 const closeAttendanceBtn = document.getElementById('closeAttendanceBtn');
 const attendanceIframe = document.querySelector('.attendance-iframe');
+const listaTabs = document.querySelectorAll('#academiaAttendance .eval-tab');
 const academiaTwoCol = document.querySelector('.academia-two-col');
 
 function ocultarPanelesAcademia() {
   academiaSchedule.style.display = 'none';
   if (academiaTwoCol) academiaTwoCol.style.display = 'none';
   // Se oculta el sello de fondo de Academia acá: cada lista (asistencias,
-  // tenientes, capitanes) ya trae su propio sello de fondo, y si se dejan
-  // los dos activos a la vez se superponen y queda sucio, sobre todo
-  // cuando la lista tiene pocas filas y no llega a cubrirlo del todo.
+  // tenientes, capitanes, mayores) ya trae su propio sello de fondo, y si
+  // se dejan los dos activos a la vez se superponen y queda sucio, sobre
+  // todo cuando la lista tiene pocas filas y no llega a cubrirlo del todo.
   if (academiaBg) academiaBg.style.display = 'none';
 }
 function mostrarGridAcademia() {
@@ -2034,11 +2031,19 @@ closeAttendanceBtn.addEventListener('click', () => {
   mostrarGridAcademia();
 });
 
-/* ---- Evaluaciones por rango (iframe con pestañas Tenientes/Capitanes) ---- */
+listaTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    if (tab.classList.contains('active')) return;
+    listaTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    attendanceIframe.src = tab.dataset.lista;
+  });
+});
+
+/* ---- Evaluaciones (visor único de solo lectura) ---- */
 const academiaEvaluaciones = document.getElementById('academiaEvaluaciones');
 const closeEvaluacionesBtn = document.getElementById('closeEvaluacionesBtn');
 const evaluacionesIframe = document.querySelector('.evaluaciones-iframe');
-const evalTabs = document.querySelectorAll('.eval-tab');
 
 function openEvaluaciones() {
   academiaAttendance.classList.remove('active');
@@ -2053,15 +2058,6 @@ document.querySelectorAll('.turno-card[data-action="evaluaciones"]').forEach(car
 closeEvaluacionesBtn.addEventListener('click', () => {
   academiaEvaluaciones.classList.remove('active');
   mostrarGridAcademia();
-});
-
-evalTabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    if (tab.classList.contains('active')) return;
-    evalTabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    evaluacionesIframe.src = tab.dataset.rango;
-  });
 });
 
 // Los iframes de asistencias.html / tenientes.html / capitanes.html avisan su
