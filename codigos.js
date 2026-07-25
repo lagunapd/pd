@@ -25,7 +25,6 @@ const CODIGOS = {
   "1232e": { nombre: "Eliel Martinez", rol: "instructor" },
   "1234m": { nombre: "Moises Medez", rol: "instructor" },
   "1238j": { nombre: "Jacobo Vargas", rol: "instructor" },
-  "1235j": { nombre: "Joyce Blaxland", rol: "instructor" },
 };
 
 // No hace falta tocar nada de acá para abajo.
