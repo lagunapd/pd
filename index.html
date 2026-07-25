@@ -783,11 +783,16 @@ h1 {
     0 0 8px rgba(167,139,250,0.25);
 }
 .temario-card {
-  border-color: rgba(139, 143, 154, 0.4);
-  border-style: dashed;
+  border-color: rgba(212, 146, 42, 0.5);
 }
 .temario-card .turno-time {
-  color: var(--muted);
+  color: var(--accent);
+}
+.temario-card:hover {
+  box-shadow:
+    inset 0 0 0 1px rgba(212,146,42,0.5),
+    inset 0 0 14px rgba(212,146,42,0.15),
+    0 0 8px rgba(212,146,42,0.25);
 }
 .academia-two-col {
   position: relative;
@@ -829,6 +834,53 @@ h1 {
 }
 .roster-names {
   font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+.temario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 700px) {
+  .temario-grid { grid-template-columns: 1fr; }
+}
+.modulo-card {
+  background: rgba(26, 29, 36, 0.55);
+  backdrop-filter: blur(3px);
+  border: 1px solid rgba(212,146,42,0.35);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  padding: 16px 18px;
+}
+.modulo-letra {
+  display: inline-block;
+  font-family: 'Bebas Neue', -apple-system, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 2px 10px;
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+.modulo-titulo {
+  font-family: 'Bebas Neue', -apple-system, sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  color: var(--accent2);
+  margin-bottom: 10px;
+}
+.modulo-objetivo-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.modulo-objetivo-texto {
+  font-size: 0.85rem;
   color: var(--text);
   line-height: 1.5;
 }
@@ -1170,10 +1222,8 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Hora:</b> 17:00 - 19:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Drak Reem</div>
-          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Martes:</b>⚖️ Modulo C</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>💬 Modulo B</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>⚖️ Modulo C</div>
+          <div class="turno-row"><b>Auxiliar:</b> Eliel Martinez</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
           <div class="turno-time">🎯 RECLUTAMIENTO</div>
@@ -1184,11 +1234,9 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-time">🕗 SEGUNDA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 20:00 - 22:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Jacobo Vargas</div>
-          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Martes:</b>📜 Modulo A</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>📜 Modulo A</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>📜 Modulo A</div>
+          <div class="turno-row"><b>Instructor:</b> Goliat Carwley(Excepto Viernes)</div>
+          <div class="turno-row"><b>Auxiliar:</b> -</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
           <div class="turno-time">🎯 RECLUTAMIENTO</div>
@@ -1199,11 +1247,9 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-time">🕚 TERCERA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 23:00 - 01:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Goliat Crawley</div>
-          <div class="turno-row"><b>Auxiliar:</b> Axo Velasco</div>
-          <div class="turno-row turno-days"><b>Martes:</b>📜 Modulo A</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>📜 Modulo A</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>📜 Modulo A</div>
+          <div class="turno-row"><b>Instructor:</b> Axo Velasco</div>
+          <div class="turno-row"><b>Auxiliar:</b> —</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card" data-map="sala-revista">
           <div class="turno-time">🕑 CUARTA CLASE</div>
@@ -1211,22 +1257,18 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Lilith Black</div>
           <div class="turno-row"><b>Auxiliar:</b> Sr Chakalito</div>
-          <div class="turno-row turno-days"><b>Martes:</b>🛡️ Modulo D</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>🛡️ Modulo D</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>🛡️ Modulo D</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
         <div class="turno-card" data-map="sala-revista">
           <div class="turno-time">🕔 QUINTA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 05:00 - 07:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b>🚨 Por Definir</div>
-          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Martes:</b>🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>🚨 Por Definir</div>
+          <div class="turno-row"><b>Instructor:</b> Por Definir</div>
+          <div class="turno-row"><b>Auxiliar:</b> —</div>
+          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
         </div>
       </div>
-      <div class="academia-updated" id="academiaUpdated">Última actualización: 25 de julio de 2026 · 00:40 hrs</div>
+      <div class="academia-updated" id="academiaUpdated">Última actualización: 18 de julio de 2026 · 01:00 hrs</div>
     </div>
 
     <div class="academia-two-col">
@@ -1239,9 +1281,9 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-time">🎖️ EVALUACIONES</div>
           <div class="turno-row">Ver resultados de evaluaciones por rango (Tenientes, Capitanes)</div>
         </div>
-        <div class="turno-card temario-card">
+        <div class="turno-card temario-card" data-action="temario">
           <div class="turno-time">📚 TEMARIO</div>
-          <div class="turno-row">Contenido a definir.</div>
+          <div class="turno-row">Ver los módulos de la Academia (A, B, C y D)</div>
         </div>
       </div>
       <div class="academia-col-right">
@@ -1262,6 +1304,10 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="roster-group">
             <div class="roster-role">Evaluadores</div>
             <div class="roster-names" id="rosterEvaluadores">—</div>
+          </div>
+          <div class="roster-group">
+            <div class="roster-role">Miembros a Prueba</div>
+            <div class="roster-names">Joyce Blaxland</div>
           </div>
         </div>
       </div>
@@ -1289,6 +1335,36 @@ body.mapa-fullscreen .academia-placeholder {
       <button class="map-back-btn" id="closeEvaluacionesBtn">← VOLVER</button>
       <div class="map-frame attendance-frame">
         <iframe src="evaluaciones.html" class="evaluaciones-iframe"></iframe>
+      </div>
+    </div>
+
+    <div class="academia-map" id="academiaTemario">
+      <button class="map-back-btn" id="closeTemarioBtn">← VOLVER</button>
+      <div class="temario-grid">
+        <div class="modulo-card">
+          <div class="modulo-letra">MÓDULO A</div>
+          <div class="modulo-titulo">Reglas básicas de recluta y reglas del departamento de policía</div>
+          <div class="modulo-objetivo-label">🎯 Objetivo del módulo</div>
+          <div class="modulo-objetivo-texto">Brindar los conocimientos básicos sobre las 15 reglas de la facción policía, establecidas por la administración del servidor, y las normas fundamentales de la Comisaría de Policía, asegurando que comprendan y apliquen correctamente estos lineamientos durante su formación y servicio.</div>
+        </div>
+        <div class="modulo-card">
+          <div class="modulo-letra">MÓDULO B</div>
+          <div class="modulo-titulo">Las Reglas del RolePlay</div>
+          <div class="modulo-objetivo-label">🎯 Objetivo del módulo</div>
+          <div class="modulo-objetivo-texto">Brindar a los reclutas los conocimientos esenciales sobre las 16 reglas de Roleplay, indispensables para todo jugador dentro del servidor, así como identificar y comprender el funcionamiento de las zonas protegidas y zonas verdes, con el fin de prevenir sanciones y fomentar un roleplay de calidad.</div>
+        </div>
+        <div class="modulo-card">
+          <div class="modulo-letra">MÓDULO C</div>
+          <div class="modulo-titulo">Infracciones y delitos</div>
+          <div class="modulo-objetivo-label">🎯 Objetivo del módulo</div>
+          <div class="modulo-objetivo-texto">Explicar a los reclutas los tres grupos de infracciones: penales, civiles y administrativas, identificando las conductas que comprende cada una y las sanciones correspondientes. Asimismo, se abordará el trato adecuado hacia miembros de otras facciones, pandilleros y civiles, conforme a los protocolos de la Comisaría de Policía.</div>
+        </div>
+        <div class="modulo-card">
+          <div class="modulo-letra">MÓDULO D</div>
+          <div class="modulo-titulo">Procedimientos</div>
+          <div class="modulo-objetivo-label">🎯 Objetivo del módulo</div>
+          <div class="modulo-objetivo-texto">Aprender las herramientas fundamentales para desempeñar correctamente la labor como oficial. Se explica el procedimiento de arresto paso a paso, el uso adecuado de la Bodycam como medio de evidencia, así como cuándo y cómo abrir un ticket para reportar situaciones que requieran la intervención de la administración. Dominar estos procedimientos garantiza actuaciones profesionales, transparentes y conforme a la normativa del servidor.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -2024,6 +2100,7 @@ function mostrarGridAcademia() {
 
 function openAttendance() {
   academiaEvaluaciones.classList.remove('active');
+  academiaTemario.classList.remove('active');
   ocultarPanelesAcademia();
   academiaAttendance.classList.add('active');
 }
@@ -2053,6 +2130,7 @@ const evaluacionesIframe = document.querySelector('.evaluaciones-iframe');
 
 function openEvaluaciones() {
   academiaAttendance.classList.remove('active');
+  academiaTemario.classList.remove('active');
   ocultarPanelesAcademia();
   academiaEvaluaciones.classList.add('active');
 }
@@ -2063,6 +2141,26 @@ document.querySelectorAll('.turno-card[data-action="evaluaciones"]').forEach(car
 
 closeEvaluacionesBtn.addEventListener('click', () => {
   academiaEvaluaciones.classList.remove('active');
+  mostrarGridAcademia();
+});
+
+/* ---- Temario (4 módulos, contenido estático) ---- */
+const academiaTemario = document.getElementById('academiaTemario');
+const closeTemarioBtn = document.getElementById('closeTemarioBtn');
+
+function openTemario() {
+  academiaAttendance.classList.remove('active');
+  academiaEvaluaciones.classList.remove('active');
+  ocultarPanelesAcademia();
+  academiaTemario.classList.add('active');
+}
+
+document.querySelectorAll('.turno-card[data-action="temario"]').forEach(card => {
+  card.addEventListener('click', openTemario);
+});
+
+closeTemarioBtn.addEventListener('click', () => {
+  academiaTemario.classList.remove('active');
   mostrarGridAcademia();
 });
 
@@ -2097,6 +2195,7 @@ window.addEventListener('message', e => {
   <p>No afiliado ni respaldado oficialmente por ChillGaming, Ltd.</p>
   <p>Las imágenes y recursos visuales utilizados pertenecen a sus respectivos propietarios y se muestran únicamente con fines informativos y comunitarios.</p>
   <p>Última actualización: Julio 2026</p>
+  <p><a href="admin.html" style="color:var(--muted); font-size:0.75rem;">⚙️ Panel de administración</a></p>
 </footer>
 
 </body>

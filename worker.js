@@ -15,6 +15,7 @@
 //   POST / { recurso:"tenientes", edit: {...} }              -> edita/renombra (admin)
 //   POST / { recurso:"tenientes", delete: {...} }            -> elimina (admin)
 //   POST / { recurso:"tenientes", evaluarAscenso: {...} }    -> evalúa para el rango siguiente
+//   POST / { recurso:"tenientes", cambiarRango: {...} }      -> cambia el rango a mano (panel de administración)
 //
 // Recursos disponibles: "asistencias", "tenientes", "capitanes", "mayores".
 // Mayores es el techo por ahora (no tiene rango siguiente configurado), así
@@ -200,6 +201,9 @@ async function manejarListaClases(request, env, payload, recurso) {
     }
     if (!persona.rango) persona.rango = config.rangoDefault;
     if (!Array.isArray(persona.historialEvaluaciones)) persona.historialEvaluaciones = [];
+    // El rango normalmente no se toca acá — solo lo usa el panel de
+    // administración para asignarlo a mano al dar de alta a alguien.
+    if (payload.edit.rango) persona.rango = String(payload.edit.rango).trim() || persona.rango;
 
     const registrosNuevos = Array.isArray(payload.edit.registros)
       ? payload.edit.registros.map((r) => {
@@ -229,6 +233,18 @@ async function manejarListaClases(request, env, payload, recurso) {
     }
     const actual = await cargarLista(env, config.kvKey, recurso);
     return json({ [recurso]: actual.lista, ultimaActualizacion: actual.ultimaActualizacion });
+  }
+
+  // ---- cambiar rango a mano (solo lo usa el panel de administración) ----
+  if (payload.cambiarRango && payload.cambiarRango.nombre) {
+    const nombreLimpio = String(payload.cambiarRango.nombre).trim();
+    const idx = lista.findIndex((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
+    if (idx === -1) return json({ error: "No se encontró a esa persona en esta lista." }, 404);
+    const rangoNuevo = String(payload.cambiarRango.rangoNuevo || "").trim();
+    if (!rangoNuevo) return json({ error: "Falta el rango nuevo." }, 400);
+    lista[idx].rango = rangoNuevo;
+    const estado = await guardarLista(env, config.kvKey, recurso, lista);
+    return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
   }
 
   // ---- evaluarAscenso: evalúa para el rango siguiente ----
