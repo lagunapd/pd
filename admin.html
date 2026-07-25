@@ -735,10 +735,7 @@ function validarGate() {
 document.getElementById('btnEntrar').addEventListener('click', validarGate);
 inputCodigoAdmin.addEventListener('keydown', e => { if (e.key === 'Enter') validarGate(); });
 document.getElementById('btnSalirAdmin').addEventListener('click', () => {
-  panelContenido.classList.add('hidden');
-  gatePanel.classList.remove('hidden');
-  inputCodigoAdmin.value = '';
-  gateError.textContent = '';
+  window.location.href = 'index.html';
 });
 
 function iniciarPanel() {
