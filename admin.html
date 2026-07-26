@@ -559,6 +559,21 @@
   }
   .admin-resumen-num { font-size: 1.5rem; font-weight: 700; color: var(--accent2); }
   .admin-resumen-label { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); }
+  .btn-tab {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 7px 16px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .btn-tab.active {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #14161b;
+    font-weight: 600;
+  }
 </style>
 </head>
 <body>
@@ -612,9 +627,9 @@
         <label>Rango nuevo</label>
         <select id="rangoNuevo">
           <option value="Uniformado">Uniformado</option>
-          <option value="Tenientes">Tenientes</option>
-          <option value="Capitanes">Capitanes</option>
-          <option value="Mayores">Mayores</option>
+          <option value="Teniente">Teniente</option>
+          <option value="Capitán">Capitán</option>
+          <option value="Mayor">Mayor</option>
         </select>
       </div>
       <button class="btn btn-primario" id="btnCambiarRango">Cambiar rango</button>
@@ -659,7 +674,14 @@
     <h2>📊 Reportes combinados</h2>
     <div class="admin-row">
       <button class="btn btn-secundario" id="btnCargarReporte">🔄 Cargar / actualizar</button>
-      <button class="btn btn-primario" id="btnDescargarReporteCombinado">⬇️ Descargar reporte combinado</button>
+      <button class="btn btn-primario" id="btnDescargarReporte">⬇️ Descargar reporte de esta pestaña</button>
+    </div>
+    <div class="admin-row" id="reporteTabs">
+      <button class="btn btn-tab active" data-tab="todos">Todos</button>
+      <button class="btn btn-tab" data-tab="asistencias">Uniformado</button>
+      <button class="btn btn-tab" data-tab="tenientes">Teniente</button>
+      <button class="btn btn-tab" data-tab="capitanes">Capitán</button>
+      <button class="btn btn-tab" data-tab="mayores">Mayor</button>
     </div>
     <div id="reporteResumen"></div>
     <table class="admin-tabla" id="tablaReporte">
@@ -668,12 +690,53 @@
     </table>
   </section>
 </div>
+
+<div class="modal-overlay hidden" id="modalPersona">
+  <div class="modal-box modal-box-lg">
+    <h2 id="personaTitulo">Editar persona</h2>
+    <div class="modal-sub" id="personaInfo"></div>
+
+    <div class="admin-row">
+      <div class="admin-field" style="flex:1">
+        <label>Nombre</label>
+        <input type="text" id="personaNombre">
+      </div>
+      <div class="admin-field">
+        <label>Rango</label>
+        <select id="personaRango">
+          <option value="Uniformado">Uniformado</option>
+          <option value="Teniente">Teniente</option>
+          <option value="Capitán">Capitán</option>
+          <option value="Mayor">Mayor</option>
+        </select>
+      </div>
+    </div>
+
+    <table class="admin-tabla" id="tablaPersonaClases">
+      <thead><tr><th>Fecha</th><th>Turno</th><th>Instructor</th><th>Tipo</th><th style="width:40px"></th></tr></thead>
+      <tbody id="personaClasesBody"></tbody>
+    </table>
+    <div class="admin-row">
+      <button class="btn btn-secundario" id="btnAgregarClasePersona">+ Agregar clase</button>
+    </div>
+
+    <div class="admin-msg" id="personaMsg"></div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="btn btn-peligro" id="btnEliminarPersonaModal">🗑 Eliminar persona</button>
+      <div>
+        <button class="btn btn-secundario" id="btnCerrarPersona">Cancelar</button>
+        <button class="btn btn-primario" id="btnGuardarPersona">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="codigos.js"></script>
 <script>
 // ⚠️ Mismo Worker que el resto del sitio.
 const API_URL = "https://asistencia-lagunapd.popj951203.workers.dev/";
 const LISTAS = ['asistencias', 'tenientes', 'capitanes', 'mayores'];
-const RANGOS = { asistencias: 'Uniformado', tenientes: 'Tenientes', capitanes: 'Capitanes', mayores: 'Mayores' };
+const RANGOS = { asistencias: 'Uniformado', tenientes: 'Teniente', capitanes: 'Capitán', mayores: 'Mayor' };
+const TURNOS_CLASE = ["Primera Clase", "Segunda Clase", "Tercera Clase", "Cuarta Clase", "Quinta Clase", "Procedimientos"];
 
 function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 function escapeHtml(s) { return escapeAttr(s); }
@@ -750,11 +813,7 @@ async function validarGate() {
 document.getElementById('btnEntrar').addEventListener('click', validarGate);
 inputCodigoAdmin.addEventListener('keydown', e => { if (e.key === 'Enter') validarGate(); });
 document.getElementById('btnSalirAdmin').addEventListener('click', () => {
-  panelContenido.classList.add('hidden');
-  gatePanel.classList.remove('hidden');
-  inputCodigoAdmin.value = '';
-  gateError.textContent = '';
-  codigoAdminActual = null;
+  window.location.href = 'index.html';
 });
 
 function iniciarPanel() {
@@ -980,20 +1039,30 @@ function tieneProcedimientosDe(p) {
   return regs.some(r => r.turno === 'Procedimientos');
 }
 
+let todasLasPersonas = [];
+let tabActivo = 'todos';
+
 async function cargarReporteCombinado() {
   const resumen = document.getElementById('reporteResumen');
   const body = document.getElementById('reporteBody');
   resumen.innerHTML = 'Cargando...';
   body.innerHTML = '';
 
-  const todas = [];
+  todasLasPersonas = [];
   for (const recurso of LISTAS) {
     let lista = [];
     try { lista = await fetchLista(recurso); } catch (e) { lista = []; }
     personasPorLista[recurso] = lista;
-    for (const p of lista) todas.push({ ...p, lista: recurso });
+    for (const p of lista) todasLasPersonas.push({ ...p, lista: recurso });
   }
   actualizarDatalists();
+  renderReporte();
+  return todasLasPersonas;
+}
+
+function renderReporte() {
+  const resumen = document.getElementById('reporteResumen');
+  const body = document.getElementById('reporteBody');
 
   resumen.innerHTML = LISTAS.map(r => `
     <div class="admin-resumen-card">
@@ -1002,32 +1071,51 @@ async function cargarReporteCombinado() {
     </div>
   `).join('');
 
-  todas.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-  body.innerHTML = todas.length
-    ? todas.map(p => `
+  const filtradas = (tabActivo === 'todos' ? todasLasPersonas : todasLasPersonas.filter(p => p.lista === tabActivo))
+    .slice()
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+  body.innerHTML = filtradas.length
+    ? filtradas.map(p => `
       <tr>
-        <td>${escapeHtml(p.nombre)}</td>
+        <td class="nombre-cell" data-nombre="${escapeAttr(p.nombre)}" data-lista="${p.lista}">${escapeHtml(p.nombre)}</td>
         <td>${p.lista}</td>
         <td>${escapeHtml(p.rango || '—')}</td>
         <td class="num">${puntosDe(p)}</td>
         <td>${tieneProcedimientosDe(p) ? '🛡️ Sí' : '—'}</td>
       </tr>
     `).join('')
-    : '<tr><td colspan="5"><div class="empty-msg">Todavía no hay nadie cargado.</div></td></tr>';
-
-  return todas;
+    : '<tr><td colspan="5"><div class="empty-msg">Todavía no hay nadie en esta pestaña.</div></td></tr>';
 }
 
 document.getElementById('btnCargarReporte').addEventListener('click', cargarReporteCombinado);
 
-document.getElementById('btnDescargarReporteCombinado').addEventListener('click', async () => {
-  const todas = await cargarReporteCombinado();
+document.querySelectorAll('#reporteTabs .btn-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#reporteTabs .btn-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    tabActivo = tab.dataset.tab;
+    renderReporte();
+  });
+});
+
+document.getElementById('reporteBody').addEventListener('click', e => {
+  const celda = e.target.closest('.nombre-cell');
+  if (!celda) return;
+  abrirModalPersona(celda.dataset.lista, celda.dataset.nombre);
+});
+
+document.getElementById('btnDescargarReporte').addEventListener('click', async () => {
+  if (!todasLasPersonas.length) await cargarReporteCombinado();
   const ahora = new Date();
   const lineas = [];
-  lineas.push('REPORTE COMBINADO — DEPARTAMENTO DE POLICÍA DE LAGUNA');
+  const esTodos = tabActivo === 'todos';
+  lineas.push(esTodos ? 'REPORTE COMBINADO — DEPARTAMENTO DE POLICÍA DE LAGUNA' : `REPORTE — ${RANGOS[tabActivo].toUpperCase()} — DEPARTAMENTO DE POLICÍA DE LAGUNA`);
   lineas.push(`Generado: ${ahora.toLocaleDateString('es-AR')} ${ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
   lineas.push('');
-  for (const recurso of LISTAS) {
+
+  const recursosAIncluir = esTodos ? LISTAS : [tabActivo];
+  for (const recurso of recursosAIncluir) {
     const gente = personasPorLista[recurso];
     lineas.push('====================================');
     lineas.push(`${RANGOS[recurso].toUpperCase()} (${gente.length})`);
@@ -1044,12 +1132,153 @@ document.getElementById('btnDescargarReporteCombinado').addEventListener('click'
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `reporte-combinado-${ahora.toISOString().slice(0, 10)}.txt`;
+  a.download = esTodos
+    ? `reporte-combinado-${ahora.toISOString().slice(0, 10)}.txt`
+    : `reporte-${tabActivo}-${ahora.toISOString().slice(0, 10)}.txt`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
 });
+
+/* ============================================================
+   Editar persona individual (clic en el nombre, como en asistencias.html)
+   ============================================================ */
+const modalPersona = document.getElementById('modalPersona');
+const personaTitulo = document.getElementById('personaTitulo');
+const personaInfo = document.getElementById('personaInfo');
+const personaNombre = document.getElementById('personaNombre');
+const personaRango = document.getElementById('personaRango');
+const personaClasesBody = document.getElementById('personaClasesBody');
+const personaMsg = document.getElementById('personaMsg');
+let personaListaActual = null;
+let personaNombreOriginal = null;
+let personaClasesLocal = [];
+
+function opcionesTurnoAdmin(seleccionado) {
+  return TURNOS_CLASE.map(t => `<option value="${escapeAttr(t)}" ${t === seleccionado ? 'selected' : ''}>${t}</option>`).join('');
+}
+
+function renderClasesPersona() {
+  personaClasesBody.innerHTML = personaClasesLocal.length
+    ? personaClasesLocal.map((r, i) => `
+      <tr>
+        <td><input type="date" class="clase-fecha" data-idx="${i}" value="${r.fecha && r.fecha !== '—' ? escapeAttr(r.fecha) : ''}"></td>
+        <td><select class="clase-turno" data-idx="${i}">${opcionesTurnoAdmin(r.turno)}</select></td>
+        <td><input type="text" class="clase-instructor" data-idx="${i}" value="${escapeAttr(r.instructor || '')}"></td>
+        <td>
+          <select class="clase-tipo" data-idx="${i}">
+            <option value="verde" ${r.tipo === 'verde' ? 'selected' : ''}>🟢 Verde</option>
+            <option value="amarillo" ${r.tipo === 'amarillo' ? 'selected' : ''}>🟡 Amarillo</option>
+          </select>
+        </td>
+        <td><span class="quitar" data-idx="${i}" style="cursor:pointer;color:var(--red);">✕</span></td>
+      </tr>
+    `).join('')
+    : '<tr><td colspan="5"><div class="empty-msg">Todavía no tiene clases registradas.</div></td></tr>';
+}
+
+personaClasesBody.addEventListener('input', e => {
+  const idx = Number(e.target.dataset.idx);
+  if (Number.isNaN(idx)) return;
+  if (e.target.classList.contains('clase-fecha')) personaClasesLocal[idx].fecha = e.target.value || '—';
+  if (e.target.classList.contains('clase-instructor')) personaClasesLocal[idx].instructor = e.target.value;
+});
+personaClasesBody.addEventListener('change', e => {
+  const idx = Number(e.target.dataset.idx);
+  if (Number.isNaN(idx)) return;
+  if (e.target.classList.contains('clase-turno')) personaClasesLocal[idx].turno = e.target.value;
+  if (e.target.classList.contains('clase-tipo')) personaClasesLocal[idx].tipo = e.target.value;
+});
+personaClasesBody.addEventListener('click', e => {
+  const btn = e.target.closest('.quitar');
+  if (!btn) return;
+  personaClasesLocal.splice(Number(btn.dataset.idx), 1);
+  renderClasesPersona();
+});
+
+document.getElementById('btnAgregarClasePersona').addEventListener('click', () => {
+  personaClasesLocal.push({ tipo: 'verde', fecha: hoyISO(), turno: TURNOS_CLASE[0], instructor: '', registrador: `Panel de administración (${adminNombre.textContent})` });
+  renderClasesPersona();
+});
+
+function hoyISO() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function abrirModalPersona(lista, nombre) {
+  const p = (personasPorLista[lista] || []).find(x => x.nombre.toLowerCase() === nombre.toLowerCase());
+  if (!p) return;
+  personaListaActual = lista;
+  personaNombreOriginal = p.nombre;
+  personaTitulo.textContent = `Editar a ${p.nombre}`;
+  personaInfo.innerHTML = `Lista: <b>${lista}</b>`;
+  personaNombre.value = p.nombre;
+  personaRango.value = p.rango || RANGOS[lista];
+  personaClasesLocal = Array.isArray(p.registros) ? p.registros.map(r => ({ ...r })) : [];
+  personaMsg.textContent = '';
+  renderClasesPersona();
+  modalPersona.classList.remove('hidden');
+}
+function cerrarModalPersona() {
+  modalPersona.classList.add('hidden');
+}
+document.getElementById('btnCerrarPersona').addEventListener('click', cerrarModalPersona);
+modalPersona.addEventListener('click', e => { if (e.target === modalPersona) cerrarModalPersona(); });
+
+document.getElementById('btnGuardarPersona').addEventListener('click', async () => {
+  const nombreNuevo = personaNombre.value.trim();
+  if (!nombreNuevo) {
+    personaMsg.textContent = 'El nombre no puede quedar vacío.';
+    personaMsg.className = 'admin-msg error';
+    return;
+  }
+  personaMsg.textContent = 'Guardando...';
+  personaMsg.className = 'admin-msg';
+  try {
+    await postAccion(personaListaActual, {
+      edit: {
+        nombre: personaNombreOriginal,
+        nombreNuevo,
+        rango: personaRango.value,
+        registros: personaClasesLocal,
+        registrador: `Panel de administración (${adminNombre.textContent})`,
+      },
+    });
+    personaMsg.textContent = 'Guardado.';
+    personaMsg.className = 'admin-msg ok';
+    personasPorLista[personaListaActual] = await fetchLista(personaListaActual);
+    actualizarDatalists();
+    todasLasPersonas = todasLasPersonas.filter(p => p.lista !== personaListaActual)
+      .concat(personasPorLista[personaListaActual].map(p => ({ ...p, lista: personaListaActual })));
+    renderReporte();
+    setTimeout(cerrarModalPersona, 500);
+  } catch (e) {
+    personaMsg.textContent = e && e.message ? e.message : 'No se pudo guardar.';
+    personaMsg.className = 'admin-msg error';
+  }
+});
+
+document.getElementById('btnEliminarPersonaModal').addEventListener('click', async () => {
+  if (!confirm(`¿Seguro que querés eliminar a "${personaNombreOriginal}" de la lista de ${personaListaActual}? No se puede deshacer.`)) return;
+  personaMsg.textContent = 'Eliminando...';
+  personaMsg.className = 'admin-msg';
+  try {
+    await postAccion(personaListaActual, { delete: { nombre: personaNombreOriginal } });
+    personasPorLista[personaListaActual] = await fetchLista(personaListaActual);
+    actualizarDatalists();
+    todasLasPersonas = todasLasPersonas.filter(p => !(p.lista === personaListaActual && p.nombre.toLowerCase() === personaNombreOriginal.toLowerCase()));
+    renderReporte();
+    cerrarModalPersona();
+  } catch (e) {
+    personaMsg.textContent = e && e.message ? e.message : 'No se pudo eliminar.';
+    personaMsg.className = 'admin-msg error';
+  }
+});
 </script>
 </body>
 </html>
+

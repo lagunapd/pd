@@ -862,7 +862,7 @@ function fmtPuntos(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
 function tieneProcedimientos(p) { return p.registros.some(r => r.turno === TURNO_PROCEDIMIENTOS); }
 // Cumple los requisitos para evaluar: 3 clases (o más), una de ellas
 // sea la clase de Procedimientos (es obligatoria, no alcanza con las otras).
-function cumpleRequisitos(p) { return puntos(p) >= 3 && tieneProcedimientos(p) && p.rango === 'Tenientes'; }
+function cumpleRequisitos(p) { return puntos(p) >= 3 && tieneProcedimientos(p) && p.rango === 'Teniente'; }
 function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 function escapeHtml(s) { return escapeAttr(s); }
 
@@ -1535,12 +1535,12 @@ function actualizarBotonEvaluacion() {
   const puntosActuales = puntos(personaLocal);
   const tieneProc = tieneProcedimientos(personaLocal);
   const personaReal = tenientes.find(p => p.nombre.toLowerCase() === (personaEditando || '').toLowerCase());
-  const esRangoTenientes = !personaReal || personaReal.rango === 'Tenientes'; // por si el rango ya se cambió a mano
+  const esRangoTenientes = !personaReal || personaReal.rango === 'Teniente'; // por si el rango ya se cambió a mano
   const cumple = puntosActuales >= 3 && tieneProc && esRangoTenientes;
   let tituloBoton = '';
   if (!cumple) {
     if (!esRangoTenientes) {
-      tituloBoton = `Esta persona no tiene el rango de Tenientes (tiene "${personaReal.rango || '—'}"), no se puede evaluar acá.`;
+      tituloBoton = `Esta persona no tiene el rango de Teniente (tiene "${personaReal.rango || '—'}"), no se puede evaluar acá.`;
     } else if (puntosActuales < 3 && !tieneProc) {
       tituloBoton = `Necesita 3 clases (lleva ${fmtPuntos(puntosActuales)}) y la clase de Procedimientos para poder evaluar.`;
     } else if (puntosActuales < 3) {
@@ -1841,7 +1841,7 @@ btnGuardarEvaluacion.addEventListener('click', async () => {
     cerrarModalEvaluacion();
     cerrarModalEditar();
     if (resultadoEvaluacion === 'aprobado') {
-      alert(`${nombreEvaluado} fue aprobado/a y pasó a la lista de Capitanes (con el rango de Capitanes asignado automáticamente).`);
+      alert(`${nombreEvaluado} fue aprobado/a y pasó a la lista de Capitanes (con el rango de Capitán asignado automáticamente).`);
     } else {
       alert(`${nombreEvaluado} fue reprobado/a: se queda en Tenientes y se le puede volver a evaluar más adelante.`);
     }

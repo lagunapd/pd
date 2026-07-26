@@ -227,21 +227,21 @@ const LISTAS_CLASES = {
   asistencias: {
     kvKey: KV_KEY_ASISTENCIAS,
     rangoDefault: "Uniformado",
-    siguiente: { recurso: "tenientes", rango: "Tenientes" },
+    siguiente: { recurso: "tenientes", rango: "Teniente" },
   },
   tenientes: {
     kvKey: "tenientes",
-    rangoDefault: "Tenientes",
-    siguiente: { recurso: "capitanes", rango: "Capitanes" },
+    rangoDefault: "Teniente",
+    siguiente: { recurso: "capitanes", rango: "Capitán" },
   },
   capitanes: {
     kvKey: "capitanes",
-    rangoDefault: "Capitanes",
-    siguiente: { recurso: "mayores", rango: "Mayores" },
+    rangoDefault: "Capitán",
+    siguiente: { recurso: "mayores", rango: "Mayor" },
   },
   mayores: {
     kvKey: "mayores",
-    rangoDefault: "Mayores",
+    rangoDefault: "Mayor",
     siguiente: null, // techo por ahora: acá no hay evaluarAscenso
   },
 };
