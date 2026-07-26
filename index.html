@@ -837,6 +837,39 @@ h1 {
   color: var(--text);
   line-height: 1.5;
 }
+.roster-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 480px) {
+  .roster-columns { grid-template-columns: 1fr; }
+}
+.roster-admin-row {
+  margin-top: 18px;
+  text-align: center;
+}
+.btn-admin-link {
+  display: inline-block;
+  background: linear-gradient(180deg, #5b6b82, #414f63);
+  border: 1px solid rgba(148,163,184,0.55);
+  color: #e8ecf1;
+  font-family: 'Bebas Neue', -apple-system, sans-serif;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  padding: 10px 24px;
+  border-radius: 4px;
+  text-decoration: none;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.btn-admin-link:hover {
+  filter: brightness(1.15);
+}
+.btn-admin-link:active {
+  transform: translateY(1px);
+}
 .temario-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1222,8 +1255,10 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Hora:</b> 17:00 - 19:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Drak Reem</div>
-          <div class="turno-row"><b>Auxiliar:</b> Eliel Martinez</div>
-          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
+          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
+          <div class="turno-row turno-days"><b>Martes:</b>⚖️ Modulo C</div>
+          <div class="turno-row turno-days"><b>Miercoles:</b>💬 Modulo B</div>
+          <div class="turno-row turno-days"><b>Viernes:</b>⚖️ Modulo C</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
           <div class="turno-time">🎯 RECLUTAMIENTO</div>
@@ -1234,9 +1269,11 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-time">🕗 SEGUNDA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 20:00 - 22:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Goliat Carwley(Excepto Viernes)</div>
-          <div class="turno-row"><b>Auxiliar:</b> -</div>
-          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
+          <div class="turno-row"><b>Instructor:</b> Jacobo Vargas</div>
+          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
+          <div class="turno-row turno-days"><b>Martes:</b>📜 Modulo A</div>
+          <div class="turno-row turno-days"><b>Miercoles:</b>📜 Modulo A</div>
+          <div class="turno-row turno-days"><b>Viernes:</b>📜 Modulo A</div>
         </div>
         <div class="turno-card recruit-card" data-map="vestidores">
           <div class="turno-time">🎯 RECLUTAMIENTO</div>
@@ -1247,9 +1284,11 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-time">🕚 TERCERA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 23:00 - 01:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Axo Velasco</div>
-          <div class="turno-row"><b>Auxiliar:</b> —</div>
-          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
+          <div class="turno-row"><b>Instructor:</b> Goliat Crawley</div>
+          <div class="turno-row"><b>Auxiliar:</b> Axo Velasco</div>
+          <div class="turno-row turno-days"><b>Martes:</b>📜 Modulo A</div>
+          <div class="turno-row turno-days"><b>Miercoles:</b>📜 Modulo A</div>
+          <div class="turno-row turno-days"><b>Viernes:</b>📜 Modulo A</div>
         </div>
         <div class="turno-card" data-map="sala-revista">
           <div class="turno-time">🕑 CUARTA CLASE</div>
@@ -1257,18 +1296,22 @@ body.mapa-fullscreen .academia-placeholder {
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
           <div class="turno-row"><b>Instructor:</b> Lilith Black</div>
           <div class="turno-row"><b>Auxiliar:</b> Sr Chakalito</div>
-          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
+          <div class="turno-row turno-days"><b>Martes:</b>🛡️ Modulo D</div>
+          <div class="turno-row turno-days"><b>Miercoles:</b>🛡️ Modulo D</div>
+          <div class="turno-row turno-days"><b>Viernes:</b>🛡️ Modulo D</div>
         </div>
         <div class="turno-card" data-map="sala-revista">
           <div class="turno-time">🕔 QUINTA CLASE</div>
           <div class="turno-row"><b>Hora:</b> 05:00 - 07:00</div>
           <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Por Definir</div>
-          <div class="turno-row"><b>Auxiliar:</b> —</div>
-          <div class="turno-row turno-days"><b>Días:</b> Martes, Miercoles, Viernes</div>
+          <div class="turno-row"><b>Instructor:</b>🚨 Por Definir</div>
+          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
+          <div class="turno-row turno-days"><b>Martes:</b>🚨 Por Definir</div>
+          <div class="turno-row turno-days"><b>Miercoles:</b>🚨 Por Definir</div>
+          <div class="turno-row turno-days"><b>Viernes:</b>🚨 Por Definir</div>
         </div>
       </div>
-      <div class="academia-updated" id="academiaUpdated">Última actualización: 18 de julio de 2026 · 01:00 hrs</div>
+      <div class="academia-updated" id="academiaUpdated">Última actualización: 25 de julio de 2026 · 00:40 hrs</div>
     </div>
 
     <div class="academia-two-col">
@@ -1289,25 +1332,32 @@ body.mapa-fullscreen .academia-placeholder {
       <div class="academia-col-right">
         <div class="roster-card">
           <div class="roster-title">Miembros de la Academia Policial</div>
-          <div class="roster-group">
-            <div class="roster-role">Líder</div>
-            <div class="roster-names">Lilith Black</div>
+          <div class="roster-columns">
+            <div class="roster-col">
+              <div class="roster-group">
+                <div class="roster-role">Líder</div>
+                <div class="roster-names">Lilith Black</div>
+              </div>
+              <div class="roster-group">
+                <div class="roster-role">Sublíder(es)</div>
+                <div class="roster-names">Drak Reem</div>
+              </div>
+            </div>
+            <div class="roster-col">
+              <div class="roster-group">
+                <div class="roster-role">Instructores</div>
+                <div class="roster-names" id="rosterInstructores">—</div>
+              </div>
+            </div>
+            <div class="roster-col">
+              <div class="roster-group">
+                <div class="roster-role">Evaluadores</div>
+                <div class="roster-names" id="rosterEvaluadores">—</div>
+              </div>
+            </div>
           </div>
-          <div class="roster-group">
-            <div class="roster-role">Sublíder(es)</div>
-            <div class="roster-names">Drak Reem</div>
-          </div>
-          <div class="roster-group">
-            <div class="roster-role">Instructores</div>
-            <div class="roster-names" id="rosterInstructores">—</div>
-          </div>
-          <div class="roster-group">
-            <div class="roster-role">Evaluadores</div>
-            <div class="roster-names" id="rosterEvaluadores">—</div>
-          </div>
-          <div class="roster-group">
-            <div class="roster-role">Miembros a Prueba</div>
-            <div class="roster-names">Joyce Blaxland</div>
+          <div class="roster-admin-row">
+            <a href="admin.html" class="btn-admin-link">⚙️ Administración</a>
           </div>
         </div>
       </div>
@@ -1871,28 +1921,49 @@ btnComoAgregarMacros.addEventListener('click', () => {
 });
 
 // ---- Códigos con rol (desbloquean las Macros de Instrucción) ----
-// Vienen de codigos.js (cargado antes que este script): CODIGOS,
-// NIVELES_ROL y rolAlcanza son los mismos que usan asistencias.html,
-// tenientes.html y capitanes.html. Cualquier código de rol instructor,
-// evaluador o administrador desbloquea.
+// Ya no viven en ningún archivo: viven en el KV del Worker y se piden en
+// vivo. NIVELES_ROL/rolAlcanza siguen viniendo de codigos.js (no son
+// sensibles, es solo la comparación de niveles).
+const API_URL = "https://asistencia-lagunapd.popj951203.workers.dev/";
 let instruccionDesbloqueada = false;
 const SUB_INSTRUCCION = "Macros de Instrucción";
 
-// ---- Roster de Instructores/Evaluadores (se llena solo desde codigos.js) ----
+async function validarCodigoEnServidor(codigo) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recurso: 'codigos', accion: 'validar', codigo }),
+  });
+  if (!resp.ok) {
+    let msg = 'Código incorrecto.';
+    try { const b = await resp.json(); if (b && b.error) msg = b.error; } catch (e) { /* no era JSON */ }
+    throw new Error(msg);
+  }
+  return await resp.json(); // { nombre, rol }
+}
+
+// ---- Roster de Instructores/Evaluadores (se llena solo desde el Worker) ----
 // Nota: "Evaluadores" acá muestra solo a quienes tienen ese rol exacto (no
 // a los administradores, que ya figuran arriba como Líder/Sublíder), para
 // no repetir nombres en dos categorías a la vez.
-(function poblarRosterAcademia() {
+async function poblarRosterAcademia() {
   const rosterInstructoresEl = document.getElementById('rosterInstructores');
   const rosterEvaluadoresEl = document.getElementById('rosterEvaluadores');
-  if (rosterInstructoresEl) {
-    rosterInstructoresEl.textContent = NOMBRES_INSTRUCTORES.length ? NOMBRES_INSTRUCTORES.join(' • ') : '—';
-  }
-  if (rosterEvaluadoresEl) {
-    const soloEvaluadores = Object.values(CODIGOS).filter(u => u.rol === 'evaluador').map(u => u.nombre);
-    rosterEvaluadoresEl.textContent = soloEvaluadores.length ? soloEvaluadores.join(' • ') : '—';
-  }
-})();
+  try {
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=codigos', { method: 'GET' });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (rosterInstructoresEl) {
+      const instructores = Array.isArray(data.instructores) ? data.instructores : [];
+      rosterInstructoresEl.textContent = instructores.length ? instructores.join(' • ') : '—';
+    }
+    if (rosterEvaluadoresEl) {
+      const soloEvaluadores = Array.isArray(data.soloEvaluadores) ? data.soloEvaluadores : [];
+      rosterEvaluadoresEl.textContent = soloEvaluadores.length ? soloEvaluadores.join(' • ') : '—';
+    }
+  } catch (e) { /* deja los guiones, no rompe nada */ }
+}
+poblarRosterAcademia();
 
 function renderMacros() {
   const q = macroSearch.value.trim().toLowerCase();
@@ -1951,17 +2022,26 @@ function cerrarModalInstructor() {
   instructorModalOverlay.classList.add('hidden');
 }
 
-function confirmarCodigoInstructor() {
+async function confirmarCodigoInstructor() {
   const codigo = instructorCodeInput.value.trim();
-  const usuario = CODIGOS[codigo];
-  if (usuario && rolAlcanza(usuario.rol, 'instructor')) {
-    instruccionDesbloqueada = true;
-    cerrarModalInstructor();
-    renderMacros();
-  } else {
-    instructorModalError.textContent = 'Código incorrecto.';
+  btnConfirmarInstructorCodigo.disabled = true;
+  try {
+    const usuario = await validarCodigoEnServidor(codigo);
+    if (usuario && rolAlcanza(usuario.rol, 'instructor')) {
+      instruccionDesbloqueada = true;
+      cerrarModalInstructor();
+      renderMacros();
+    } else {
+      instructorModalError.textContent = 'Código incorrecto.';
+      instructorCodeInput.value = '';
+      instructorCodeInput.focus();
+    }
+  } catch (e) {
+    instructorModalError.textContent = e && e.message ? e.message : 'Código incorrecto.';
     instructorCodeInput.value = '';
     instructorCodeInput.focus();
+  } finally {
+    btnConfirmarInstructorCodigo.disabled = false;
   }
 }
 
@@ -2195,7 +2275,6 @@ window.addEventListener('message', e => {
   <p>No afiliado ni respaldado oficialmente por ChillGaming, Ltd.</p>
   <p>Las imágenes y recursos visuales utilizados pertenecen a sus respectivos propietarios y se muestran únicamente con fines informativos y comunitarios.</p>
   <p>Última actualización: Julio 2026</p>
-  <p><a href="admin.html" style="color:var(--muted); font-size:0.75rem;">⚙️ Panel de administración</a></p>
 </footer>
 
 </body>

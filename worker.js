@@ -23,6 +23,26 @@
 
 const KV_KEY_ASISTENCIAS = "asistencias";
 const KV_KEY_EVALUACIONES = "evaluaciones"; // legacy, ya no lo usa nada activo
+const KV_KEY_CODIGOS = "codigos_acceso";
+
+// Semilla inicial: solo se usa la primera vez, si todavía no hay nada
+// guardado en el KV bajo KV_KEY_CODIGOS. Después de esa primera vez, el KV
+// manda siempre — esto ya no se vuelve a leer. Se puede seguir editando
+// todo desde el panel de administración (admin.html).
+const CODIGOS_SEED = {
+  "1203d": { nombre: "Drak Reem", rol: "administrador" },
+  "5678l": { nombre: "Lilith Velarys", rol: "administrador" },
+  "1237c": { nombre: "Sr Chakalito", rol: "instructor" },
+  "1236a": { nombre: "Axo Velasco", rol: "instructor" },
+  "1235j": { nombre: "Joyce Blaxland", rol: "instructor" },
+  "1234m": { nombre: "Moises Medez", rol: "instructor" },
+  "1232e": { nombre: "Eliel Martinez", rol: "instructor" },
+  "1231g": { nombre: "Goliat Crawley", rol: "instructor" },
+};
+const NIVELES_ROL = { instructor: 1, evaluador: 2, administrador: 3 };
+function rolAlcanza(rolActual, rolRequerido) {
+  return (NIVELES_ROL[rolActual] || 0) >= (NIVELES_ROL[rolRequerido] || 99);
+}
 
 // Por seguridad, cambiá esto por tu dominio real de GitHub Pages una vez
 // que lo tengas andando, ej: "https://tuusuario.github.io"
@@ -90,6 +110,77 @@ async function guardarLista(env, kvKey, campoLista, lista) {
   };
   await env.ASISTENCIAS_KV.put(kvKey, JSON.stringify(estado));
   return estado;
+}
+
+// ==================== códigos de acceso (en el KV, no en el repo) ====================
+async function cargarCodigos(env) {
+  const raw = await env.ASISTENCIAS_KV.get(KV_KEY_CODIGOS);
+  if (!raw) return { ...CODIGOS_SEED };
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : { ...CODIGOS_SEED };
+  } catch (e) {
+    return { ...CODIGOS_SEED };
+  }
+}
+
+async function guardarCodigos(env, codigos) {
+  await env.ASISTENCIAS_KV.put(KV_KEY_CODIGOS, JSON.stringify(codigos));
+}
+
+function nombresDeCodigos(codigos) {
+  const todos = Object.values(codigos).map((u) => u.nombre);
+  const instructores = Object.values(codigos).filter((u) => u.rol === "instructor").map((u) => u.nombre);
+  const evaluadores = Object.values(codigos).filter((u) => rolAlcanza(u.rol, "evaluador")).map((u) => u.nombre);
+  const soloEvaluadores = Object.values(codigos).filter((u) => u.rol === "evaluador").map((u) => u.nombre);
+  return { todos, instructores, evaluadores, soloEvaluadores };
+}
+
+// recurso "codigos": maneja el acceso (validar código) y el panel de
+// administración (listar/guardar). Nunca le manda al cliente el mapa
+// completo de códigos salvo que el código con el que pide sea de
+// administrador (para eso está la acción "listar").
+async function manejarCodigos(request, env, payload) {
+  const codigos = await cargarCodigos(env);
+
+  if (request.method === "GET" || payload.accion === "nombres") {
+    // Público: solo nombres, sin códigos — para desplegables y el roster.
+    return json(nombresDeCodigos(codigos));
+  }
+
+  if (payload.accion === "validar") {
+    const codigo = String(payload.codigo || "").trim();
+    const usuario = codigos[codigo];
+    if (!usuario) return json({ error: "Código inválido." }, 401);
+    return json({ nombre: usuario.nombre, rol: usuario.rol });
+  }
+
+  if (payload.accion === "listar") {
+    const admin = codigos[String(payload.codigoAdmin || "").trim()];
+    if (!admin || !rolAlcanza(admin.rol, "administrador")) {
+      return json({ error: "Ese código no tiene permisos de administrador." }, 403);
+    }
+    return json({ codigos });
+  }
+
+  if (payload.accion === "guardar") {
+    const admin = codigos[String(payload.codigoAdmin || "").trim()];
+    if (!admin || !rolAlcanza(admin.rol, "administrador")) {
+      return json({ error: "Ese código no tiene permisos de administrador." }, 403);
+    }
+    if (!payload.codigos || typeof payload.codigos !== "object" || Array.isArray(payload.codigos)) {
+      return json({ error: "Formato de códigos inválido." }, 400);
+    }
+    for (const [cod, u] of Object.entries(payload.codigos)) {
+      if (!cod || !u || !u.nombre || !u.rol || !NIVELES_ROL[u.rol]) {
+        return json({ error: `Entrada inválida para el código "${cod}".` }, 400);
+      }
+    }
+    await guardarCodigos(env, payload.codigos);
+    return json({ ok: true, codigos: payload.codigos });
+  }
+
+  return json({ error: "Acción de códigos no reconocida." }, 400);
 }
 
 // ==================== evaluaciones (legacy, orfanato) ====================
@@ -364,6 +455,9 @@ export default {
 
       if (request.method === "GET") {
         const recurso = url.searchParams.get("recurso");
+        if (recurso === "codigos") {
+          return await manejarCodigos(request, env, {});
+        }
         if (recurso === "evaluacionesVisor") {
           return await manejarEvaluacionesVisor(request, env);
         }
@@ -384,6 +478,9 @@ export default {
           return json({ error: "JSON inválido" }, 400);
         }
 
+        if (payload.recurso === "codigos") {
+          return await manejarCodigos(request, env, payload);
+        }
         if (payload.recurso === "evaluacionesLegacy") {
           return await manejarEvaluacionesLegacy(request, env, payload);
         }

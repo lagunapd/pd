@@ -753,10 +753,11 @@
 
 <script src="codigos.js"></script>
 <script>
-// Los códigos de acceso (CODIGOS, NIVELES_ROL, rolAlcanza, NOMBRES_TODOS,
-// NOMBRES_INSTRUCTORES, NOMBRES_EVALUADORES) se cargan desde codigos.js —
-// ese es el único lugar donde hay que editarlos, se comparte con
-// tenientes.html / capitanes.html / index.html.
+// NIVELES_ROL y rolAlcanza vienen de codigos.js (compartido con el resto
+// de las páginas). Los códigos y nombres reales YA NO están en ningún
+// archivo: viven en el KV del Worker y se piden en vivo (ver
+// validarCodigoEnServidor / cargarNombresRoles más abajo). Se administran
+// desde admin.html.
 
 // La clase de Procedimientos es especial: cuenta para las 6 clases, pero es
 // obligatoria (sin ella no alcanza aunque haya 6 o más puntos) y solo la
@@ -777,6 +778,38 @@ const STORAGE_KEY = 'wspd_asistencias_v1'; // ya no se usa para guardar, solo co
 
 // ⚠️ Reemplazá esto por la URL de tu Worker (ver SETUP.md)
 const API_URL = "https://asistencia-lagunapd.popj951203.workers.dev/";
+
+// Valida un código contra el KV del Worker (ya no hay una lista de códigos
+// acá en el archivo). Devuelve { nombre, rol } o tira un error con el
+// mensaje para mostrar tal cual.
+async function validarCodigoEnServidor(codigo) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recurso: 'codigos', accion: 'validar', codigo }),
+  });
+  if (!resp.ok) {
+    let msg = 'Código inválido. Probá de nuevo.';
+    try { const b = await resp.json(); if (b && b.error) msg = b.error; } catch (e) { /* no era JSON */ }
+    throw new Error(msg);
+  }
+  return await resp.json(); // { nombre, rol }
+}
+
+// Nombres de instructores/evaluadores (sin códigos) — se piden una vez al
+// cargar la página y se guardan acá para los desplegables.
+let NOMBRES_INSTRUCTORES = [];
+let NOMBRES_EVALUADORES = [];
+async function cargarNombresRoles() {
+  try {
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=codigos', { method: 'GET' });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    NOMBRES_INSTRUCTORES = Array.isArray(data.instructores) ? data.instructores : [];
+    NOMBRES_EVALUADORES = Array.isArray(data.evaluadores) ? data.evaluadores : [];
+  } catch (e) { /* deja los arrays vacíos, no rompe nada */ }
+}
+cargarNombresRoles();
 
 let asistencias = []; // se llena SOLO desde el servidor (KV) — no hay siembra automática
 let servidorConectado = false;
@@ -929,11 +962,14 @@ function cerrarModalCodigo() {
 document.getElementById('btnAbrirCodigo').addEventListener('click', abrirModalCodigo);
 document.getElementById('btnCancelarCodigo').addEventListener('click', cerrarModalCodigo);
 
-function validarCodigo() {
+async function validarCodigo() {
   const code = inputCodigo.value.trim();
-  const usuario = CODIGOS[code];
-  if (!usuario) {
-    codigoError.textContent = 'Código inválido. Probá de nuevo.';
+  codigoError.textContent = '';
+  let usuario;
+  try {
+    usuario = await validarCodigoEnServidor(code);
+  } catch (e) {
+    codigoError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
   if (!rolAlcanza(usuario.rol, 'instructor')) {
@@ -1170,11 +1206,14 @@ function cerrarModalCodigoEditar() {
 btnAbrirEdicionGlobal.addEventListener('click', abrirModalCodigoEditar);
 document.getElementById('btnCancelarCodigoEditar').addEventListener('click', cerrarModalCodigoEditar);
 
-function validarCodigoEditar() {
+async function validarCodigoEditar() {
   const code = inputCodigoEditar.value.trim();
-  const usuario = CODIGOS[code];
-  if (!usuario) {
-    codigoEditarError.textContent = 'Código inválido. Probá de nuevo.';
+  codigoEditarError.textContent = '';
+  let usuario;
+  try {
+    usuario = await validarCodigoEnServidor(code);
+  } catch (e) {
+    codigoEditarError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
   if (!rolAlcanza(usuario.rol, 'administrador')) {
@@ -1719,11 +1758,14 @@ function cerrarModalCodigoEvaluar() {
   modalCodigoEvaluar.classList.add('hidden');
 }
 
-function validarCodigoEvaluar() {
+async function validarCodigoEvaluar() {
   const code = inputCodigoEvaluar.value.trim();
-  const usuario = CODIGOS[code];
-  if (!usuario) {
-    codigoEvaluarError.textContent = 'Código inválido. Probá de nuevo.';
+  codigoEvaluarError.textContent = '';
+  let usuario;
+  try {
+    usuario = await validarCodigoEnServidor(code);
+  } catch (e) {
+    codigoEvaluarError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
   if (!rolAlcanza(usuario.rol, 'evaluador')) {

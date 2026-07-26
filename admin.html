@@ -579,20 +579,16 @@
 
   <section class="admin-seccion">
     <h2>📋 Códigos de acceso</h2>
-    <div class="modal-sub">Esto edita la lista que ves acá mismo (cargada de <code>codigos.js</code>), pero como el sitio es estático, el cambio no queda guardado solo: al final tenés que descargar el archivo nuevo y subirlo a tu repo reemplazando <code>codigos.js</code>.</div>
+    <div class="modal-sub">Los códigos viven en el servidor (KV del Worker), no en ningún archivo del repo — los cambios que hagas acá se guardan en vivo apenas tocás "Guardar cambios", sin descargar ni subir nada.</div>
     <table class="admin-tabla" id="tablaCodigos">
       <thead><tr><th style="width:22%">Código</th><th>Nombre</th><th style="width:20%">Rol</th><th style="width:40px"></th></tr></thead>
       <tbody id="codigosBody"></tbody>
     </table>
     <div class="admin-row">
       <button class="btn btn-secundario" id="btnAgregarCodigo">+ Agregar código</button>
-      <button class="btn btn-primario" id="btnGenerarCodigosJs">Generar codigos.js</button>
+      <button class="btn btn-primario" id="btnGuardarCodigos">💾 Guardar cambios</button>
     </div>
     <div class="admin-msg" id="codigosMsg"></div>
-    <textarea id="codigosJsOutput" class="hidden" readonly></textarea>
-    <div class="admin-row hidden" id="codigosDescargaRow">
-      <button class="btn btn-primario" id="btnDescargarCodigosJs">⬇️ Descargar codigos.js</button>
-    </div>
   </section>
 
   <section class="admin-seccion">
@@ -715,18 +711,37 @@ const panelContenido = document.getElementById('panelContenido');
 const inputCodigoAdmin = document.getElementById('inputCodigoAdmin');
 const gateError = document.getElementById('gateError');
 const adminNombre = document.getElementById('adminNombre');
+let codigoAdminActual = null;
 
-function validarGate() {
+async function validarCodigoEnServidor(codigo) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recurso: 'codigos', accion: 'validar', codigo }),
+  });
+  if (!resp.ok) {
+    let msg = 'Código inválido.';
+    try { const b = await resp.json(); if (b && b.error) msg = b.error; } catch (e) { /* no era JSON */ }
+    throw new Error(msg);
+  }
+  return await resp.json(); // { nombre, rol }
+}
+
+async function validarGate() {
   const code = inputCodigoAdmin.value.trim();
-  const usuario = CODIGOS[code];
-  if (!usuario) {
-    gateError.textContent = 'Código inválido.';
+  gateError.textContent = '';
+  let usuario;
+  try {
+    usuario = await validarCodigoEnServidor(code);
+  } catch (e) {
+    gateError.textContent = e && e.message ? e.message : 'Código inválido.';
     return;
   }
   if (!rolAlcanza(usuario.rol, 'administrador')) {
     gateError.textContent = 'Ese código no tiene permisos de administrador.';
     return;
   }
+  codigoAdminActual = code;
   adminNombre.textContent = usuario.nombre;
   gatePanel.classList.add('hidden');
   panelContenido.classList.remove('hidden');
@@ -735,21 +750,39 @@ function validarGate() {
 document.getElementById('btnEntrar').addEventListener('click', validarGate);
 inputCodigoAdmin.addEventListener('keydown', e => { if (e.key === 'Enter') validarGate(); });
 document.getElementById('btnSalirAdmin').addEventListener('click', () => {
-  window.location.href = 'index.html';
+  panelContenido.classList.add('hidden');
+  gatePanel.classList.remove('hidden');
+  inputCodigoAdmin.value = '';
+  gateError.textContent = '';
+  codigoAdminActual = null;
 });
 
 function iniciarPanel() {
-  renderTablaCodigos();
+  cargarCodigosDesdeServidor();
   cargarNombresPorLista();
   document.getElementById('altaRango').innerHTML = LISTAS.map(r => `<option value="${RANGOS[r]}">${RANGOS[r]}</option>`).join('');
 }
 
 /* ============================================================
-   SECCIÓN 1: Códigos (edita la copia cargada de codigos.js)
+   SECCIÓN 1: Códigos (en vivo, contra el KV del Worker)
    ============================================================ */
-let codigosLocal = Object.entries(CODIGOS).map(([codigo, u]) => ({ codigo, nombre: u.nombre, rol: u.rol }));
+let codigosLocal = [];
 const codigosBody = document.getElementById('codigosBody');
 const codigosMsg = document.getElementById('codigosMsg');
+
+async function cargarCodigosDesdeServidor() {
+  codigosMsg.textContent = 'Cargando...';
+  codigosMsg.className = 'admin-msg';
+  try {
+    const data = await postAccion('codigos', { accion: 'listar', codigoAdmin: codigoAdminActual });
+    codigosLocal = Object.entries(data.codigos || {}).map(([codigo, u]) => ({ codigo, nombre: u.nombre, rol: u.rol }));
+    renderTablaCodigos();
+    codigosMsg.textContent = '';
+  } catch (e) {
+    codigosMsg.textContent = e && e.message ? e.message : 'No se pudieron cargar los códigos.';
+    codigosMsg.className = 'admin-msg error';
+  }
+}
 
 function renderTablaCodigos() {
   codigosBody.innerHTML = codigosLocal.map((c, i) => `
@@ -791,12 +824,13 @@ document.getElementById('btnAgregarCodigo').addEventListener('click', () => {
   renderTablaCodigos();
 });
 
-document.getElementById('btnGenerarCodigosJs').addEventListener('click', () => {
+document.getElementById('btnGuardarCodigos').addEventListener('click', async () => {
   codigosMsg.textContent = '';
   const codigosVistos = new Set();
+  const codigosObj = {};
   for (const c of codigosLocal) {
     if (!c.codigo || !c.nombre) {
-      codigosMsg.textContent = 'Hay un código o nombre vacío — completá todos los campos antes de generar.';
+      codigosMsg.textContent = 'Hay un código o nombre vacío — completá todos los campos antes de guardar.';
       codigosMsg.className = 'admin-msg error';
       return;
     }
@@ -806,57 +840,23 @@ document.getElementById('btnGenerarCodigosJs').addEventListener('click', () => {
       return;
     }
     codigosVistos.add(c.codigo);
+    codigosObj[c.codigo] = { nombre: c.nombre, rol: c.rol };
   }
 
-  const lineas = codigosLocal.map(c => `  "${c.codigo}": { nombre: "${c.nombre.replace(/"/g, '\\"')}", rol: "${c.rol}" },`);
-  const archivo = `// ============================================================
-// CÓDIGOS DE ACCESO — WSPD Laguna
-// ============================================================
-// Este es el ÚNICO lugar donde hay que editar los códigos: lo carga
-// asistencias.html, tenientes.html, capitanes.html, mayores.html e
-// index.html (las Macros de Instrucción), así que un cambio acá se aplica
-// a todos. Generado desde el panel de administración.
-//
-// rol tiene que ser exactamente uno de estos tres (en minúscula):
-//   "instructor"    -> puede registrar asistencias
-//   "evaluador"     -> además, puede evaluar y registrar Procedimientos
-//   "administrador" -> además, puede editar/eliminar y usar el panel
-const CODIGOS = {
-${lineas.join('\n')}
-};
-
-// No hace falta tocar nada de acá para abajo.
-const NIVELES_ROL = { instructor: 1, evaluador: 2, administrador: 3 };
-function rolAlcanza(rolActual, rolRequerido) {
-  return (NIVELES_ROL[rolActual] || 0) >= (NIVELES_ROL[rolRequerido] || 99);
-}
-const NOMBRES_TODOS = Object.values(CODIGOS).map(u => u.nombre);
-const NOMBRES_INSTRUCTORES = Object.values(CODIGOS)
-  .filter(u => u.rol === 'instructor')
-  .map(u => u.nombre);
-const NOMBRES_EVALUADORES = Object.values(CODIGOS)
-  .filter(u => rolAlcanza(u.rol, 'evaluador'))
-  .map(u => u.nombre);
-`;
-
-  const output = document.getElementById('codigosJsOutput');
-  output.value = archivo;
-  output.classList.remove('hidden');
-  document.getElementById('codigosDescargaRow').classList.remove('hidden');
-  codigosMsg.textContent = 'Listo — revisalo y descargalo. Después subilo a tu repo reemplazando codigos.js.';
-  codigosMsg.className = 'admin-msg ok';
-
-  document.getElementById('btnDescargarCodigosJs').onclick = () => {
-    const blob = new Blob([archivo], { type: 'text/javascript;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'codigos.js';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
+  const btnGuardar = document.getElementById('btnGuardarCodigos');
+  btnGuardar.disabled = true;
+  btnGuardar.textContent = 'Guardando...';
+  try {
+    await postAccion('codigos', { accion: 'guardar', codigoAdmin: codigoAdminActual, codigos: codigosObj });
+    codigosMsg.textContent = 'Listo — los códigos ya quedaron guardados en el servidor. Se aplican al toque en todas las páginas.';
+    codigosMsg.className = 'admin-msg ok';
+  } catch (e) {
+    codigosMsg.textContent = e && e.message ? e.message : 'No se pudo guardar.';
+    codigosMsg.className = 'admin-msg error';
+  } finally {
+    btnGuardar.disabled = false;
+    btnGuardar.textContent = '💾 Guardar cambios';
+  }
 });
 
 /* ============================================================
