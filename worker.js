@@ -74,6 +74,17 @@ function limpiarRegistro(r) {
   };
 }
 
+// Llamada de atención: cada una obliga a una clase (verde) extra antes de
+// poder evaluar. Se muestran como ❗ en la columna de puntos verdes hasta
+// que una clase real las "tapa" (ver puntosUtiles en el cliente).
+function limpiarLlamada(l) {
+  return {
+    fecha: (l && l.fecha) || "—",
+    motivo: (l && l.motivo) || "",
+    registrador: (l && l.registrador) || "Desconocido",
+  };
+}
+
 // ==================== helpers genéricos de KV ====================
 // Cargan/guardan { lista: [...], ultimaActualizacion } bajo una key dada,
 // tolerando: valor vacío, formato viejo (array pelado), o JSON corrupto.
@@ -254,13 +265,17 @@ async function manejarListaClases(request, env, payload, recurso) {
   const lista = cargaInicial.lista;
   let ultimaActualizacion = cargaInicial.ultimaActualizacion;
 
-  // ---- backfill: a quien le falte el rango (gente que ya estaba en la
-  // lista antes de que existiera este campo) se le asigna el rango por
-  // defecto de esta lista, una sola vez, y se guarda. ----
+  // ---- backfill: a quien le falte el rango o el array de llamadas
+  // (gente que ya estaba en la lista antes de que existieran esos campos)
+  // se les completa una sola vez, y se guarda. ----
   let necesitaGuardar = false;
   for (const p of lista) {
     if (!p.rango) {
       p.rango = config.rangoDefault;
+      necesitaGuardar = true;
+    }
+    if (!Array.isArray(p.llamadas)) {
+      p.llamadas = [];
       necesitaGuardar = true;
     }
   }
@@ -287,11 +302,12 @@ async function manejarListaClases(request, env, payload, recurso) {
       (p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase()
     );
     if (!persona) {
-      persona = { nombre: nombreNuevo || nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [] };
+      persona = { nombre: nombreNuevo || nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [], llamadas: [] };
       lista.push(persona);
     }
     if (!persona.rango) persona.rango = config.rangoDefault;
     if (!Array.isArray(persona.historialEvaluaciones)) persona.historialEvaluaciones = [];
+    if (!Array.isArray(persona.llamadas)) persona.llamadas = [];
     // El rango normalmente no se toca acá — solo lo usa el panel de
     // administración para asignarlo a mano al dar de alta a alguien.
     if (payload.edit.rango) persona.rango = String(payload.edit.rango).trim() || persona.rango;
@@ -305,6 +321,19 @@ async function manejarListaClases(request, env, payload, recurso) {
           return limpio;
         })
       : persona.registros;
+
+    // Llamadas de atención: solo se tocan si el pedido las incluye
+    // explícitamente (para no borrarlas sin querer desde ediciones que no
+    // las mandan).
+    if (Array.isArray(payload.edit.llamadas)) {
+      persona.llamadas = payload.edit.llamadas.map((l) => {
+        const limpio = limpiarLlamada(l);
+        if (!(l && l.registrador)) {
+          limpio.registrador = `Registrada por ${registrador}`;
+        }
+        return limpio;
+      });
+    }
 
     persona.nombre = nombreNuevo || persona.nombre;
     persona.registros = registrosNuevos;
@@ -382,6 +411,7 @@ async function manejarListaClases(request, env, payload, recurso) {
         nombre: persona.nombre,
         rango: siguiente.rango,
         registros: [],
+        llamadas: [],
         historialEvaluaciones: historialNuevo,
       });
       await guardarLista(env, siguienteConfig.kvKey, siguiente.recurso, listaDestino);
@@ -402,11 +432,12 @@ async function manejarListaClases(request, env, payload, recurso) {
       (p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase()
     );
     if (!persona) {
-      persona = { nombre: nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [] };
+      persona = { nombre: nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [], llamadas: [] };
       lista.push(persona);
     }
     if (!persona.rango) persona.rango = config.rangoDefault;
     if (!Array.isArray(persona.historialEvaluaciones)) persona.historialEvaluaciones = [];
+    if (!Array.isArray(persona.llamadas)) persona.llamadas = [];
     persona.registros.push(limpiarRegistro(entry));
   }
 
