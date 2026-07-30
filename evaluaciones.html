@@ -618,7 +618,7 @@ function abrirHistorial(nombre) {
         <td>${escapeHtml(h.rangoDesde || '—')}</td>
         <td>${escapeHtml(h.rangoHacia || '—')}</td>
         <td>${fmtFecha(h.fecha)}</td>
-        <td class="${h.resultado === 'reprobado' ? 'resultado-reprobado' : 'resultado-aprobado'}">${h.resultado === 'reprobado' ? '❌ Reprobado' : '✅ Aprobado'}</td>
+        <td class="${h.resultado === 'reprobado' ? 'resultado-reprobado' : h.resultado === 'manual' ? 'resultado-manual' : 'resultado-aprobado'}">${h.resultado === 'reprobado' ? '❌ Reprobado' : h.resultado === 'manual' ? '🎖️ Manual' : '✅ Aprobado'}</td>
         <td>${escapeHtml(h.evaluador || '—')}</td>
       </tr>
     `).join('');

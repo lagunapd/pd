@@ -257,6 +257,30 @@ const LISTAS_CLASES = {
   },
 };
 
+// Dado un nombre de rango ("Teniente", "Capitán", etc.), devuelve el
+// recurso (lista) al que corresponde, o null si no matchea con ninguno de
+// los rangoDefault configurados arriba (ej. un texto libre/custom).
+function recursoParaRango(rangoNombre) {
+  for (const [recurso, cfg] of Object.entries(LISTAS_CLASES)) {
+    if (cfg.rangoDefault === rangoNombre) return recurso;
+  }
+  return null;
+}
+
+// Combina dos historiales de evaluaciones sin duplicar entradas idénticas
+// (usado al fusionar a alguien con un registro que ya existía en la lista
+// destino).
+function combinarHistorial(a, b) {
+  const combinado = [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])];
+  const vistos = new Set();
+  return combinado.filter((h) => {
+    const clave = JSON.stringify([h.fecha, h.evaluador, h.resultado, h.rangoDesde, h.rangoHacia, h.observaciones]);
+    if (vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  });
+}
+
 async function manejarListaClases(request, env, payload, recurso) {
   const config = LISTAS_CLASES[recurso];
   if (!config) return json({ error: `Recurso "${recurso}" no reconocido` }, 400);
@@ -356,15 +380,76 @@ async function manejarListaClases(request, env, payload, recurso) {
   }
 
   // ---- cambiar rango a mano (solo lo usa el panel de administración) ----
+  // Si el rango nuevo corresponde a otra lista, la persona se MUEVE a esa
+  // lista (igual que un ascenso por evaluación), pero:
+  //   - sus clases/llamadas de la lista vieja se reinician (no viajan)
+  //   - queda una entrada en su historialEvaluaciones con
+  //     resultado:"manual", dejando registrado quién hizo el cambio
+  //   - si ya existía alguien con ese nombre en la lista destino (ej. un
+  //     rango anterior), se fusiona: se conservan sus clases/llamadas de
+  //     esa lista y se combina el historial sin duplicar entradas.
   if (payload.cambiarRango && payload.cambiarRango.nombre) {
     const nombreLimpio = String(payload.cambiarRango.nombre).trim();
     const idx = lista.findIndex((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
     if (idx === -1) return json({ error: "No se encontró a esa persona en esta lista." }, 404);
     const rangoNuevo = String(payload.cambiarRango.rangoNuevo || "").trim();
     if (!rangoNuevo) return json({ error: "Falta el rango nuevo." }, 400);
-    lista[idx].rango = rangoNuevo;
-    const estado = await guardarLista(env, config.kvKey, recurso, lista);
-    return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
+    const registrador = payload.cambiarRango.registrador || "Desconocido";
+
+    const persona = lista[idx];
+    const rangoAnterior = persona.rango || config.rangoDefault;
+    const recursoDestino = recursoParaRango(rangoNuevo);
+
+    // Rango nuevo sin lista propia conocida (texto libre), o misma lista
+    // en la que ya está: solo se actualiza el texto del rango in situ,
+    // sin mover a nadie ni tocar el historial.
+    if (!recursoDestino || recursoDestino === recurso) {
+      persona.rango = rangoNuevo;
+      const estado = await guardarLista(env, config.kvKey, recurso, lista);
+      return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion, movida: false });
+    }
+
+    if (!Array.isArray(persona.historialEvaluaciones)) persona.historialEvaluaciones = [];
+    const entradaHistorial = {
+      fecha: payload.cambiarRango.fecha || new Date().toISOString().slice(0, 10),
+      evaluador: registrador,
+      observaciones: payload.cambiarRango.observaciones || "Cambio de rango manual desde el panel de administración.",
+      resultado: "manual",
+      rangoDesde: rangoAnterior,
+      rangoHacia: rangoNuevo,
+    };
+    const historialNuevo = [...persona.historialEvaluaciones, entradaHistorial];
+
+    // Sacar a la persona de la lista actual (sus clases/llamadas de acá
+    // se reinician, no viajan a la lista destino).
+    lista.splice(idx, 1);
+    const estadoOrigen = await guardarLista(env, config.kvKey, recurso, lista);
+
+    const configDestino = LISTAS_CLASES[recursoDestino];
+    const { lista: listaDestino } = await cargarLista(env, configDestino.kvKey, recursoDestino);
+    const existente = listaDestino.find((p) => p.nombre.toLowerCase() === persona.nombre.toLowerCase());
+    if (existente) {
+      // Fusionar: se conservan las clases/llamadas que ya tenía en la
+      // lista destino, y se combina el historial sin duplicar.
+      existente.rango = rangoNuevo;
+      existente.historialEvaluaciones = combinarHistorial(existente.historialEvaluaciones, historialNuevo);
+    } else {
+      listaDestino.push({
+        nombre: persona.nombre,
+        rango: rangoNuevo,
+        registros: [],
+        llamadas: [],
+        historialEvaluaciones: historialNuevo,
+      });
+    }
+    await guardarLista(env, configDestino.kvKey, recursoDestino, listaDestino);
+
+    return json({
+      [recurso]: estadoOrigen[recurso],
+      ultimaActualizacion: estadoOrigen.ultimaActualizacion,
+      movida: true,
+      recursoDestino,
+    });
   }
 
   // ---- evaluarAscenso: evalúa para el rango siguiente ----

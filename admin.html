@@ -962,10 +962,17 @@ document.getElementById('btnCambiarRango').addEventListener('click', async () =>
   rangoMsg.textContent = 'Guardando...';
   rangoMsg.className = 'admin-msg';
   try {
-    await postAccion(recurso, { cambiarRango: { nombre, rangoNuevo } });
-    rangoMsg.textContent = `Listo — ${nombre} ahora tiene el rango "${rangoNuevo}" en la lista de ${recurso}.`;
+    const resp = await postAccion(recurso, { cambiarRango: { nombre, rangoNuevo, registrador: adminNombre.textContent } });
+    if (resp && resp.movida) {
+      rangoMsg.textContent = `Listo — ${nombre} ahora es "${rangoNuevo}" y se movió a la lista de ${resp.recursoDestino}. Sus clases en ${recurso} se reiniciaron y quedó el cambio en su historial.`;
+    } else {
+      rangoMsg.textContent = `Listo — ${nombre} ahora tiene el rango "${rangoNuevo}" en la lista de ${recurso}.`;
+    }
     rangoMsg.className = 'admin-msg ok';
     personasPorLista[recurso] = await fetchLista(recurso);
+    if (resp && resp.movida && resp.recursoDestino) {
+      personasPorLista[resp.recursoDestino] = await fetchLista(resp.recursoDestino);
+    }
     actualizarDatalists();
   } catch (e) {
     rangoMsg.textContent = e && e.message ? e.message : 'No se pudo cambiar el rango.';
