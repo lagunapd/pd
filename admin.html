@@ -560,6 +560,21 @@
   }
   .admin-resumen-num { font-size: 1.5rem; font-weight: 700; color: var(--accent2); }
   .admin-resumen-label { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); }
+  .admin-turno-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    background: rgba(15,17,21,0.4);
+  }
+  .admin-turno-card .admin-row:last-child { margin-bottom: 0; }
+  .admin-sub-titulo {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 12px 0 6px;
+  }
+  .admin-check-field { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
   .btn-tab {
     background: var(--card);
     border: 1px solid var(--border);
@@ -605,6 +620,17 @@
       <button class="btn btn-primario" id="btnGuardarCodigos">💾 Guardar cambios</button>
     </div>
     <div class="admin-msg" id="codigosMsg"></div>
+  </section>
+
+  <section class="admin-seccion">
+    <h2>📅 Horarios de Academia</h2>
+    <div class="modal-sub">Esto es lo que se ve en la grilla de "Horarios de Instrucciones" de la sección Academia (index.html) — vive en el KV del Worker, se guarda apenas tocás "Guardar cambios".</div>
+    <div id="horariosLista"></div>
+    <div class="admin-row">
+      <button class="btn btn-secundario" id="btnAgregarTurno">+ Agregar turno</button>
+      <button class="btn btn-primario" id="btnGuardarHorarios">💾 Guardar cambios</button>
+    </div>
+    <div class="admin-msg" id="horariosMsg"></div>
   </section>
 
   <section class="admin-seccion">
@@ -823,6 +849,7 @@ document.getElementById('btnSalirAdmin').addEventListener('click', () => {
 
 function iniciarPanel() {
   cargarCodigosDesdeServidor();
+  cargarHorariosDesdeServidor();
   cargarNombresPorLista();
   document.getElementById('altaRango').innerHTML = LISTAS.map(r => `<option value="${RANGOS[r]}">${RANGOS[r]}</option>`).join('');
 }
@@ -917,6 +944,187 @@ document.getElementById('btnGuardarCodigos').addEventListener('click', async () 
   } catch (e) {
     codigosMsg.textContent = e && e.message ? e.message : 'No se pudo guardar.';
     codigosMsg.className = 'admin-msg error';
+  } finally {
+    btnGuardar.disabled = false;
+    btnGuardar.textContent = '💾 Guardar cambios';
+  }
+});
+
+/* ============================================================
+   SECCIÓN: Horarios de Academia (en vivo, contra el KV del Worker)
+   ============================================================ */
+let horariosLocal = [];
+const horariosListaEl = document.getElementById('horariosLista');
+const horariosMsg = document.getElementById('horariosMsg');
+const MAPAS_DISPONIBLES = [
+  { value: '', label: '(ninguno)' },
+  { value: 'sala-revista', label: 'Sala de Revista' },
+  { value: 'vestidores', label: 'Vestidores' },
+];
+
+async function cargarHorariosDesdeServidor() {
+  horariosMsg.textContent = 'Cargando...';
+  horariosMsg.className = 'admin-msg';
+  try {
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=horarios', { method: 'GET' });
+    if (!resp.ok) throw new Error(await errorDe(resp));
+    const data = await resp.json();
+    horariosLocal = (Array.isArray(data.horarios) ? data.horarios : []).map(t => ({
+      id: t.id || '',
+      titulo: t.titulo || '',
+      destacado: !!t.destacado,
+      diasLabel: t.diasLabel || '',
+      hora: t.hora || '',
+      ubicacion: t.ubicacion || '',
+      mapa: t.mapa || '',
+      personas: Array.isArray(t.personas) ? t.personas.map(p => ({ label: p.label || '', nombre: p.nombre || '' })) : [],
+      dias: Array.isArray(t.dias) ? t.dias.map(d => ({ dia: d.dia || '', texto: d.texto || '' })) : [],
+    }));
+    renderHorarios();
+    horariosMsg.textContent = '';
+  } catch (e) {
+    horariosMsg.textContent = e && e.message ? e.message : 'No se pudieron cargar los horarios.';
+    horariosMsg.className = 'admin-msg error';
+  }
+}
+
+function opcionesMapa(seleccionado) {
+  return MAPAS_DISPONIBLES.map(m => `<option value="${escapeAttr(m.value)}" ${m.value === (seleccionado || '') ? 'selected' : ''}>${escapeHtml(m.label)}</option>`).join('');
+}
+
+function renderHorarios() {
+  if (horariosLocal.length === 0) {
+    horariosListaEl.innerHTML = '<div class="modal-sub">Todavía no hay turnos cargados — usá "+ Agregar turno".</div>';
+    return;
+  }
+  horariosListaEl.innerHTML = horariosLocal.map((t, i) => `
+    <div class="admin-turno-card" data-idx="${i}">
+      <div class="admin-row">
+        <div class="admin-field" style="flex:1">
+          <label>Título de la tarjeta</label>
+          <input type="text" class="turno-campo-titulo" data-idx="${i}" value="${escapeAttr(t.titulo)}">
+        </div>
+        <div class="admin-field">
+          <label>Hora</label>
+          <input type="text" class="turno-campo-hora" data-idx="${i}" value="${escapeAttr(t.hora)}">
+        </div>
+        <div class="admin-field" style="flex:1">
+          <label>Ubicación</label>
+          <input type="text" class="turno-campo-ubicacion" data-idx="${i}" value="${escapeAttr(t.ubicacion)}">
+        </div>
+        <div class="admin-field">
+          <label>Mapa</label>
+          <select class="turno-campo-mapa" data-idx="${i}">${opcionesMapa(t.mapa)}</select>
+        </div>
+      </div>
+      <div class="admin-row">
+        <div class="admin-field" style="flex:1">
+          <label>Días en texto libre (ej. "Lunes y Jueves" — dejar vacío si usás el desglose por día de abajo)</label>
+          <input type="text" class="turno-campo-diaslabel" data-idx="${i}" value="${escapeAttr(t.diasLabel)}">
+        </div>
+        <label class="admin-check-field"><input type="checkbox" class="turno-campo-destacado" data-idx="${i}" ${t.destacado ? 'checked' : ''}> Destacar tarjeta</label>
+        <button class="btn btn-peligro" data-idx="${i}" data-accion="quitar-turno">🗑 Quitar turno</button>
+      </div>
+
+      <div class="admin-sub-titulo">Instructores / Auxiliares / Evaluadores</div>
+      <table class="admin-tabla">
+        <thead><tr><th style="width:30%">Rol</th><th>Nombre</th><th style="width:40px"></th></tr></thead>
+        <tbody>
+          ${t.personas.map((p, j) => `
+            <tr>
+              <td><input type="text" class="persona-campo-label" data-idx="${i}" data-j="${j}" value="${escapeAttr(p.label)}"></td>
+              <td><input type="text" class="persona-campo-nombre" data-idx="${i}" data-j="${j}" value="${escapeAttr(p.nombre)}"></td>
+              <td><span class="quitar" data-idx="${i}" data-j="${j}" data-accion="quitar-persona" title="Quitar" style="cursor:pointer;color:var(--red);">✕</span></td>
+            </tr>`).join('') || '<tr><td colspan="3" style="color:var(--muted);">Sin filas todavía.</td></tr>'}
+        </tbody>
+      </table>
+      <button class="btn btn-secundario" data-idx="${i}" data-accion="agregar-persona">+ Agregar persona</button>
+
+      <div class="admin-sub-titulo">Días (desglose por día)</div>
+      <table class="admin-tabla">
+        <thead><tr><th style="width:30%">Día</th><th>Texto</th><th style="width:40px"></th></tr></thead>
+        <tbody>
+          ${t.dias.map((d, j) => `
+            <tr>
+              <td><input type="text" class="dia-campo-dia" data-idx="${i}" data-j="${j}" value="${escapeAttr(d.dia)}"></td>
+              <td><input type="text" class="dia-campo-texto" data-idx="${i}" data-j="${j}" value="${escapeAttr(d.texto)}"></td>
+              <td><span class="quitar" data-idx="${i}" data-j="${j}" data-accion="quitar-dia" title="Quitar" style="cursor:pointer;color:var(--red);">✕</span></td>
+            </tr>`).join('') || '<tr><td colspan="3" style="color:var(--muted);">Sin filas todavía.</td></tr>'}
+        </tbody>
+      </table>
+      <button class="btn btn-secundario" data-idx="${i}" data-accion="agregar-dia">+ Agregar día</button>
+    </div>
+  `).join('');
+}
+
+horariosListaEl.addEventListener('input', e => {
+  const idx = Number(e.target.dataset.idx);
+  if (Number.isNaN(idx) || !horariosLocal[idx]) return;
+  const t = horariosLocal[idx];
+  const j = e.target.dataset.j !== undefined ? Number(e.target.dataset.j) : null;
+  if (e.target.classList.contains('turno-campo-titulo')) t.titulo = e.target.value;
+  else if (e.target.classList.contains('turno-campo-hora')) t.hora = e.target.value;
+  else if (e.target.classList.contains('turno-campo-ubicacion')) t.ubicacion = e.target.value;
+  else if (e.target.classList.contains('turno-campo-diaslabel')) t.diasLabel = e.target.value;
+  else if (e.target.classList.contains('persona-campo-label') && j !== null && t.personas[j]) t.personas[j].label = e.target.value;
+  else if (e.target.classList.contains('persona-campo-nombre') && j !== null && t.personas[j]) t.personas[j].nombre = e.target.value;
+  else if (e.target.classList.contains('dia-campo-dia') && j !== null && t.dias[j]) t.dias[j].dia = e.target.value;
+  else if (e.target.classList.contains('dia-campo-texto') && j !== null && t.dias[j]) t.dias[j].texto = e.target.value;
+});
+
+horariosListaEl.addEventListener('change', e => {
+  const idx = Number(e.target.dataset.idx);
+  if (Number.isNaN(idx) || !horariosLocal[idx]) return;
+  if (e.target.classList.contains('turno-campo-mapa')) horariosLocal[idx].mapa = e.target.value;
+  if (e.target.classList.contains('turno-campo-destacado')) horariosLocal[idx].destacado = e.target.checked;
+});
+
+horariosListaEl.addEventListener('click', e => {
+  const btn = e.target.closest('[data-accion]');
+  if (!btn) return;
+  const idx = Number(btn.dataset.idx);
+  if (Number.isNaN(idx) || !horariosLocal[idx]) return;
+  const t = horariosLocal[idx];
+  const accion = btn.dataset.accion;
+  if (accion === 'quitar-turno') {
+    if (!confirm('¿Quitar este turno de la grilla? (no se guarda hasta que toques "Guardar cambios")')) return;
+    horariosLocal.splice(idx, 1);
+  } else if (accion === 'agregar-persona') {
+    t.personas.push({ label: 'Instructor', nombre: '' });
+  } else if (accion === 'quitar-persona') {
+    t.personas.splice(Number(btn.dataset.j), 1);
+  } else if (accion === 'agregar-dia') {
+    t.dias.push({ dia: '', texto: '' });
+  } else if (accion === 'quitar-dia') {
+    t.dias.splice(Number(btn.dataset.j), 1);
+  } else {
+    return;
+  }
+  renderHorarios();
+});
+
+document.getElementById('btnAgregarTurno').addEventListener('click', () => {
+  horariosLocal.push({
+    id: '', titulo: 'NUEVO TURNO', destacado: false, diasLabel: '',
+    hora: '🚨 Por Definir', ubicacion: '', mapa: '', personas: [], dias: [],
+  });
+  renderHorarios();
+});
+
+document.getElementById('btnGuardarHorarios').addEventListener('click', async () => {
+  horariosMsg.textContent = '';
+  const btnGuardar = document.getElementById('btnGuardarHorarios');
+  btnGuardar.disabled = true;
+  btnGuardar.textContent = 'Guardando...';
+  try {
+    const data = await postAccion('horarios', { accion: 'guardar', codigoAdmin: codigoAdminActual, horarios: horariosLocal });
+    horariosLocal = Array.isArray(data.horarios) ? data.horarios : horariosLocal;
+    renderHorarios();
+    horariosMsg.textContent = 'Listo — la grilla ya quedó guardada en el servidor. Se aplica al toque en index.html.';
+    horariosMsg.className = 'admin-msg ok';
+  } catch (e) {
+    horariosMsg.textContent = e && e.message ? e.message : 'No se pudo guardar.';
+    horariosMsg.className = 'admin-msg error';
   } finally {
     btnGuardar.disabled = false;
     btnGuardar.textContent = '💾 Guardar cambios';

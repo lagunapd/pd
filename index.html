@@ -1249,68 +1249,8 @@ body.mapa-fullscreen .academia-placeholder {
 
     <div class="academia-schedule" id="academiaSchedule">
       <div class="academia-schedule-title">📋 HORARIOS DE INSTRUCCIONES 🚨🫡</div>
-      <div class="turno-grid">
-        <div class="turno-card recruit-card" data-map="vestidores">
-          <div class="turno-time">🎯 EVALUACIONES</div>
-          <div class="turno-row turno-days"><b>Lunes y Jueves</b></div>
-          <div class="turno-row"><b>Hora:</b> 🚨 Por Definir</div>
-          <div class="turno-row"><b>Evaluador:</b> Lilith Nyx</div>
-          <div class="turno-row"><b>Evaluador:</b> Drak Reem</div>
-          <div class="turno-row"><b>Evaluador:</b> Goliath Crawley</div>
-          <div class="turno-row"><b>Ubicación:</b> Piso 2</div>
-        </div>
-        <div class="turno-card" data-map="sala-revista">
-          <div class="turno-time">🕔 PRIMERA CLASE</div>
-          <div class="turno-row"><b>Hora:</b> 17:00 - 19:00</div>
-          <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Moises Medez</div>
-          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Martes:</b>📜 Modulo A</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>💬 Modulo B</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>⚖️ Modulo C</div>
-        </div>
-        <div class="turno-card" data-map="sala-revista">
-          <div class="turno-time">🕗 SEGUNDA CLASE</div>
-          <div class="turno-row"><b>Hora:</b> 20:00 - 22:00</div>
-          <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Jacobo Vargas</div>
-          <div class="turno-row"><b>Auxiliar:</b> Eliel Crawley</div>
-          <div class="turno-row turno-days"><b>Martes:</b>💬 Modulo B</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>⚖️ Modulo C</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>🛡️ Modulo D</div>
-        </div>
-        <div class="turno-card" data-map="sala-revista">
-          <div class="turno-time">🕚 TERCERA CLASE</div>
-          <div class="turno-row"><b>Hora:</b> 23:00 - 01:00</div>
-          <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Goliat Crawley</div>
-          <div class="turno-row"><b>Auxiliar:</b> Axo Velasco</div>
-          <div class="turno-row turno-days"><b>Martes:</b>⚖️ Modulo C</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>🛡️ Modulo D</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>📜 Modulo A</div>
-        </div>
-        <div class="turno-card" data-map="sala-revista">
-          <div class="turno-time">🕑 CUARTA CLASE</div>
-          <div class="turno-row"><b>Hora:</b> 02:00 - 04:00</div>
-          <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b> Lilith Black</div>
-          <div class="turno-row"><b>Auxiliar:</b> Sr Chakalito</div>
-          <div class="turno-row turno-days"><b>Martes:</b>🛡️ Modulo D</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>📜 Modulo A</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>💬 Modulo B</div>
-        </div>
-        <!--<div class="turno-card" data-map="sala-revista">
-          <div class="turno-time">🕔 QUINTA CLASE</div>
-          <div class="turno-row"><b>Hora:</b> 05:00 - 07:00</div>
-          <div class="turno-row"><b>Ubicación:</b> Sala de Revista</div>
-          <div class="turno-row"><b>Instructor:</b>🚨 Por Definir</div>
-          <div class="turno-row"><b>Auxiliar:</b> 🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Martes:</b>🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Miercoles:</b>🚨 Por Definir</div>
-          <div class="turno-row turno-days"><b>Viernes:</b>🚨 Por Definir</div>
-        </div>-->
-      </div>
-      <div class="academia-updated" id="academiaUpdated">Última actualización: 25 de julio de 2026 · 00:40 hrs</div>
+      <div class="turno-grid" id="turnoGrid"></div>
+      <div class="academia-updated" id="academiaUpdated">Cargando horarios...</div>
     </div>
 
     <div class="academia-two-col">
@@ -1965,6 +1905,65 @@ async function poblarRosterAcademia() {
 }
 poblarRosterAcademia();
 
+// ---- Horarios de Academia (grilla, se llena en vivo desde el Worker) ----
+// El contenido (títulos, horas, instructores/auxiliares/evaluadores, días)
+// se administra desde admin.html; acá solo se pide y se pinta.
+const academiaUpdated = document.getElementById('academiaUpdated');
+
+function fmtUltimaActualizacion(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    const fecha = d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const hora = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `Última actualización: ${fecha} · ${hora} hrs`;
+  } catch (e) {
+    return '';
+  }
+}
+
+function renderTurnoCard(t) {
+  const clases = ['turno-card'];
+  if (t.destacado) clases.push('recruit-card');
+  const dataMap = t.mapa ? ` data-map="${escapeAttr(t.mapa)}"` : '';
+  const diasLabelHtml = t.diasLabel
+    ? `<div class="turno-row turno-days"><b>${escapeAttr(t.diasLabel)}</b></div>`
+    : '';
+  const horaHtml = t.hora ? `<div class="turno-row"><b>Hora:</b> ${escapeAttr(t.hora)}</div>` : '';
+  const ubicacionHtml = t.ubicacion
+    ? `<div class="turno-row"><b>Ubicación:</b> ${escapeAttr(t.ubicacion)}</div>`
+    : '';
+  const personasHtml = (t.personas || [])
+    .map(p => `<div class="turno-row"><b>${escapeAttr(p.label)}:</b> ${escapeAttr(p.nombre)}</div>`)
+    .join('');
+  const diasHtml = (t.dias || [])
+    .map(d => `<div class="turno-row turno-days"><b>${escapeAttr(d.dia)}:</b>${escapeAttr(d.texto)}</div>`)
+    .join('');
+  return `<div class="${clases.join(' ')}"${dataMap}>
+    <div class="turno-time">${escapeAttr(t.titulo)}</div>
+    ${diasLabelHtml}
+    ${horaHtml}
+    ${ubicacionHtml}
+    ${personasHtml}
+    ${diasHtml}
+  </div>`;
+}
+
+async function cargarHorariosAcademia() {
+  try {
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=horarios', { method: 'GET' });
+    if (!resp.ok) throw new Error('No se pudo cargar');
+    const data = await resp.json();
+    const horarios = Array.isArray(data.horarios) ? data.horarios : [];
+    turnoGrid.innerHTML = horarios.map(renderTurnoCard).join('');
+    academiaUpdated.textContent = fmtUltimaActualizacion(data.ultimaActualizacion) || '';
+  } catch (e) {
+    turnoGrid.innerHTML = '<div class="empty-msg">No se pudieron cargar los horarios. Recargá la página.</div>';
+    academiaUpdated.textContent = '';
+  }
+}
+cargarHorariosAcademia();
+
 function renderMacros() {
   const q = macroSearch.value.trim().toLowerCase();
   let filtered = macros;
@@ -2144,8 +2143,13 @@ function openMap(key) {
   document.body.classList.add('mapa-fullscreen');
 }
 
-document.querySelectorAll('.turno-card[data-map]').forEach(card => {
-  card.addEventListener('click', () => openMap(card.dataset.map));
+// Delegado en el contenedor (en vez de engancharse a cada .turno-card):
+// la grilla se arma en vivo con los horarios que vienen del Worker, así
+// que las tarjetas no existen todavía cuando corre este script.
+const turnoGrid = document.getElementById('turnoGrid');
+turnoGrid.addEventListener('click', e => {
+  const card = e.target.closest('.turno-card[data-map]');
+  if (card) openMap(card.dataset.map);
 });
 
 closeMapBtn.addEventListener('click', () => {

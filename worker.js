@@ -18,6 +18,12 @@
 //   POST / { recurso:"tenientes", evaluarAscenso: {...} }    -> evalúa para el rango siguiente
 //   POST / { recurso:"tenientes", cambiarRango: {...} }      -> cambia el rango a mano (panel de administración)
 //
+// Aparte, "horarios" guarda la grilla de horarios de Academia que se ve en
+// index.html (uno por turno: título, hora, ubicación, instructores/
+// auxiliares/evaluadores y días), editable desde admin.html:
+//   GET  /?recurso=horarios                                  -> { horarios: [...], ultimaActualizacion }
+//   POST / { recurso:"horarios", accion:"guardar", codigoAdmin, horarios: [...] } -> reemplaza la grilla completa (solo admin)
+//
 // Recursos disponibles: "asistencias", "tenientes", "capitanes", "mayores", "coroneles".
 // Mayores es el techo por ahora (no tiene rango siguiente configurado), así
 // que ahí no existe la acción de evaluarAscenso en el cliente.
@@ -25,6 +31,102 @@
 const KV_KEY_ASISTENCIAS = "asistencias";
 const KV_KEY_EVALUACIONES = "evaluaciones"; // legacy, ya no lo usa nada activo
 const KV_KEY_CODIGOS = "codigos_acceso";
+const KV_KEY_HORARIOS = "horarios_academia";
+
+// Semilla inicial de los horarios de Academia (la grilla que se ve en
+// index.html). Solo se usa la primera vez, si todavía no hay nada guardado
+// en el KV bajo KV_KEY_HORARIOS — es la migración de lo que antes estaba
+// escrito a mano en el HTML. Después de esa primera vez el KV manda
+// siempre, y todo se edita desde el panel de administración (admin.html).
+const HORARIOS_SEED = [
+  {
+    id: "evaluaciones",
+    titulo: "🎯 EVALUACIONES",
+    destacado: true,
+    diasLabel: "Lunes y Jueves",
+    hora: "🚨 Por Definir",
+    ubicacion: "Piso 2",
+    mapa: "vestidores",
+    personas: [
+      { label: "Evaluador", nombre: "Lilith Nyx" },
+      { label: "Evaluador", nombre: "Drak Reem" },
+      { label: "Evaluador", nombre: "Goliath Crawley" },
+    ],
+    dias: [],
+  },
+  {
+    id: "clase1",
+    titulo: "🕔 PRIMERA CLASE",
+    destacado: false,
+    diasLabel: "",
+    hora: "17:00 - 19:00",
+    ubicacion: "Sala de Revista",
+    mapa: "sala-revista",
+    personas: [
+      { label: "Instructor", nombre: "Moises Medez" },
+      { label: "Auxiliar", nombre: "🚨 Por Definir" },
+    ],
+    dias: [
+      { dia: "Martes", texto: "📜 Modulo A" },
+      { dia: "Miercoles", texto: "💬 Modulo B" },
+      { dia: "Viernes", texto: "⚖️ Modulo C" },
+    ],
+  },
+  {
+    id: "clase2",
+    titulo: "🕗 SEGUNDA CLASE",
+    destacado: false,
+    diasLabel: "",
+    hora: "20:00 - 22:00",
+    ubicacion: "Sala de Revista",
+    mapa: "sala-revista",
+    personas: [
+      { label: "Instructor", nombre: "Jacobo Vargas" },
+      { label: "Auxiliar", nombre: "Eliel Crawley" },
+    ],
+    dias: [
+      { dia: "Martes", texto: "💬 Modulo B" },
+      { dia: "Miercoles", texto: "⚖️ Modulo C" },
+      { dia: "Viernes", texto: "🛡️ Modulo D" },
+    ],
+  },
+  {
+    id: "clase3",
+    titulo: "🕚 TERCERA CLASE",
+    destacado: false,
+    diasLabel: "",
+    hora: "23:00 - 01:00",
+    ubicacion: "Sala de Revista",
+    mapa: "sala-revista",
+    personas: [
+      { label: "Instructor", nombre: "Goliat Crawley" },
+      { label: "Auxiliar", nombre: "Axo Velasco" },
+    ],
+    dias: [
+      { dia: "Martes", texto: "⚖️ Modulo C" },
+      { dia: "Miercoles", texto: "🛡️ Modulo D" },
+      { dia: "Viernes", texto: "📜 Modulo A" },
+    ],
+  },
+  {
+    id: "clase4",
+    titulo: "🕑 CUARTA CLASE",
+    destacado: false,
+    diasLabel: "",
+    hora: "02:00 - 04:00",
+    ubicacion: "Sala de Revista",
+    mapa: "sala-revista",
+    personas: [
+      { label: "Instructor", nombre: "Lilith Black" },
+      { label: "Auxiliar", nombre: "Sr Chakalito" },
+    ],
+    dias: [
+      { dia: "Martes", texto: "🛡️ Modulo D" },
+      { dia: "Miercoles", texto: "📜 Modulo A" },
+      { dia: "Viernes", texto: "💬 Modulo B" },
+    ],
+  },
+];
 
 // Semilla inicial: solo se usa la primera vez, si todavía no hay nada
 // guardado en el KV bajo KV_KEY_CODIGOS. Después de esa primera vez, el KV
@@ -206,6 +308,83 @@ async function manejarCodigos(request, env, payload) {
   }
 
   return json({ error: "Acción de códigos no reconocida." }, 400);
+}
+
+// ==================== horarios de Academia (grilla que se ve en index.html) ====================
+// Cada turno: {
+//   id, titulo, destacado, diasLabel, hora, ubicacion, mapa,
+//   personas: [{label, nombre}],   // Instructor/Auxiliar/Evaluador, en el orden que se muestran
+//   dias: [{dia, texto}],          // desglose por día (ej. Martes: Modulo A), en el orden que se muestran
+// }
+// "diasLabel" es para el caso de un turno con un solo renglón de días en
+// texto libre (ej. "Lunes y Jueves"), en vez del desglose día por día.
+async function cargarHorarios(env) {
+  const raw = await env.ASISTENCIAS_KV.get(KV_KEY_HORARIOS);
+  if (!raw) return { horarios: HORARIOS_SEED, ultimaActualizacion: null };
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.horarios)) {
+      return { horarios: parsed.horarios, ultimaActualizacion: parsed.ultimaActualizacion || null };
+    }
+    return { horarios: HORARIOS_SEED, ultimaActualizacion: null };
+  } catch (e) {
+    return { horarios: HORARIOS_SEED, ultimaActualizacion: null };
+  }
+}
+
+async function guardarHorarios(env, horarios) {
+  const estado = { horarios, ultimaActualizacion: new Date().toISOString() };
+  await env.ASISTENCIAS_KV.put(KV_KEY_HORARIOS, JSON.stringify(estado));
+  return estado;
+}
+
+function limpiarPersonaHorario(p) {
+  return {
+    label: String((p && p.label) || "").trim() || "Instructor",
+    nombre: String((p && p.nombre) || "").trim() || "🚨 Por Definir",
+  };
+}
+function limpiarDiaHorario(d) {
+  return {
+    dia: String((d && d.dia) || "").trim(),
+    texto: String((d && d.texto) || "").trim(),
+  };
+}
+function limpiarTurnoHorario(t, i) {
+  return {
+    id: String((t && t.id) || "").trim() || `turno_${Date.now()}_${i}`,
+    titulo: String((t && t.titulo) || "").trim() || "NUEVO TURNO",
+    destacado: !!(t && t.destacado),
+    diasLabel: String((t && t.diasLabel) || "").trim(),
+    hora: String((t && t.hora) || "").trim() || "🚨 Por Definir",
+    ubicacion: String((t && t.ubicacion) || "").trim(),
+    mapa: String((t && t.mapa) || "").trim(),
+    personas: Array.isArray(t && t.personas) ? t.personas.map(limpiarPersonaHorario) : [],
+    dias: Array.isArray(t && t.dias) ? t.dias.map(limpiarDiaHorario) : [],
+  };
+}
+
+async function manejarHorarios(request, env, payload) {
+  if (request.method === "GET") {
+    const { horarios, ultimaActualizacion } = await cargarHorarios(env);
+    return json({ horarios, ultimaActualizacion });
+  }
+
+  if (payload.accion === "guardar") {
+    const codigos = await cargarCodigos(env);
+    const admin = codigos[String(payload.codigoAdmin || "").trim()];
+    if (!admin || !rolAlcanza(admin.rol, "administrador")) {
+      return json({ error: "Ese código no tiene permisos de administrador." }, 403);
+    }
+    if (!Array.isArray(payload.horarios)) {
+      return json({ error: "Formato de horarios inválido." }, 400);
+    }
+    const limpio = payload.horarios.map((t, i) => limpiarTurnoHorario(t, i));
+    const estado = await guardarHorarios(env, limpio);
+    return json({ ok: true, horarios: estado.horarios, ultimaActualizacion: estado.ultimaActualizacion });
+  }
+
+  return json({ error: "Acción de horarios no reconocida." }, 400);
 }
 
 // ==================== evaluaciones (legacy, orfanato) ====================
@@ -638,6 +817,9 @@ export default {
         if (recurso === "codigos") {
           return await manejarCodigos(request, env, {});
         }
+        if (recurso === "horarios") {
+          return await manejarHorarios(request, env, {});
+        }
         if (recurso === "evaluacionesVisor") {
           return await manejarEvaluacionesVisor(request, env);
         }
@@ -660,6 +842,9 @@ export default {
 
         if (payload.recurso === "codigos") {
           return await manejarCodigos(request, env, payload);
+        }
+        if (payload.recurso === "horarios") {
+          return await manejarHorarios(request, env, payload);
         }
         if (payload.recurso === "evaluacionesLegacy") {
           return await manejarEvaluacionesLegacy(request, env, payload);
