@@ -598,7 +598,7 @@
 
 <div class="admin-gate" id="gatePanel">
   <div class="modal-sub">Ingresá tu código de administrador para entrar.</div>
-  <input type="text" id="inputCodigoAdmin" placeholder="Código..." autocomplete="off">
+  <input type="password" id="inputCodigoAdmin" placeholder="Código..." autocomplete="off">
   <div class="modal-error" id="gateError"></div>
   <div class="modal-actions" style="justify-content:center;">
     <button class="btn btn-primario" id="btnEntrar">Entrar</button>
@@ -849,7 +849,10 @@ document.getElementById('btnSalirAdmin').addEventListener('click', () => {
 
 function iniciarPanel() {
   cargarCodigosDesdeServidor();
-  cargarHorariosDesdeServidor();
+  (async () => {
+    await cargarRosterNombres();
+    await cargarHorariosDesdeServidor();
+  })();
   cargarNombresPorLista();
   document.getElementById('altaRango').innerHTML = LISTAS.map(r => `<option value="${RANGOS[r]}">${RANGOS[r]}</option>`).join('');
 }
@@ -882,9 +885,12 @@ function renderTablaCodigos() {
       <td><input type="text" class="cod-campo-nombre" data-idx="${i}" value="${escapeAttr(c.nombre)}"></td>
       <td>
         <select class="cod-campo-rol" data-idx="${i}">
+          <option value="instructor_prueba" ${c.rol === 'instructor_prueba' ? 'selected' : ''}>instructor a prueba</option>
           <option value="instructor" ${c.rol === 'instructor' ? 'selected' : ''}>instructor</option>
           <option value="evaluador" ${c.rol === 'evaluador' ? 'selected' : ''}>evaluador</option>
           <option value="administrador" ${c.rol === 'administrador' ? 'selected' : ''}>administrador</option>
+          <option value="sublider" ${c.rol === 'sublider' ? 'selected' : ''}>sublíder</option>
+          <option value="lider" ${c.rol === 'lider' ? 'selected' : ''}>líder</option>
         </select>
       </td>
       <td><span class="quitar" data-idx="${i}" title="Quitar" style="cursor:pointer;color:var(--red);">✕</span></td>
@@ -934,11 +940,26 @@ document.getElementById('btnGuardarCodigos').addEventListener('click', async () 
     codigosObj[c.codigo] = { nombre: c.nombre, rol: c.rol };
   }
 
+  const cantLideres = codigosLocal.filter(c => c.rol === 'lider').length;
+  const cantSublideres = codigosLocal.filter(c => c.rol === 'sublider').length;
+  if (cantLideres > 1) {
+    codigosMsg.textContent = 'Solo puede haber un líder — hay más de uno marcado.';
+    codigosMsg.className = 'admin-msg error';
+    return;
+  }
+  if (cantSublideres > 2) {
+    codigosMsg.textContent = 'Solo puede haber hasta dos sublíderes — hay más de dos marcados.';
+    codigosMsg.className = 'admin-msg error';
+    return;
+  }
+
   const btnGuardar = document.getElementById('btnGuardarCodigos');
   btnGuardar.disabled = true;
   btnGuardar.textContent = 'Guardando...';
   try {
     await postAccion('codigos', { accion: 'guardar', codigoAdmin: codigoAdminActual, codigos: codigosObj });
+    await cargarRosterNombres();
+    renderHorarios();
     codigosMsg.textContent = 'Listo — los códigos ya quedaron guardados en el servidor. Se aplican al toque en todas las páginas.';
     codigosMsg.className = 'admin-msg ok';
   } catch (e) {
@@ -961,6 +982,36 @@ const MAPAS_DISPONIBLES = [
   { value: 'sala-revista', label: 'Sala de Revista' },
   { value: 'vestidores', label: 'Vestidores' },
 ];
+
+// Roles que puede tener una fila de "persona" dentro de un turno, y a qué
+// lista del roster (nombres de codigos.js/Worker) corresponde cada uno
+// para poblar el desplegable de nombres.
+// - "Instructor" acepta a cualquiera del roster EXCEPTO instructores a
+//   prueba (todavía no están habilitados para dar clase como titulares).
+// - "Auxiliar" no es un rol de acceso propio, así que acepta a cualquiera
+//   del roster sin restricción (incluidos los instructores a prueba).
+const ROLES_TURNO = { Instructor: 'instructoresElegibles', Auxiliar: 'todos', Evaluador: 'evaluadores' };
+let rosterNombres = { todos: [], instructores: [], evaluadores: [], soloEvaluadores: [], instructoresPrueba: [], lideres: [], sublideres: [], instructoresElegibles: [] };
+
+async function cargarRosterNombres() {
+  try {
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=codigos', { method: 'GET' });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const todos = Array.isArray(data.todos) ? data.todos : [];
+    const instructoresPrueba = Array.isArray(data.instructoresPrueba) ? data.instructoresPrueba : [];
+    rosterNombres = {
+      todos,
+      instructores: Array.isArray(data.instructores) ? data.instructores : [],
+      evaluadores: Array.isArray(data.evaluadores) ? data.evaluadores : [],
+      soloEvaluadores: Array.isArray(data.soloEvaluadores) ? data.soloEvaluadores : [],
+      instructoresPrueba,
+      lideres: Array.isArray(data.lideres) ? data.lideres : [],
+      sublideres: Array.isArray(data.sublideres) ? data.sublideres : [],
+      instructoresElegibles: todos.filter(n => !instructoresPrueba.includes(n)),
+    };
+  } catch (e) { /* deja los arrays vacíos, los desplegables quedan sin opciones del roster */ }
+}
 
 async function cargarHorariosDesdeServidor() {
   horariosMsg.textContent = 'Cargando...';
@@ -990,6 +1041,26 @@ async function cargarHorariosDesdeServidor() {
 
 function opcionesMapa(seleccionado) {
   return MAPAS_DISPONIBLES.map(m => `<option value="${escapeAttr(m.value)}" ${m.value === (seleccionado || '') ? 'selected' : ''}>${escapeHtml(m.label)}</option>`).join('');
+}
+
+function opcionesRolPersona(seleccionado) {
+  return Object.keys(ROLES_TURNO).map(r => `<option value="${escapeAttr(r)}" ${r === seleccionado ? 'selected' : ''}>${escapeHtml(r)}</option>`).join('');
+}
+
+function opcionesNombrePersona(label, actual) {
+  const clave = ROLES_TURNO[label] || 'todos';
+  const base = (rosterNombres[clave] || rosterNombres.todos || []).slice();
+  if (actual && !base.includes(actual)) base.unshift(actual);
+  if (!base.includes('🚨 Por Definir')) base.unshift('🚨 Por Definir');
+  const vistos = new Set();
+  const opciones = base.filter(n => {
+    if (!n) return false;
+    const k = n.toLowerCase();
+    if (vistos.has(k)) return false;
+    vistos.add(k);
+    return true;
+  });
+  return opciones.map(n => `<option value="${escapeAttr(n)}" ${n === actual ? 'selected' : ''}>${escapeHtml(n)}</option>`).join('');
 }
 
 function renderHorarios() {
@@ -1032,8 +1103,8 @@ function renderHorarios() {
         <tbody>
           ${t.personas.map((p, j) => `
             <tr>
-              <td><input type="text" class="persona-campo-label" data-idx="${i}" data-j="${j}" value="${escapeAttr(p.label)}"></td>
-              <td><input type="text" class="persona-campo-nombre" data-idx="${i}" data-j="${j}" value="${escapeAttr(p.nombre)}"></td>
+              <td><select class="persona-campo-label" data-idx="${i}" data-j="${j}">${opcionesRolPersona(p.label)}</select></td>
+              <td><select class="persona-campo-nombre" data-idx="${i}" data-j="${j}">${opcionesNombrePersona(p.label, p.nombre)}</select></td>
               <td><span class="quitar" data-idx="${i}" data-j="${j}" data-accion="quitar-persona" title="Quitar" style="cursor:pointer;color:var(--red);">✕</span></td>
             </tr>`).join('') || '<tr><td colspan="3" style="color:var(--muted);">Sin filas todavía.</td></tr>'}
         </tbody>
@@ -1066,8 +1137,6 @@ horariosListaEl.addEventListener('input', e => {
   else if (e.target.classList.contains('turno-campo-hora')) t.hora = e.target.value;
   else if (e.target.classList.contains('turno-campo-ubicacion')) t.ubicacion = e.target.value;
   else if (e.target.classList.contains('turno-campo-diaslabel')) t.diasLabel = e.target.value;
-  else if (e.target.classList.contains('persona-campo-label') && j !== null && t.personas[j]) t.personas[j].label = e.target.value;
-  else if (e.target.classList.contains('persona-campo-nombre') && j !== null && t.personas[j]) t.personas[j].nombre = e.target.value;
   else if (e.target.classList.contains('dia-campo-dia') && j !== null && t.dias[j]) t.dias[j].dia = e.target.value;
   else if (e.target.classList.contains('dia-campo-texto') && j !== null && t.dias[j]) t.dias[j].texto = e.target.value;
 });
@@ -1075,8 +1144,19 @@ horariosListaEl.addEventListener('input', e => {
 horariosListaEl.addEventListener('change', e => {
   const idx = Number(e.target.dataset.idx);
   if (Number.isNaN(idx) || !horariosLocal[idx]) return;
-  if (e.target.classList.contains('turno-campo-mapa')) horariosLocal[idx].mapa = e.target.value;
-  if (e.target.classList.contains('turno-campo-destacado')) horariosLocal[idx].destacado = e.target.checked;
+  const t = horariosLocal[idx];
+  const j = e.target.dataset.j !== undefined ? Number(e.target.dataset.j) : null;
+  if (e.target.classList.contains('turno-campo-mapa')) { t.mapa = e.target.value; return; }
+  if (e.target.classList.contains('turno-campo-destacado')) { t.destacado = e.target.checked; return; }
+  if (e.target.classList.contains('persona-campo-nombre') && j !== null && t.personas[j]) { t.personas[j].nombre = e.target.value; return; }
+  if (e.target.classList.contains('persona-campo-label') && j !== null && t.personas[j]) {
+    t.personas[j].label = e.target.value;
+    // Al cambiar el rol, el nombre elegido pertenecía a la lista vieja del
+    // roster — se resetea a "Por Definir" y se vuelve a pintar para que el
+    // desplegable de nombre muestre las opciones del rol nuevo.
+    t.personas[j].nombre = '🚨 Por Definir';
+    renderHorarios();
+  }
 });
 
 horariosListaEl.addEventListener('click', e => {
@@ -1090,7 +1170,7 @@ horariosListaEl.addEventListener('click', e => {
     if (!confirm('¿Quitar este turno de la grilla? (no se guarda hasta que toques "Guardar cambios")')) return;
     horariosLocal.splice(idx, 1);
   } else if (accion === 'agregar-persona') {
-    t.personas.push({ label: 'Instructor', nombre: '' });
+    t.personas.push({ label: 'Instructor', nombre: '🚨 Por Definir' });
   } else if (accion === 'quitar-persona') {
     t.personas.splice(Number(btn.dataset.j), 1);
   } else if (accion === 'agregar-dia') {

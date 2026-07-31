@@ -794,6 +794,20 @@ h1 {
     inset 0 0 14px rgba(212,146,42,0.15),
     0 0 8px rgba(212,146,42,0.25);
 }
+.admin-card {
+  display: block;
+  text-decoration: none;
+  border-color: rgba(139, 143, 154, 0.5);
+}
+.admin-card .turno-time {
+  color: #b8bcc6;
+}
+.admin-card:hover {
+  box-shadow:
+    inset 0 0 0 1px rgba(139,143,154,0.5),
+    inset 0 0 14px rgba(139,143,154,0.15),
+    0 0 8px rgba(139,143,154,0.25);
+}
 .academia-two-col {
   position: relative;
   z-index: 1;
@@ -847,28 +861,6 @@ h1 {
 }
 .roster-admin-row {
   margin-top: 18px;
-  text-align: center;
-}
-.btn-admin-link {
-  display: inline-block;
-  background: linear-gradient(180deg, #5b6b82, #414f63);
-  border: 1px solid rgba(148,163,184,0.55);
-  color: #e8ecf1;
-  font-family: 'Bebas Neue', -apple-system, sans-serif;
-  letter-spacing: 0.05em;
-  font-size: 0.95rem;
-  padding: 10px 24px;
-  border-radius: 4px;
-  text-decoration: none;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  transition: filter 0.15s ease, transform 0.1s ease;
-}
-.btn-admin-link:hover {
-  filter: brightness(1.15);
-}
-.btn-admin-link:active {
-  transform: translateY(1px);
 }
 .temario-grid {
   display: grid;
@@ -942,25 +934,34 @@ h1 {
 }
 .evaluaciones-tabs {
   display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin: 10px 0 4px;
+  gap: 3px;
+  margin: 0 0 -1px;
+  padding: 0 2px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
+.evaluaciones-tabs::-webkit-scrollbar { height: 4px; }
 .eval-tab {
-  background: var(--card);
-  border: 1px solid var(--border);
+  flex-shrink: 0;
+  white-space: nowrap;
+  background: rgba(15,17,21,0.75);
+  border: 1px solid rgba(255,184,79,0.3);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
   color: var(--muted);
-  padding: 8px 20px;
-  font-size: 0.8rem;
+  padding: 9px 18px;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   cursor: pointer;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
 }
 .eval-tab.active {
-  border-color: var(--accent);
+  position: relative;
+  z-index: 2;
+  border-color: rgba(255,184,79,0.5);
   color: var(--accent2);
-  background: #2a2416;
+  background: rgba(5,7,10,0.55);
 }
 .eval-tab:hover { color: var(--text); }
 .recruit-card:hover {
@@ -1275,17 +1276,21 @@ body.mapa-fullscreen .academia-placeholder {
             <div class="roster-col">
               <div class="roster-group">
                 <div class="roster-role">Líder</div>
-                <div class="roster-names">Lilith Nyx</div>
+                <div class="roster-names" id="rosterLider">—</div>
               </div>
               <div class="roster-group">
                 <div class="roster-role">Sublíder(es)</div>
-                <div class="roster-names">Drak Reem</div>
+                <div class="roster-names" id="rosterSublideres">—</div>
               </div>
             </div>
             <div class="roster-col">
               <div class="roster-group">
                 <div class="roster-role">Instructores</div>
                 <div class="roster-names" id="rosterInstructores">—</div>
+              </div>
+              <div class="roster-group">
+                <div class="roster-role">Instructores a prueba</div>
+                <div class="roster-names" id="rosterInstructoresPrueba">—</div>
               </div>
             </div>
             <div class="roster-col">
@@ -1296,7 +1301,10 @@ body.mapa-fullscreen .academia-placeholder {
             </div>
           </div>
           <div class="roster-admin-row">
-            <a href="admin.html" class="btn-admin-link">⚙️ Administración</a>
+            <a href="admin.html" class="turno-card admin-card">
+              <div class="turno-time">⚙️ ADMINISTRACIÓN</div>
+              <div class="turno-row">Editar horarios, códigos de acceso y roster</div>
+            </a>
           </div>
         </div>
       </div>
@@ -1884,11 +1892,14 @@ async function validarCodigoEnServidor(codigo) {
 
 // ---- Roster de Instructores/Evaluadores (se llena solo desde el Worker) ----
 // Nota: "Evaluadores" acá muestra solo a quienes tienen ese rol exacto (no
-// a los administradores, que ya figuran arriba como Líder/Sublíder), para
-// no repetir nombres en dos categorías a la vez.
+// a los administradores/líder/sublíder, que ya figuran arriba en sus
+// propias categorías), para no repetir nombres en dos categorías a la vez.
 async function poblarRosterAcademia() {
   const rosterInstructoresEl = document.getElementById('rosterInstructores');
+  const rosterInstructoresPruebaEl = document.getElementById('rosterInstructoresPrueba');
   const rosterEvaluadoresEl = document.getElementById('rosterEvaluadores');
+  const rosterLiderEl = document.getElementById('rosterLider');
+  const rosterSublideresEl = document.getElementById('rosterSublideres');
   try {
     const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=codigos', { method: 'GET' });
     if (!resp.ok) return;
@@ -1897,9 +1908,21 @@ async function poblarRosterAcademia() {
       const instructores = Array.isArray(data.instructores) ? data.instructores : [];
       rosterInstructoresEl.textContent = instructores.length ? instructores.join(' • ') : '—';
     }
+    if (rosterInstructoresPruebaEl) {
+      const instructoresPrueba = Array.isArray(data.instructoresPrueba) ? data.instructoresPrueba : [];
+      rosterInstructoresPruebaEl.textContent = instructoresPrueba.length ? instructoresPrueba.join(' • ') : '—';
+    }
     if (rosterEvaluadoresEl) {
       const soloEvaluadores = Array.isArray(data.soloEvaluadores) ? data.soloEvaluadores : [];
       rosterEvaluadoresEl.textContent = soloEvaluadores.length ? soloEvaluadores.join(' • ') : '—';
+    }
+    if (rosterLiderEl) {
+      const lideres = Array.isArray(data.lideres) ? data.lideres : [];
+      rosterLiderEl.textContent = lideres.length ? lideres.join(' • ') : '—';
+    }
+    if (rosterSublideresEl) {
+      const sublideres = Array.isArray(data.sublideres) ? data.sublideres : [];
+      rosterSublideresEl.textContent = sublideres.length ? sublideres.join(' • ') : '—';
     }
   } catch (e) { /* deja los guiones, no rompe nada */ }
 }
@@ -2026,7 +2049,7 @@ async function confirmarCodigoInstructor() {
   btnConfirmarInstructorCodigo.disabled = true;
   try {
     const usuario = await validarCodigoEnServidor(codigo);
-    if (usuario && rolAlcanza(usuario.rol, 'instructor')) {
+    if (usuario && (usuario.rol === 'instructor_prueba' || rolAlcanza(usuario.rol, 'instructor'))) {
       instruccionDesbloqueada = true;
       cerrarModalInstructor();
       renderMacros();

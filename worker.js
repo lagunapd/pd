@@ -142,7 +142,20 @@ const CODIGOS_SEED = {
   "1232e": { nombre: "Eliel Martinez", rol: "instructor" },
   "1231g": { nombre: "Goliat Crawley", rol: "instructor" },
 };
-const NIVELES_ROL = { instructor: 1, evaluador: 2, administrador: 3 };
+// Mismo ranking que codigos.js (acá se necesita aparte porque el Worker no
+// puede importar ese archivo). "instructor_prueba" queda por debajo de
+// "instructor" a propósito (su único permiso, ver Macros de Instrucción, se
+// chequea aparte en el cliente); "lider"/"sublider" quedan al mismo nivel
+// que "administrador" (mismos permisos, pero categorías separadas — máximo
+// 1 líder y 2 sublíderes, validado más abajo al guardar).
+const NIVELES_ROL = {
+  instructor_prueba: 1,
+  instructor: 2,
+  evaluador: 3,
+  administrador: 4,
+  sublider: 4,
+  lider: 4,
+};
 function rolAlcanza(rolActual, rolRequerido) {
   return (NIVELES_ROL[rolActual] || 0) >= (NIVELES_ROL[rolRequerido] || 99);
 }
@@ -258,9 +271,12 @@ async function guardarCodigos(env, codigos) {
 function nombresDeCodigos(codigos) {
   const todos = Object.values(codigos).map((u) => u.nombre);
   const instructores = Object.values(codigos).filter((u) => u.rol === "instructor").map((u) => u.nombre);
+  const instructoresPrueba = Object.values(codigos).filter((u) => u.rol === "instructor_prueba").map((u) => u.nombre);
   const evaluadores = Object.values(codigos).filter((u) => rolAlcanza(u.rol, "evaluador")).map((u) => u.nombre);
   const soloEvaluadores = Object.values(codigos).filter((u) => u.rol === "evaluador").map((u) => u.nombre);
-  return { todos, instructores, evaluadores, soloEvaluadores };
+  const lideres = Object.values(codigos).filter((u) => u.rol === "lider").map((u) => u.nombre);
+  const sublideres = Object.values(codigos).filter((u) => u.rol === "sublider").map((u) => u.nombre);
+  return { todos, instructores, instructoresPrueba, evaluadores, soloEvaluadores, lideres, sublideres };
 }
 
 // recurso "codigos": maneja el acceso (validar código) y el panel de
@@ -302,6 +318,15 @@ async function manejarCodigos(request, env, payload) {
       if (!cod || !u || !u.nombre || !u.rol || !NIVELES_ROL[u.rol]) {
         return json({ error: `Entrada inválida para el código "${cod}".` }, 400);
       }
+    }
+    const entradas = Object.values(payload.codigos);
+    const cantLideres = entradas.filter((u) => u.rol === "lider").length;
+    const cantSublideres = entradas.filter((u) => u.rol === "sublider").length;
+    if (cantLideres > 1) {
+      return json({ error: "Solo puede haber un líder — hay más de uno marcado." }, 400);
+    }
+    if (cantSublideres > 2) {
+      return json({ error: "Solo puede haber hasta dos sublíderes — hay más de dos marcados." }, 400);
     }
     await guardarCodigos(env, payload.codigos);
     return json({ ok: true, codigos: payload.codigos });

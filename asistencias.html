@@ -535,6 +535,7 @@
   <select id="orden">
     <option value="alfabetico">Orden alfabético (A-Z)</option>
     <option value="puntos">Mayor puntaje primero</option>
+    <option value="procedimientos">Con Procedimientos aprobada primero</option>
   </select>
 </div>
 
@@ -562,7 +563,7 @@
   <div class="modal-box">
     <h2>Código de Registrador</h2>
     <div class="modal-sub">Ingresá tu código para identificarte antes de registrar asistencias.</div>
-    <input type="text" id="inputCodigo" placeholder="Código..." maxlength="12" autocomplete="off">
+    <input type="password" id="inputCodigo" placeholder="Código..." maxlength="12" autocomplete="off">
     <div class="modal-error" id="codigoError"></div>
     <div class="modal-actions">
       <button class="btn btn-secundario" id="btnCancelarCodigo">Cancelar</button>
@@ -639,7 +640,7 @@
   <div class="modal-box">
     <h2>Código de Administrador</h2>
     <div class="modal-sub">Ingresá tu código de administrador para editar el registro de cualquier persona.</div>
-    <input type="text" id="inputCodigoEditar" placeholder="Código..." maxlength="12" autocomplete="off">
+    <input type="password" id="inputCodigoEditar" placeholder="Código..." maxlength="12" autocomplete="off">
     <div class="modal-error" id="codigoEditarError"></div>
     <div class="modal-actions">
       <button class="btn btn-secundario" id="btnCancelarCodigoEditar">Cancelar</button>
@@ -738,7 +739,7 @@
   <div class="modal-box">
     <h2>Código de Evaluador</h2>
     <div class="modal-sub">Ingresá tu código de evaluador o administrador para evaluar a esta persona.</div>
-    <input type="text" id="inputCodigoEvaluar" placeholder="Código..." maxlength="12" autocomplete="off">
+    <input type="password" id="inputCodigoEvaluar" placeholder="Código..." maxlength="12" autocomplete="off">
     <div class="modal-error" id="codigoEvaluarError"></div>
     <div class="modal-actions">
       <button class="btn btn-secundario" id="btnCancelarCodigoEvaluar">Cancelar</button>
@@ -966,6 +967,8 @@ function render() {
 
   const sortFn = orden.value === 'puntos'
     ? (a, b) => puntos(b) - puntos(a) || a.nombre.localeCompare(b.nombre, 'es')
+    : orden.value === 'procedimientos'
+    ? (a, b) => (tieneProcedimientos(b) - tieneProcedimientos(a)) || a.nombre.localeCompare(b.nombre, 'es')
     : (a, b) => a.nombre.localeCompare(b.nombre, 'es');
 
   const destacados = filtered.filter(a => cumpleRequisitos(a)).slice().sort(sortFn);
