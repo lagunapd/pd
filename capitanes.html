@@ -556,7 +556,7 @@
 </table>
 
 <div class="note">
-  Pasá el mouse sobre cualquier punto 🟢, 🟡, 🛡️ o ❗ para ver quién lo registró, en qué fecha, turno e instructor (o motivo, si es una llamada de atención). El 🛡️ marca específicamente una clase de Procedimientos. El ❗ es una llamada de atención: cada una exige una clase de Procedimientos extra antes de poder evaluar — apenas se registra una clase real, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos</b> (ya descontadas las llamadas sin compensar) <b>y 15 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. La clase de Procedimientos solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam". Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos y 15 BodyCams aprobadas (y tiene el rango de Capitán asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Mayores (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
+  Al registrar una clase, elegí el rango de cada persona en su fila: así se puede cargar una sola clase con gente mezclada de distintos rangos desde cualquiera de las 5 listas (Asistencias, Tenientes, Capitanes, Mayores, Coroneles) — cada quien queda anotado en su lista correspondiente, no en la que tenías abierta. Pasá el mouse sobre cualquier punto 🟢, 🟡, 🛡️ o ❗ para ver quién lo registró, en qué fecha, turno e instructor (o motivo, si es una llamada de atención). El 🛡️ marca específicamente una clase de Procedimientos. El ❗ es una llamada de atención: cada una exige una clase de Procedimientos extra antes de poder evaluar — apenas se registra una clase real, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos</b> (ya descontadas las llamadas sin compensar) <b>y 15 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. La clase de Procedimientos solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam". Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos y 15 BodyCams aprobadas (y tiene el rango de Capitán asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Mayores (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
 </div>
 
 <!-- Modal 1: código de registrador -->
@@ -601,6 +601,16 @@
         <datalist id="listaNombres"></datalist>
       </div>
       <div class="modal-field">
+        <label>Rango</label>
+        <select id="inputRango">
+          <option value="Uniformado">Uniformado</option>
+          <option value="Teniente">Teniente</option>
+          <option value="Capitán">Capitán</option>
+          <option value="Mayor">Mayor</option>
+          <option value="Coronel">Coronel</option>
+        </select>
+      </div>
+      <div class="modal-field">
         <label>Punto</label>
         <div class="tipo-selector">
           <button type="button" class="tipo-btn tipo-verde active" data-tipo="verde" id="btnTipoVerde">🟢 Verde</button>
@@ -613,7 +623,7 @@
 
     <div class="mini-lista-wrap" id="miniListaWrap">
       <table class="mini-lista">
-        <thead><tr><th>Nombre</th><th>Punto</th><th></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Rango</th><th>Punto</th><th></th></tr></thead>
         <tbody id="miniListaBody"></tbody>
       </table>
     </div>
@@ -844,6 +854,12 @@
 // evaluación (junto con las BodyCams aprobadas) y solo la pueden registrar
 // evaluadores o administradores, no instructores comunes.
 const TURNO_PROCEDIMIENTOS = "Procedimientos";
+// Mapeo entre el nombre del rango (el que se elige por fila al registrar
+// una clase) y el recurso/lista donde vive esa gente en el servidor.
+const RANGO_A_RECURSO = { Uniformado: 'asistencias', Teniente: 'tenientes', Capitán: 'capitanes', Mayor: 'mayores', Coronel: 'coroneles' };
+const RECURSO_A_RANGO = { asistencias: 'Uniformado', tenientes: 'Teniente', capitanes: 'Capitán', mayores: 'Mayor', coroneles: 'Coronel' };
+const RECURSO_PROPIO = 'capitanes';
+const RANGO_PROPIO = 'Capitán';
 // Requisito para poder evaluar a Teniente/Capitán para arriba: 3 clases de
 // Procedimientos (ya descontadas las llamadas de atención sin compensar)
 // y 15 BodyCams aprobadas.
@@ -1133,6 +1149,7 @@ inputTurno.addEventListener('change', () => {
 });
 const inputInstructor = document.getElementById('inputInstructor');
 const inputNombre = document.getElementById('inputNombre');
+const inputRango = document.getElementById('inputRango');
 const listaNombres = document.getElementById('listaNombres');
 const nombreError = document.getElementById('nombreError');
 const miniListaBody = document.getElementById('miniListaBody');
@@ -1157,30 +1174,65 @@ function hoyISO() {
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
-function poblarListaNombres() {
-  listaNombres.innerHTML = capitanes
-    .slice()
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-    .map(a => `<option value="${escapeAttr(a.nombre)}">`)
-    .join('');
+let personasTodasLasListas = []; // [{nombre, rango}] combinado de las 5 listas, para autocompletar y sugerir rango
+
+async function fetchListaGenerica(recurso) {
+  try {
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=' + recurso, { method: 'GET' });
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    return Array.isArray(data[recurso]) ? data[recurso] : [];
+  } catch (e) {
+    return [];
+  }
 }
 
-function abrirModalRegistro() {
+async function cargarPersonasTodasLasListas() {
+  const combinado = capitanes.map(p => ({ nombre: p.nombre, rango: p.rango || RANGO_PROPIO }));
+  const otras = Object.entries(RANGO_A_RECURSO).filter(([, recurso]) => recurso !== RECURSO_PROPIO);
+  const resultados = await Promise.all(otras.map(([rango, recurso]) => fetchListaGenerica(recurso).then(lista => ({ rango, lista }))));
+  for (const { rango, lista } of resultados) {
+    for (const p of lista) combinado.push({ nombre: p.nombre, rango: p.rango || rango });
+  }
+  return combinado;
+}
+
+function poblarListaNombresDesde(personas) {
+  const vistos = new Set();
+  const unicos = personas
+    .slice()
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+    .filter(p => {
+      const key = p.nombre.toLowerCase();
+      if (vistos.has(key)) return false;
+      vistos.add(key);
+      return true;
+    });
+  listaNombres.innerHTML = unicos.map(p => `<option value="${escapeAttr(p.nombre)}">`).join('');
+}
+
+async function abrirModalRegistro() {
   registradorInfo.innerHTML = `Registrando como: <b>${escapeHtml(registradorActual)}</b>`;
   inputFecha.value = hoyISO();
   inputTurno.innerHTML = opcionesTurno(null, true);
   inputInstructor.innerHTML = opcionesInstructor(registradorActual, true);
   inputNombre.value = '';
+  inputRango.value = RANGO_PROPIO;
   nombreError.textContent = '';
   tipoSeleccionado = 'verde';
   btnTipoVerde.classList.add('active');
   btnTipoAmarillo.classList.remove('active');
   actualizarEtiquetaVerde(btnTipoVerde, inputTurno.value === TURNO_PROCEDIMIENTOS);
   miniLista = [];
-  poblarListaNombres();
+  // Mostramos de una la propia lista (ya la tenemos en memoria) y de fondo
+  // pedimos las otras 4 para poder buscar/autocompletar a cualquiera, sin
+  // hacer esperar al que está registrando.
+  poblarListaNombresDesde(capitanes.map(p => ({ nombre: p.nombre, rango: p.rango || RANGO_PROPIO })));
   renderMiniLista();
   modalRegistro.classList.remove('hidden');
   setTimeout(() => inputNombre.focus(), 50);
+  personasTodasLasListas = await cargarPersonasTodasLasListas();
+  poblarListaNombresDesde(personasTodasLasListas);
 }
 
 function cerrarModalRegistro() {
@@ -1199,6 +1251,7 @@ function renderMiniLista() {
   miniListaBody.innerHTML = miniLista.map((item, i) => `
     <tr>
       <td>${escapeHtml(item.nombre)}</td>
+      <td>${escapeHtml(item.rango)}</td>
       <td>${item.tipo === 'verde' ? (esProcedimientos ? '🛡️ Procedimientos' : '🟢 Verde') : '🟡 Amarillo'}</td>
       <td><span class="quitar" data-idx="${i}">✕</span></td>
     </tr>
@@ -1223,11 +1276,20 @@ function agregarFila() {
     return;
   }
   nombreError.textContent = '';
-  miniLista.push({ nombre, tipo: tipoSeleccionado });
+  miniLista.push({ nombre, tipo: tipoSeleccionado, rango: inputRango.value });
   inputNombre.value = '';
   inputNombre.focus();
   renderMiniLista();
 }
+
+// Si el nombre escrito/elegido ya existe en alguna de las 5 listas, le
+// sugerimos automáticamente su rango conocido (se puede seguir cambiando a mano).
+inputNombre.addEventListener('input', () => {
+  const val = inputNombre.value.trim().toLowerCase();
+  if (!val) return;
+  const match = personasTodasLasListas.find(p => p.nombre.toLowerCase() === val);
+  if (match) inputRango.value = match.rango;
+});
 
 document.getElementById('btnAgregarFila').addEventListener('click', agregarFila);
 inputNombre.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarFila(); } });
@@ -1256,14 +1318,21 @@ btnConfirmarRegistro.addEventListener('click', async () => {
   const turno = inputTurno.value;
   const instructor = inputInstructor.value;
 
-  const entries = miniLista.map(item => ({
-    nombre: item.nombre,
-    tipo: item.tipo,
-    fecha: fecha,
-    turno: turno,
-    instructor: instructor,
-    registrador: registradorActual,
-  }));
+  // Agrupamos por lista destino según el rango elegido en cada fila: una
+  // sola "clase" acá puede terminar repartida entre varias listas si se
+  // cargó gente de distinto rango.
+  const porRecurso = {};
+  for (const item of miniLista) {
+    const recursoDestino = RANGO_A_RECURSO[item.rango] || RECURSO_PROPIO;
+    (porRecurso[recursoDestino] = porRecurso[recursoDestino] || []).push({
+      nombre: item.nombre,
+      tipo: item.tipo,
+      fecha: fecha,
+      turno: turno,
+      instructor: instructor,
+      registrador: registradorActual,
+    });
+  }
 
   if (!API_URL || API_URL.includes('PEGA_AQUI')) {
     nombreError.textContent = 'Falta configurar el servidor (API_URL). Revisá SETUP.md.';
@@ -1274,24 +1343,41 @@ btnConfirmarRegistro.addEventListener('click', async () => {
   btnConfirmarRegistro.disabled = true;
   btnConfirmarRegistro.textContent = 'Guardando...';
 
-  try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recurso: 'capitanes', entries }),
-    });
-    if (!resp.ok) throw new Error(await errorDe(resp));
-    aplicarEstado(await resp.json());
-    servidorConectado = true;
-    miniLista = [];
-    render();
-    cerrarModalRegistro();
-  } catch (e) {
-    nombreError.textContent = 'No se pudo guardar en el servidor. Revisá tu conexión e intentá de nuevo.';
-  } finally {
-    btnConfirmarRegistro.disabled = false;
-    btnConfirmarRegistro.textContent = 'Agregar';
+  const fallidos = [];
+  for (const [recursoDestino, entries] of Object.entries(porRecurso)) {
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recurso: recursoDestino, entries }),
+      });
+      if (!resp.ok) throw new Error(await errorDe(resp));
+      const data = await resp.json();
+      if (recursoDestino === RECURSO_PROPIO) {
+        aplicarEstado(data);
+        servidorConectado = true;
+      }
+    } catch (e) {
+      fallidos.push(RECURSO_A_RANGO[recursoDestino] || recursoDestino);
+    }
   }
+
+  btnConfirmarRegistro.disabled = false;
+  btnConfirmarRegistro.textContent = 'Agregar';
+
+  if (fallidos.length) {
+    // Dejamos en la mini-lista solo lo que falló, para que sea fácil
+    // reintentar sin tener que cargar todo de nuevo.
+    miniLista = miniLista.filter(item => fallidos.includes(item.rango));
+    nombreError.textContent = `Se guardó el resto, pero falló para: ${fallidos.join(', ')}. Volvé a intentar con esas personas.`;
+    renderMiniLista();
+    render();
+    return;
+  }
+
+  miniLista = [];
+  render();
+  cerrarModalRegistro();
 });
 
 // -------------------- modal 2b: mini lista de registro de BodyCams --------------------
