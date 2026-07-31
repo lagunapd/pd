@@ -1,11 +1,12 @@
 // Worker de Cloudflare para guardar, compartidas entre todos, las listas de
-// clases de cada rango: Asistencias (Uniformados), Tenientes, Capitanes y
-// Mayores. Las cuatro usan el mismo esquema (clases verde/amarillo, con
-// Procedimientos obligatoria), pidiendo distinta cantidad de clases cada
-// una. Al evaluar a alguien para el rango siguiente, si aprueba pasa de
-// lista con el rango nuevo asignado; si reprueba, se queda donde está. En
-// ambos casos queda una entrada en su historial de evaluaciones (de solo
-// lectura, se ve desde evaluaciones.html).
+// clases de cada rango: Asistencias (Uniformados), Tenientes, Capitanes,
+// Mayores y Coroneles. Las cinco usan el mismo esquema (clases
+// verde/amarillo, con Procedimientos obligatoria), pidiendo distinta
+// cantidad de clases cada una. Al evaluar a alguien para el rango
+// siguiente, si aprueba pasa de lista con el rango nuevo asignado; si
+// reprueba, se queda donde está. En ambos casos queda una entrada en su
+// historial de evaluaciones (de solo lectura, se ve desde
+// evaluaciones.html).
 // No requiere servidor propio: se despliega gratis en Cloudflare.
 //
 // Cada recurso funciona igual, cambiando ?recurso=xxx (asistencias es el
@@ -17,7 +18,7 @@
 //   POST / { recurso:"tenientes", evaluarAscenso: {...} }    -> evalúa para el rango siguiente
 //   POST / { recurso:"tenientes", cambiarRango: {...} }      -> cambia el rango a mano (panel de administración)
 //
-// Recursos disponibles: "asistencias", "tenientes", "capitanes", "mayores".
+// Recursos disponibles: "asistencias", "tenientes", "capitanes", "mayores", "coroneles".
 // Mayores es el techo por ahora (no tiene rango siguiente configurado), así
 // que ahí no existe la acción de evaluarAscenso en el cliente.
 
@@ -229,7 +230,7 @@ async function manejarEvaluacionesLegacy(request, env, payload) {
   return json({ error: "Este recurso legacy ya no acepta escrituras." }, 400);
 }
 
-// ==================== listas de clases (Asistencias/Tenientes/Capitanes/Mayores) ====================
+// ==================== listas de clases (Asistencias/Tenientes/Capitanes/Mayores/Coroneles) ====================
 // Cada persona: {
 //   nombre, rango,
 //   registros: [{tipo, fecha, turno, instructor, registrador}],
@@ -266,6 +267,11 @@ const LISTAS_CLASES = {
   mayores: {
     kvKey: "mayores",
     rangoDefault: "Mayor",
+    siguiente: { recurso: "coroneles", rango: "Coronel" },
+  },
+  coroneles: {
+    kvKey: "coroneles",
+    rangoDefault: "Coronel",
     siguiente: null, // techo por ahora: acá no hay evaluarAscenso
   },
 };

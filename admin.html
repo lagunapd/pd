@@ -617,6 +617,7 @@
           <option value="tenientes">Tenientes</option>
           <option value="capitanes">Capitanes</option>
           <option value="mayores">Mayores</option>
+          <option value="coroneles">Coroneles</option>
         </select>
       </div>
       <div class="admin-field" style="flex:1">
@@ -631,6 +632,7 @@
           <option value="Teniente">Teniente</option>
           <option value="Capitán">Capitán</option>
           <option value="Mayor">Mayor</option>
+          <option value="Coronel">Coronel</option>
         </select>
       </div>
       <button class="btn btn-primario" id="btnCambiarRango">Cambiar rango</button>
@@ -648,6 +650,7 @@
           <option value="tenientes">Tenientes</option>
           <option value="capitanes">Capitanes</option>
           <option value="mayores">Mayores</option>
+          <option value="coroneles">Coroneles</option>
         </select>
       </div>
       <div class="admin-field" style="flex:1">
@@ -683,6 +686,7 @@
       <button class="btn btn-tab" data-tab="tenientes">Teniente</button>
       <button class="btn btn-tab" data-tab="capitanes">Capitán</button>
       <button class="btn btn-tab" data-tab="mayores">Mayor</button>
+      <button class="btn btn-tab" data-tab="coroneles">Coronel</button>
     </div>
     <div id="reporteResumen"></div>
     <table class="admin-tabla" id="tablaReporte">
@@ -735,8 +739,8 @@
 <script>
 // ⚠️ Mismo Worker que el resto del sitio.
 const API_URL = "https://asistencia-lagunapd.popj951203.workers.dev/";
-const LISTAS = ['asistencias', 'tenientes', 'capitanes', 'mayores'];
-const RANGOS = { asistencias: 'Uniformado', tenientes: 'Teniente', capitanes: 'Capitán', mayores: 'Mayor' };
+const LISTAS = ['asistencias', 'tenientes', 'capitanes', 'mayores', 'coroneles'];
+const RANGOS = { asistencias: 'Uniformado', tenientes: 'Teniente', capitanes: 'Capitán', mayores: 'Mayor', coroneles: 'Coronel' };
 const TURNOS_CLASE = ["Primera Clase", "Segunda Clase", "Tercera Clase", "Cuarta Clase", "Quinta Clase", "Procedimientos"];
 
 function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
@@ -922,7 +926,7 @@ document.getElementById('btnGuardarCodigos').addEventListener('click', async () 
 /* ============================================================
    Nombres por lista (para autocompletar cambiar rango / eliminar)
    ============================================================ */
-let personasPorLista = { asistencias: [], tenientes: [], capitanes: [], mayores: [] };
+let personasPorLista = { asistencias: [], tenientes: [], capitanes: [], mayores: [], coroneles: [] };
 
 async function cargarNombresPorLista() {
   for (const recurso of LISTAS) {

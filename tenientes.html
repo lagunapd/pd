@@ -2342,10 +2342,10 @@ const modalObserver = new MutationObserver(() => {
   const modalAbierto = modalesTodos.find(m => m && !m.classList.contains('hidden'));
   if (modalAbierto) {
     // Esperamos un frame para que el padre ya haya aplicado el nuevo alto del iframe
-    // antes de pedirle que centre el scroll en el popup.
+    // antes de pedirle que suba el scroll hasta el popup.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        window.parent.postMessage({ tipo: 'asistencias-centrar' }, '*');
+        window.parent.postMessage({ tipo: 'asistencias-subir' }, '*');
       });
     });
   }

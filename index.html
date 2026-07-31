@@ -1374,6 +1374,7 @@ body.mapa-fullscreen .academia-placeholder {
         <button class="eval-tab" data-lista="tenientes.html">Tenientes</button>
         <button class="eval-tab" data-lista="capitanes.html">Capitanes</button>
         <button class="eval-tab" data-lista="mayores.html">Mayores</button>
+        <button class="eval-tab" data-lista="coroneles.html">Coroneles</button>
       </div>
       <div class="map-frame attendance-frame">
         <iframe src="asistencias.html" class="attendance-iframe"></iframe>
@@ -2257,10 +2258,13 @@ window.addEventListener('message', e => {
     iframeOrigen.style.height = Math.max(320, e.data.alto) + 'px';
   }
 
-  if (e.data.tipo === 'asistencias-centrar') {
+  if (e.data.tipo === 'asistencias-subir') {
+    // El modal ahora se dibuja pegado arriba del iframe (no al medio), así
+    // que acá alineamos el TOP del iframe con el TOP de la ventana en vez
+    // de centrar — si no, quedaba el mismo problema de siempre: el modal
+    // se dibuja arriba pero la página scrollea a la mitad del contenido.
     const rect = iframeOrigen.getBoundingClientRect();
-    const centroIframe = window.scrollY + rect.top + rect.height / 2;
-    const destino = Math.max(0, centroIframe - window.innerHeight / 2);
+    const destino = Math.max(0, window.scrollY + rect.top - 12);
     window.scrollTo({ top: destino, behavior: 'smooth' });
   }
 });

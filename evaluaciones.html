@@ -663,7 +663,7 @@ const modalObserver = new MutationObserver(() => {
   if (!modalHistorial.classList.contains('hidden')) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        window.parent.postMessage({ tipo: 'asistencias-centrar' }, '*');
+        window.parent.postMessage({ tipo: 'asistencias-subir' }, '*');
       });
     });
   }
