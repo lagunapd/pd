@@ -960,7 +960,7 @@ async function cargarDatosServidor() {
 // -------------------- helpers --------------------
 function verdesDe(p) { return p.registros.filter(r => r.tipo === 'verde').length; }
 function amarillosDe(p) { return p.registros.filter(r => r.tipo === 'amarillo').length; }
-function puntos(p) { return verdesDe(p) * 1 + amarillosDe(p) * 0.5; }
+function puntos(p) { return verdesDe(p) + bodycamsDe(p).length; } // de Teniente para arriba: el amarillo no cuenta para el puntaje, solo verde (incluye Procedimientos) + BodyCams
 function fmtPuntos(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
 function tieneProcedimientos(p) { return p.registros.some(r => r.turno === TURNO_PROCEDIMIENTOS); }
 function procedimientosDe(p) { return p.registros.filter(r => r.turno === TURNO_PROCEDIMIENTOS).length; }
@@ -1032,7 +1032,7 @@ function render() {
   const sortFn = orden.value === 'puntos'
     ? (a, b) => puntos(b) - puntos(a) || a.nombre.localeCompare(b.nombre, 'es')
     : orden.value === 'procedimientos'
-    ? (a, b) => (tieneProcedimientos(b) - tieneProcedimientos(a)) || a.nombre.localeCompare(b.nombre, 'es')
+    ? (a, b) => (tieneProcedimientos(b) - tieneProcedimientos(a)) || (puntos(b) - puntos(a)) || a.nombre.localeCompare(b.nombre, 'es')
     : (a, b) => a.nombre.localeCompare(b.nombre, 'es');
 
   const destacados = filtered.filter(a => cumpleRequisitos(a)).slice().sort(sortFn);

@@ -968,7 +968,7 @@ function render() {
   const sortFn = orden.value === 'puntos'
     ? (a, b) => puntos(b) - puntos(a) || a.nombre.localeCompare(b.nombre, 'es')
     : orden.value === 'procedimientos'
-    ? (a, b) => (tieneProcedimientos(b) - tieneProcedimientos(a)) || a.nombre.localeCompare(b.nombre, 'es')
+    ? (a, b) => (tieneProcedimientos(b) - tieneProcedimientos(a)) || (puntos(b) - puntos(a)) || a.nombre.localeCompare(b.nombre, 'es')
     : (a, b) => a.nombre.localeCompare(b.nombre, 'es');
 
   const destacados = filtered.filter(a => cumpleRequisitos(a)).slice().sort(sortFn);
