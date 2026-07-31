@@ -1221,6 +1221,7 @@ async function abrirModalRegistro() {
   inputInstructor.innerHTML = opcionesInstructor(registradorActual, true);
   inputNombre.value = '';
   inputRango.value = RANGO_PROPIO;
+  inputRango.disabled = false;
   nombreError.textContent = '';
   tipoSeleccionado = 'verde';
   btnTipoVerde.classList.add('active');
@@ -1281,17 +1282,28 @@ function agregarFila() {
   nombreError.textContent = '';
   miniLista.push({ nombre, tipo: tipoSeleccionado, rango: inputRango.value });
   inputNombre.value = '';
+  inputRango.disabled = false;
   inputNombre.focus();
   renderMiniLista();
 }
 
 // Si el nombre escrito/elegido ya existe en alguna de las 5 listas, le
-// sugerimos automáticamente su rango conocido (se puede seguir cambiando a mano).
+// autocompletamos su rango conocido y lo bloqueamos (no se puede tocar el
+// rango de alguien que ya tiene uno asignado). Para nombres nuevos el select
+// queda habilitado para elegir el rango a mano.
 inputNombre.addEventListener('input', () => {
   const val = inputNombre.value.trim().toLowerCase();
-  if (!val) return;
+  if (!val) {
+    inputRango.disabled = false;
+    return;
+  }
   const match = personasTodasLasListas.find(p => p.nombre.toLowerCase() === val);
-  if (match) inputRango.value = match.rango;
+  if (match) {
+    inputRango.value = match.rango;
+    inputRango.disabled = true;
+  } else {
+    inputRango.disabled = false;
+  }
 });
 
 document.getElementById('btnAgregarFila').addEventListener('click', agregarFila);
