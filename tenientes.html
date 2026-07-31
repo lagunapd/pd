@@ -486,6 +486,7 @@
 <div class="accion-bar">
   <button class="btn btn-refrescar" id="btnRefrescarLista">🔄 Refrescar</button>
   <button class="btn btn-registrar" id="btnAbrirCodigo">🟢 Registrar Clase</button>
+  <button class="btn btn-registrar" id="btnAbrirCodigoBodycam">🎥 Registrar BodyCam</button>
   <button class="btn btn-editar-global" id="btnAbrirEdicionGlobal">✏️ Editar</button>
   <button class="btn btn-reporte hidden" id="btnGenerarReporte">📄 Generar Reporte</button>
   <span id="modoEdicionBadge" class="modo-edicion-badge hidden">
@@ -546,6 +547,7 @@
       <th class="num">🟢</th>
       <th class="num">🟡</th>
       <th class="num">Clases</th>
+      <th class="num">🎥</th>
       <th class="num col-eliminar"></th>
     </tr>
   </thead>
@@ -553,7 +555,7 @@
 </table>
 
 <div class="note">
-  Pasá el mouse sobre cualquier punto 🟢, 🟡, 🛡️ o ❗ para ver quién lo registró, en qué fecha, turno e instructor (o motivo, si es una llamada de atención). El 🛡️ marca específicamente la clase de Procedimientos cumplida. El ❗ es una llamada de atención: cada una exige una clase verde extra antes de poder evaluar — apenas se registra una clase real, el ❗ se reemplaza solo por la bolita verde correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). Los que llegan a 3 clases útiles <b>incluyendo Procedimientos</b> (ya descontadas las llamadas sin compensar) se marcan en verde y suben al principio de la lista — la clase de Procedimientos es obligatoria y solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases útiles con la de Procedimientos incluida (y tiene el rango de Teniente asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Capitanes (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
+  Pasá el mouse sobre cualquier punto 🟢, 🟡, 🛡️ o ❗ para ver quién lo registró, en qué fecha, turno e instructor (o motivo, si es una llamada de atención). El 🛡️ marca específicamente una clase de Procedimientos. El ❗ es una llamada de atención: cada una exige una clase de Procedimientos extra antes de poder evaluar — apenas se registra una clase real, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos</b> (ya descontadas las llamadas sin compensar) <b>y 10 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. La clase de Procedimientos solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam". Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos y 10 BodyCams aprobadas (y tiene el rango de Teniente asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Capitanes (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
 </div>
 
 <!-- Modal 1: código de registrador -->
@@ -619,6 +621,54 @@
     <div class="modal-actions">
       <button class="btn btn-secundario" id="btnCancelarRegistro">Cancelar</button>
       <button class="btn btn-primario" id="btnConfirmarRegistro">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2b: mini lista de registro de BodyCams -->
+<div class="modal-overlay hidden" id="modalRegistroBodycam">
+  <div class="modal-box modal-box-lg">
+    <h2>Registrar BodyCams</h2>
+    <div class="modal-sub" id="registradorInfoBodycam"></div>
+
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Fecha</label>
+        <input type="date" id="bodycamFecha">
+      </div>
+      <div class="modal-field flex1">
+        <label>Aprobó (nombre)</label>
+        <input type="text" id="bodycamAprobador" placeholder="Quién la aprobó..." autocomplete="off">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field flex1">
+        <label>Observaciones</label>
+        <input type="text" id="bodycamObservaciones" placeholder="Observaciones (opcional)...">
+      </div>
+    </div>
+
+    <div class="modal-row">
+      <div class="modal-field flex1">
+        <label>Nombre</label>
+        <input type="text" id="bodycamInputNombre" list="listaNombresBodycam" placeholder="Escribí o elegí un nombre..." autocomplete="off">
+        <datalist id="listaNombresBodycam"></datalist>
+      </div>
+      <button class="btn btn-primario btn-agregar-fila" id="btnAgregarFilaBodycam">+ Agregar</button>
+    </div>
+    <div class="modal-error" id="bodycamNombreError"></div>
+
+    <div class="mini-lista-wrap" id="miniListaBodycamWrap">
+      <table class="mini-lista">
+        <thead><tr><th>Nombre</th><th></th></tr></thead>
+        <tbody id="miniListaBodycamBody"></tbody>
+      </table>
+    </div>
+    <div class="mini-lista-empty" id="miniListaBodycamEmpty">Todavía no agregaste a nadie.</div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secundario" id="btnCancelarRegistroBodycam">Cancelar</button>
+      <button class="btn btn-primario" id="btnConfirmarRegistroBodycam">Agregar</button>
     </div>
   </div>
 </div>
@@ -695,6 +745,15 @@
       </table>
     </div>
     <div class="mini-lista-empty" id="llamadasListaEmpty">No tiene llamadas de atención.</div>
+
+    <div class="modal-sub" style="margin-top:14px;">🎥 BodyCams Aprobadas (se agregan con el botón "Registrar BodyCam", acá solo se pueden borrar)</div>
+    <div class="mini-lista-wrap" id="bodycamsListaWrap">
+      <table class="mini-lista">
+        <thead><tr><th>Fecha</th><th>Aprobó</th><th>Observaciones</th><th>Registró</th><th id="bodycamsAccionHeader"></th></tr></thead>
+        <tbody id="bodycamsListaBody"></tbody>
+      </table>
+    </div>
+    <div class="mini-lista-empty" id="bodycamsListaEmpty">No tiene BodyCams aprobadas.</div>
 
     <div class="modal-row" id="clasesRenombrarRow">
       <div class="modal-field flex1">
@@ -780,10 +839,15 @@
 // validarCodigoEnServidor / cargarNombresRoles más abajo). Se administran
 // desde admin.html.
 
-// La clase de Procedimientos es especial: cuenta para las 3 clases, pero es
-// obligatoria (sin ella no alcanza aunque haya 3 o más puntos) y solo la
-// pueden registrar evaluadores o administradores, no instructores comunes.
+// La clase de Procedimientos es la única que cuenta para el requisito de
+// evaluación (junto con las BodyCams aprobadas) y solo la pueden registrar
+// evaluadores o administradores, no instructores comunes.
 const TURNO_PROCEDIMIENTOS = "Procedimientos";
+// Requisito para poder evaluar a Teniente/Capitán para arriba: 3 clases de
+// Procedimientos (ya descontadas las llamadas de atención sin compensar)
+// y 10 BodyCams aprobadas.
+const REQUISITO_PROCEDIMIENTOS = 3;
+const REQUISITO_BODYCAMS = 10;
 
 // restringir = true: si quien se identificó no es administrador, solo puede
 // elegir su propio nombre como evaluador (no puede atribuirle la evaluación
@@ -881,15 +945,18 @@ function amarillosDe(p) { return p.registros.filter(r => r.tipo === 'amarillo').
 function puntos(p) { return verdesDe(p) * 1 + amarillosDe(p) * 0.5; }
 function fmtPuntos(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
 function tieneProcedimientos(p) { return p.registros.some(r => r.turno === TURNO_PROCEDIMIENTOS); }
+function procedimientosDe(p) { return p.registros.filter(r => r.turno === TURNO_PROCEDIMIENTOS).length; }
 function llamadasDe(p) { return Array.isArray(p.llamadas) ? p.llamadas : []; }
-// Cada llamada de atención exige una clase (verde) extra antes de poder
-// evaluar: se le restan los puntos "útiles" hasta que se compensen con
-// clases reales.
+function bodycamsDe(p) { return Array.isArray(p.bodycams) ? p.bodycams : []; }
+// Cada llamada de atención exige una clase de Procedimientos extra antes de
+// poder evaluar: se le restan las clases de Procedimientos "útiles" hasta
+// que se compensen con clases reales.
 function puntosUtiles(p) { return Math.max(0, puntos(p) - llamadasDe(p).length); }
-// Cumple los requisitos para evaluar: 3 clases útiles (o más, ya
-// descontadas las llamadas de atención sin compensar), una de ellas
-// sea la clase de Procedimientos (es obligatoria, no alcanza con las otras).
-function cumpleRequisitos(p) { return puntosUtiles(p) >= 3 && tieneProcedimientos(p) && p.rango === 'Teniente'; }
+function procedimientosUtiles(p) { return Math.max(0, procedimientosDe(p) - llamadasDe(p).length); }
+// Cumple los requisitos para evaluar: 3 clases de Procedimientos (ya
+// descontadas las llamadas de atención sin compensar) y 10 BodyCams
+// aprobadas.
+function cumpleRequisitos(p) { return procedimientosUtiles(p) >= REQUISITO_PROCEDIMIENTOS && bodycamsDe(p).length >= REQUISITO_BODYCAMS && p.rango === 'Teniente'; }
 function escapeAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 function escapeHtml(s) { return escapeAttr(s); }
 
@@ -958,7 +1025,7 @@ function render() {
   countEl.innerHTML = `<span>${filtered.length} persona${filtered.length !== 1 ? 's' : ''}</span><span>${fmtUltimaActualizacion()}</span>`;
 
   if (ordenados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-msg">${tenientes.length === 0 ? 'Todavía no hay nadie en la lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-msg">${tenientes.length === 0 ? 'Todavía no hay nadie en la lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
     return;
   }
 
@@ -977,6 +1044,7 @@ function render() {
         <span class="count-mobile count-amarillo">${amarillosDe(a)}</span>
       </td>
       <td class="num puntos">${fmtPuntos(puntos(a))}</td>
+      <td class="num puntos" title="BodyCams aprobadas">${bodycamsDe(a).length}/${REQUISITO_BODYCAMS}</td>
       <td class="num col-eliminar"><span class="btn-eliminar-fila" data-nombre="${escapeAttr(a.nombre)}" title="Eliminar registro">✕</span></td>
     </tr>
   `;
@@ -993,8 +1061,10 @@ const codigoError = document.getElementById('codigoError');
 
 let registradorActual = null;
 let registradorActualRol = null;
+let flujoPendienteCodigo = 'clase'; // 'clase' | 'bodycam' — qué modal abrir después de validar el código
 
-function abrirModalCodigo() {
+function abrirModalCodigo(flujo) {
+  flujoPendienteCodigo = flujo || 'clase';
   inputCodigo.value = '';
   codigoError.textContent = '';
   modalCodigo.classList.remove('hidden');
@@ -1004,7 +1074,8 @@ function cerrarModalCodigo() {
   modalCodigo.classList.add('hidden');
 }
 
-document.getElementById('btnAbrirCodigo').addEventListener('click', abrirModalCodigo);
+document.getElementById('btnAbrirCodigo').addEventListener('click', () => abrirModalCodigo('clase'));
+document.getElementById('btnAbrirCodigoBodycam').addEventListener('click', () => abrirModalCodigo('bodycam'));
 document.getElementById('btnCancelarCodigo').addEventListener('click', cerrarModalCodigo);
 
 async function validarCodigo() {
@@ -1024,7 +1095,11 @@ async function validarCodigo() {
   registradorActual = usuario.nombre;
   registradorActualRol = usuario.rol;
   cerrarModalCodigo();
-  abrirModalRegistro();
+  if (flujoPendienteCodigo === 'bodycam') {
+    abrirModalRegistroBodycam();
+  } else {
+    abrirModalRegistro();
+  }
 }
 
 document.getElementById('btnContinuarCodigo').addEventListener('click', validarCodigo);
@@ -1202,6 +1277,140 @@ btnConfirmarRegistro.addEventListener('click', async () => {
   }
 });
 
+// -------------------- modal 2b: mini lista de registro de BodyCams --------------------
+const modalRegistroBodycam = document.getElementById('modalRegistroBodycam');
+const registradorInfoBodycam = document.getElementById('registradorInfoBodycam');
+const bodycamFecha = document.getElementById('bodycamFecha');
+const bodycamAprobador = document.getElementById('bodycamAprobador');
+const bodycamObservaciones = document.getElementById('bodycamObservaciones');
+const bodycamInputNombre = document.getElementById('bodycamInputNombre');
+const listaNombresBodycam = document.getElementById('listaNombresBodycam');
+const bodycamNombreError = document.getElementById('bodycamNombreError');
+const miniListaBodycamBody = document.getElementById('miniListaBodycamBody');
+const miniListaBodycamWrap = document.getElementById('miniListaBodycamWrap');
+const miniListaBodycamEmpty = document.getElementById('miniListaBodycamEmpty');
+
+let miniListaBodycam = []; // { nombre }
+
+function poblarListaNombresBodycam() {
+  listaNombresBodycam.innerHTML = tenientes
+    .slice()
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+    .map(a => `<option value="${escapeAttr(a.nombre)}">`)
+    .join('');
+}
+
+function abrirModalRegistroBodycam() {
+  registradorInfoBodycam.innerHTML = `Registrando como: <b>${escapeHtml(registradorActual)}</b>`;
+  bodycamFecha.value = hoyISO();
+  bodycamAprobador.value = '';
+  bodycamObservaciones.value = '';
+  bodycamInputNombre.value = '';
+  bodycamNombreError.textContent = '';
+  miniListaBodycam = [];
+  poblarListaNombresBodycam();
+  renderMiniListaBodycam();
+  modalRegistroBodycam.classList.remove('hidden');
+  setTimeout(() => bodycamInputNombre.focus(), 50);
+}
+
+function cerrarModalRegistroBodycam() {
+  modalRegistroBodycam.classList.add('hidden');
+}
+
+function renderMiniListaBodycam() {
+  if (miniListaBodycam.length === 0) {
+    miniListaBodycamWrap.style.display = 'none';
+    miniListaBodycamEmpty.style.display = 'block';
+    return;
+  }
+  miniListaBodycamWrap.style.display = 'block';
+  miniListaBodycamEmpty.style.display = 'none';
+  miniListaBodycamBody.innerHTML = miniListaBodycam.map((item, i) => `
+    <tr>
+      <td>${escapeHtml(item.nombre)}</td>
+      <td><span class="quitar" data-idx="${i}">✕</span></td>
+    </tr>
+  `).join('');
+}
+
+function agregarFilaBodycam() {
+  const nombre = bodycamInputNombre.value.trim();
+  if (!nombre) {
+    bodycamNombreError.textContent = 'Escribí o elegí un nombre primero.';
+    return;
+  }
+  bodycamNombreError.textContent = '';
+  miniListaBodycam.push({ nombre });
+  bodycamInputNombre.value = '';
+  bodycamInputNombre.focus();
+  renderMiniListaBodycam();
+}
+
+document.getElementById('btnAgregarFilaBodycam').addEventListener('click', agregarFilaBodycam);
+bodycamInputNombre.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarFilaBodycam(); } });
+
+miniListaBodycamBody.addEventListener('click', e => {
+  const el = e.target.closest('.quitar');
+  if (!el) return;
+  const idx = Number(el.dataset.idx);
+  miniListaBodycam.splice(idx, 1);
+  renderMiniListaBodycam();
+});
+
+document.getElementById('btnCancelarRegistroBodycam').addEventListener('click', () => {
+  miniListaBodycam = [];
+  cerrarModalRegistroBodycam();
+});
+
+const btnConfirmarRegistroBodycam = document.getElementById('btnConfirmarRegistroBodycam');
+
+btnConfirmarRegistroBodycam.addEventListener('click', async () => {
+  if (miniListaBodycam.length === 0) {
+    cerrarModalRegistroBodycam();
+    return;
+  }
+  const fecha = bodycamFecha.value || hoyISO();
+  const aprobador = bodycamAprobador.value.trim();
+  const observaciones = bodycamObservaciones.value.trim();
+
+  const bodycamEntries = miniListaBodycam.map(item => ({
+    nombre: item.nombre,
+    fecha: fecha,
+    aprobador: aprobador,
+    observaciones: observaciones,
+    registrador: registradorActual,
+  }));
+
+  if (!API_URL || API_URL.includes('PEGA_AQUI')) {
+    bodycamNombreError.textContent = 'Falta configurar el servidor (API_URL). Revisá SETUP.md.';
+    return;
+  }
+
+  bodycamNombreError.textContent = '';
+  btnConfirmarRegistroBodycam.disabled = true;
+  btnConfirmarRegistroBodycam.textContent = 'Guardando...';
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recurso: 'tenientes', bodycamEntries }),
+    });
+    if (!resp.ok) throw new Error(await errorDe(resp));
+    aplicarEstado(await resp.json());
+    servidorConectado = true;
+    miniListaBodycam = [];
+    render();
+    cerrarModalRegistroBodycam();
+  } catch (e) {
+    bodycamNombreError.textContent = 'No se pudo guardar en el servidor. Revisá tu conexión e intentá de nuevo.';
+  } finally {
+    btnConfirmarRegistroBodycam.disabled = false;
+    btnConfirmarRegistroBodycam.textContent = 'Agregar';
+  }
+});
+
 // -------------------- modal 3: código de edición --------------------
 const modalCodigoEditar = document.getElementById('modalCodigoEditar');
 const inputCodigoEditar = document.getElementById('inputCodigoEditar');
@@ -1361,13 +1570,15 @@ function generarReporte() {
   const haceUnaSemana = new Date(ahora.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   const completaron = [];
-  const faltaProcedimientos = [];
+  const enProgreso = [];
   const inactivos = [];
   const resto = [];
 
+  const resumenReq = p => `${procedimientosUtiles(p)}/${REQUISITO_PROCEDIMIENTOS} Procedimientos, ${bodycamsDe(p).length}/${REQUISITO_BODYCAMS} BodyCams`;
+
   tenientes.forEach(p => {
     if (cumpleRequisitos(p)) { completaron.push(p); return; }
-    if (puntos(p) >= 2 && !tieneProcedimientos(p)) { faltaProcedimientos.push(p); return; }
+    if (procedimientosUtiles(p) > 0 || bodycamsDe(p).length > 0) { enProgreso.push(p); return; }
     const ultima = ultimaClaseDe(p);
     if (ultima && ultima < haceUnaSemana) { inactivos.push({ persona: p, ultima }); return; }
     resto.push(p);
@@ -1375,7 +1586,7 @@ function generarReporte() {
 
   const alfa = (a, b) => a.nombre.localeCompare(b.nombre, 'es');
   completaron.sort(alfa);
-  faltaProcedimientos.sort((a, b) => puntos(b) - puntos(a) || alfa(a, b));
+  enProgreso.sort((a, b) => puntos(b) - puntos(a) || alfa(a, b));
   inactivos.sort((a, b) => a.ultima - b.ultima || alfa(a.persona, b.persona));
   resto.sort((a, b) => puntos(b) - puntos(a) || alfa(a, b));
 
@@ -1385,18 +1596,18 @@ function generarReporte() {
   lineas.push('');
 
   lineas.push('====================================');
-  lineas.push(`YA COMPLETARON LOS REQUISITOS (3 CLASES + PROCEDIMIENTOS) (${completaron.length})`);
+  lineas.push(`YA COMPLETARON LOS REQUISITOS (${REQUISITO_PROCEDIMIENTOS} PROCEDIMIENTOS + ${REQUISITO_BODYCAMS} BODYCAMS) (${completaron.length})`);
   lineas.push('====================================');
   lineas.push(...(completaron.length
-    ? completaron.map((p, i) => `${i + 1}. ${p.nombre} — ${fmtPuntos(puntos(p))} clases`)
+    ? completaron.map((p, i) => `${i + 1}. ${p.nombre} — ${resumenReq(p)}`)
     : ['(nadie todavía)']));
   lineas.push('');
 
   lineas.push('====================================');
-  lineas.push(`TIENEN 2 CLASES O MÁS PERO LES FALTA PROCEDIMIENTOS (${faltaProcedimientos.length})`);
+  lineas.push(`EN PROGRESO — TIENEN ALGO DE PROCEDIMIENTOS Y/O BODYCAMS PERO NO COMPLETAN (${enProgreso.length})`);
   lineas.push('====================================');
-  lineas.push(...(faltaProcedimientos.length
-    ? faltaProcedimientos.map((p, i) => `${i + 1}. ${p.nombre} — ${fmtPuntos(puntos(p))} clases (falta Procedimientos)`)
+  lineas.push(...(enProgreso.length
+    ? enProgreso.map((p, i) => `${i + 1}. ${p.nombre} — ${resumenReq(p)}`)
     : ['(nadie en esta situación)']));
   lineas.push('');
 
@@ -1404,7 +1615,7 @@ function generarReporte() {
   lineas.push(`SIN ASISTIR HACE MÁS DE 1 SEMANA (${inactivos.length})`);
   lineas.push('====================================');
   lineas.push(...(inactivos.length
-    ? inactivos.map(({ persona, ultima }) => `${persona.nombre} — última clase: ${fmtFechaCorta(ultima)} (${fmtPuntos(puntos(persona))} clases)`)
+    ? inactivos.map(({ persona, ultima }) => `${persona.nombre} — última clase: ${fmtFechaCorta(ultima)} (${resumenReq(persona)})`)
     : ['(nadie en esta situación)']));
   lineas.push('');
 
@@ -1412,7 +1623,7 @@ function generarReporte() {
   lineas.push(`RESTO DE LA LISTA — por clases, alfabético en empate (${resto.length})`);
   lineas.push('====================================');
   lineas.push(...(resto.length
-    ? resto.map((p, i) => `${i + 1}. ${p.nombre} — ${fmtPuntos(puntos(p))} clases`)
+    ? resto.map((p, i) => `${i + 1}. ${p.nombre} — ${resumenReq(p)}`)
     : ['(sin más gente)']));
   lineas.push('');
   lineas.push('Nota: las personas con puntos cargados/editados manualmente sin fecha ("—") no se pueden ubicar en "sin asistir hace más de 1 semana" porque no se sabe cuándo fue su última clase real; quedan en el resto de la lista.');
@@ -1553,9 +1764,14 @@ const llamadasAccionHeader = document.getElementById('llamadasAccionHeader');
 const llamadaNuevaFecha = document.getElementById('llamadaNuevaFecha');
 const llamadaNuevoMotivo = document.getElementById('llamadaNuevoMotivo');
 const btnAgregarLlamada = document.getElementById('btnAgregarLlamada');
+const bodycamsListaBody = document.getElementById('bodycamsListaBody');
+const bodycamsListaWrap = document.getElementById('bodycamsListaWrap');
+const bodycamsListaEmpty = document.getElementById('bodycamsListaEmpty');
+const bodycamsAccionHeader = document.getElementById('bodycamsAccionHeader');
 
 let clasesLocal = []; // copia editable de persona.registros mientras el modal está abierto
 let llamadasLocal = []; // copia editable de persona.llamadas mientras el modal está abierto
+let bodycamsLocal = []; // copia editable de persona.bodycams mientras el modal está abierto
 let claseNuevoTipo = 'verde';
 
 const TURNOS_CLASE = ["Primera Clase", "Segunda Clase", "Tercera Clase", "Cuarta Clase", "Quinta Clase", TURNO_PROCEDIMIENTOS];
@@ -1587,22 +1803,25 @@ function opcionesInstructor(seleccionado, restringir) {
 function actualizarBotonEvaluacion() {
   const personaReal = tenientes.find(p => p.nombre.toLowerCase() === (personaEditando || '').toLowerCase());
   const cantLlamadas = personaReal ? llamadasDe(personaReal).length : 0;
-  const puntosActuales = puntos({ registros: clasesLocal });
-  const puntosUtilesActuales = Math.max(0, puntosActuales - cantLlamadas);
-  const tieneProc = tieneProcedimientos({ registros: clasesLocal });
+  const procActuales = procedimientosDe({ registros: clasesLocal });
+  const procUtilesActuales = Math.max(0, procActuales - cantLlamadas);
+  const cantBodycams = (Array.isArray(bodycamsLocal) ? bodycamsLocal : []).length;
   const esRangoTenientes = !personaReal || personaReal.rango === 'Teniente'; // por si el rango ya se cambió a mano
-  const cumple = puntosUtilesActuales >= 3 && tieneProc && esRangoTenientes;
+  const cumple = procUtilesActuales >= REQUISITO_PROCEDIMIENTOS && cantBodycams >= REQUISITO_BODYCAMS && esRangoTenientes;
   let tituloBoton = '';
   if (!cumple) {
     const avisoLlamadas = cantLlamadas > 0 ? ` (tiene ${cantLlamadas} llamada${cantLlamadas !== 1 ? 's' : ''} de atención sin compensar)` : '';
     if (!esRangoTenientes) {
       tituloBoton = `Esta persona no tiene el rango de Teniente (tiene "${personaReal.rango || '—'}"), no se puede evaluar acá.`;
-    } else if (puntosUtilesActuales < 3 && !tieneProc) {
-      tituloBoton = `Necesita 3 clases (lleva ${fmtPuntos(puntosUtilesActuales)} útiles de ${fmtPuntos(puntosActuales)}) y la clase de Procedimientos para poder evaluar${avisoLlamadas}.`;
-    } else if (puntosUtilesActuales < 3) {
-      tituloBoton = `Necesita 3 clases útiles para poder evaluar (lleva ${fmtPuntos(puntosUtilesActuales)} de ${fmtPuntos(puntosActuales)})${avisoLlamadas}.`;
     } else {
-      tituloBoton = 'Le falta la clase de Procedimientos para poder evaluar.';
+      const faltantes = [];
+      if (procUtilesActuales < REQUISITO_PROCEDIMIENTOS) {
+        faltantes.push(`${REQUISITO_PROCEDIMIENTOS - procUtilesActuales} clase${REQUISITO_PROCEDIMIENTOS - procUtilesActuales !== 1 ? 's' : ''} de Procedimientos`);
+      }
+      if (cantBodycams < REQUISITO_BODYCAMS) {
+        faltantes.push(`${REQUISITO_BODYCAMS - cantBodycams} BodyCam${REQUISITO_BODYCAMS - cantBodycams !== 1 ? 's' : ''} aprobada${REQUISITO_BODYCAMS - cantBodycams !== 1 ? 's' : ''}`);
+      }
+      tituloBoton = `Le falta${faltantes.length > 1 ? 'n' : ''} ${faltantes.join(' y ')} para poder evaluar${avisoLlamadas}.`;
     }
   }
   if (btnAbrirEvaluacion) {
@@ -1689,10 +1908,39 @@ btnAgregarLlamada.addEventListener('click', () => {
   renderLlamadasLista(true);
 });
 
+function renderBodycamsLista(editable) {
+  bodycamsAccionHeader.textContent = '';
+  if (bodycamsLocal.length === 0) {
+    bodycamsListaWrap.style.display = 'none';
+    bodycamsListaEmpty.style.display = 'block';
+    return;
+  }
+  bodycamsListaWrap.style.display = 'block';
+  bodycamsListaEmpty.style.display = 'none';
+  bodycamsListaBody.innerHTML = bodycamsLocal.map((b, i) => `
+    <tr>
+      <td>${escapeHtml(b.fecha || '—')}</td>
+      <td>${escapeHtml(b.aprobador || '—')}</td>
+      <td>${escapeHtml(b.observaciones || '—')}</td>
+      <td>${escapeHtml(b.registrador || '—')}</td>
+      <td>${editable ? `<span class="quitar" data-idx="${i}" style="cursor:pointer;color:var(--red);">✕</span>` : ''}</td>
+    </tr>
+  `).join('');
+}
+
+bodycamsListaBody.addEventListener('click', e => {
+  const btn = e.target.closest('.quitar');
+  if (!btn || !modoEdicionActivo) return;
+  bodycamsLocal.splice(Number(btn.dataset.idx), 1);
+  renderBodycamsLista(true);
+  actualizarBotonEvaluacion();
+});
+
 function abrirModalEditar() {
   const persona = tenientes.find(a => a.nombre.toLowerCase() === personaEditando.toLowerCase());
   clasesLocal = persona ? persona.registros.slice() : [];
   llamadasLocal = persona ? llamadasDe(persona).slice() : [];
+  bodycamsLocal = persona ? bodycamsDe(persona).slice() : [];
   const rangoTexto = (persona && persona.rango) || '—';
 
   const editable = modoEdicionActivo;
@@ -1724,6 +1972,7 @@ function abrirModalEditar() {
 
   renderClasesLista(editable);
   renderLlamadasLista(editable);
+  renderBodycamsLista(editable);
   modalEditar.classList.remove('hidden');
 }
 function cerrarModalEditar() {
@@ -1801,8 +2050,8 @@ btnEliminarRegistro.addEventListener('click', async () => {
   if (ok) cerrarModalEditar();
 });
 
-// cerrar modales tocando el fondo oscuro (ya existen las 4 variables acá)
-[modalCodigo, modalRegistro, modalCodigoEditar, modalEditar].forEach(m => {
+// cerrar modales tocando el fondo oscuro (ya existen las variables acá)
+[modalCodigo, modalRegistro, modalRegistroBodycam, modalCodigoEditar, modalEditar].forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
 });
 
@@ -1974,6 +2223,7 @@ btnGuardarEditar.addEventListener('click', async () => {
           nombreNuevo: nombreNuevo,
           registros: clasesLocal,
           llamadas: llamadasLocal,
+          bodycams: bodycamsLocal,
           registrador: editorActual,
         },
       }),
@@ -2043,7 +2293,7 @@ document.addEventListener('mouseout', e => {
 });
 
 // -------------------- avisarle al padre (iframe) la altura real --------------------
-const modalesTodos = [modalCodigo, modalRegistro, modalCodigoEditar, modalEditar, modalReporte, modalCodigoEvaluar, modalEvaluacion];
+const modalesTodos = [modalCodigo, modalRegistro, modalRegistroBodycam, modalCodigoEditar, modalEditar, modalReporte, modalCodigoEvaluar, modalEvaluacion];
 
 function avisarAltura() {
   if (window.parent === window) return;
@@ -2094,7 +2344,7 @@ function habilitarPickerNativo(input) {
     }
   });
 }
-[inputFecha, claseNuevaFecha, reporteFecha].forEach(habilitarPickerNativo);
+[inputFecha, claseNuevaFecha, reporteFecha, bodycamFecha].forEach(habilitarPickerNativo);
 
 cargarDatosServidor();
 window.addEventListener('load', avisarAltura);

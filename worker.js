@@ -85,6 +85,19 @@ function limpiarLlamada(l) {
   };
 }
 
+// BodyCam aprobada: usado (por ahora, en Tenientes/Capitanes para arriba)
+// como requisito de evaluación junto con las clases de Procedimientos.
+// "aprobador" es un campo de texto libre por el momento (no está atado a
+// la lista de evaluadores/administradores).
+function limpiarBodycam(b) {
+  return {
+    fecha: (b && b.fecha) || "—",
+    aprobador: (b && b.aprobador) || "—",
+    observaciones: (b && b.observaciones) || "",
+    registrador: (b && b.registrador) || "Desconocido",
+  };
+}
+
 // ==================== helpers genéricos de KV ====================
 // Cargan/guardan { lista: [...], ultimaActualizacion } bajo una key dada,
 // tolerando: valor vacío, formato viejo (array pelado), o JSON corrupto.
@@ -289,9 +302,9 @@ async function manejarListaClases(request, env, payload, recurso) {
   const lista = cargaInicial.lista;
   let ultimaActualizacion = cargaInicial.ultimaActualizacion;
 
-  // ---- backfill: a quien le falte el rango o el array de llamadas
-  // (gente que ya estaba en la lista antes de que existieran esos campos)
-  // se les completa una sola vez, y se guarda. ----
+  // ---- backfill: a quien le falte el rango, el array de llamadas o el de
+  // bodycams (gente que ya estaba en la lista antes de que existieran esos
+  // campos) se les completa una sola vez, y se guarda. ----
   let necesitaGuardar = false;
   for (const p of lista) {
     if (!p.rango) {
@@ -300,6 +313,10 @@ async function manejarListaClases(request, env, payload, recurso) {
     }
     if (!Array.isArray(p.llamadas)) {
       p.llamadas = [];
+      necesitaGuardar = true;
+    }
+    if (!Array.isArray(p.bodycams)) {
+      p.bodycams = [];
       necesitaGuardar = true;
     }
   }
@@ -326,12 +343,13 @@ async function manejarListaClases(request, env, payload, recurso) {
       (p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase()
     );
     if (!persona) {
-      persona = { nombre: nombreNuevo || nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [], llamadas: [] };
+      persona = { nombre: nombreNuevo || nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [], llamadas: [], bodycams: [] };
       lista.push(persona);
     }
     if (!persona.rango) persona.rango = config.rangoDefault;
     if (!Array.isArray(persona.historialEvaluaciones)) persona.historialEvaluaciones = [];
     if (!Array.isArray(persona.llamadas)) persona.llamadas = [];
+    if (!Array.isArray(persona.bodycams)) persona.bodycams = [];
     // El rango normalmente no se toca acá — solo lo usa el panel de
     // administración para asignarlo a mano al dar de alta a alguien.
     if (payload.edit.rango) persona.rango = String(payload.edit.rango).trim() || persona.rango;
@@ -358,6 +376,20 @@ async function manejarListaClases(request, env, payload, recurso) {
         return limpio;
       });
     }
+
+    // BodyCams: mismo criterio que las llamadas — solo se tocan si el
+    // pedido las incluye explícitamente (se usan para poder borrar una
+    // cargada por error desde el panel de administración).
+    if (Array.isArray(payload.edit.bodycams)) {
+      persona.bodycams = payload.edit.bodycams.map((b) => {
+        const limpio = limpiarBodycam(b);
+        if (!(b && b.registrador)) {
+          limpio.registrador = `Registrada por ${registrador}`;
+        }
+        return limpio;
+      });
+    }
+
 
     persona.nombre = nombreNuevo || persona.nombre;
     persona.registros = registrosNuevos;
@@ -439,6 +471,7 @@ async function manejarListaClases(request, env, payload, recurso) {
         rango: rangoNuevo,
         registros: [],
         llamadas: [],
+        bodycams: [],
         historialEvaluaciones: historialNuevo,
       });
     }
@@ -497,6 +530,7 @@ async function manejarListaClases(request, env, payload, recurso) {
         rango: siguiente.rango,
         registros: [],
         llamadas: [],
+        bodycams: [],
         historialEvaluaciones: historialNuevo,
       });
       await guardarLista(env, siguienteConfig.kvKey, siguiente.recurso, listaDestino);
@@ -517,13 +551,37 @@ async function manejarListaClases(request, env, payload, recurso) {
       (p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase()
     );
     if (!persona) {
-      persona = { nombre: nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [], llamadas: [] };
+      persona = { nombre: nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [], llamadas: [], bodycams: [] };
       lista.push(persona);
     }
     if (!persona.rango) persona.rango = config.rangoDefault;
     if (!Array.isArray(persona.historialEvaluaciones)) persona.historialEvaluaciones = [];
     if (!Array.isArray(persona.llamadas)) persona.llamadas = [];
+    if (!Array.isArray(persona.bodycams)) persona.bodycams = [];
     persona.registros.push(limpiarRegistro(entry));
+  }
+
+  // ---- agregar bodycams aprobadas (mismo mecanismo que las clases, pero
+  // con su propio array por persona) ----
+  const bodycamEntries = Array.isArray(payload.bodycamEntries) ? payload.bodycamEntries : [];
+
+  for (const entry of bodycamEntries) {
+    if (!entry || !entry.nombre) continue;
+    const nombreLimpio = String(entry.nombre).trim();
+    if (!nombreLimpio) continue;
+
+    let persona = lista.find(
+      (p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase()
+    );
+    if (!persona) {
+      persona = { nombre: nombreLimpio, rango: config.rangoDefault, registros: [], historialEvaluaciones: [], llamadas: [], bodycams: [] };
+      lista.push(persona);
+    }
+    if (!persona.rango) persona.rango = config.rangoDefault;
+    if (!Array.isArray(persona.historialEvaluaciones)) persona.historialEvaluaciones = [];
+    if (!Array.isArray(persona.llamadas)) persona.llamadas = [];
+    if (!Array.isArray(persona.bodycams)) persona.bodycams = [];
+    persona.bodycams.push(limpiarBodycam(entry));
   }
 
   const estado = await guardarLista(env, config.kvKey, recurso, lista);
