@@ -2474,6 +2474,14 @@ setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros
    ============================================================ */
 (function () {
   const scrollStack = [];
+  function fijarScroll(y) {
+    // Algunos navegadores (sobre todo en celular) mueven la página sola al
+    // enfocar un campo dentro del modal recién abierto — la reforzamos un
+    // instante después para que no se vaya a otra parte de la página.
+    window.scrollTo(0, y);
+    requestAnimationFrame(() => window.scrollTo(0, y));
+    setTimeout(() => window.scrollTo(0, y), 60);
+  }
   const obs = new MutationObserver(mutList => {
     for (const m of mutList) {
       const el = m.target;
@@ -2481,10 +2489,12 @@ setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros
       const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
       const esOculto = el.classList.contains('hidden');
       if (eraOculto && !esOculto) {
-        scrollStack.push(window.scrollY);
+        const y = window.scrollY;
+        scrollStack.push(y);
+        fijarScroll(y);
       } else if (!eraOculto && esOculto) {
         const y = scrollStack.pop();
-        if (y !== undefined) window.scrollTo(0, y);
+        if (y !== undefined) fijarScroll(y);
       }
     }
   });
