@@ -2299,6 +2299,26 @@ window.addEventListener('message', e => {
   // completo del iframe, sin necesidad de tocar el scroll de esta página
   // para nada.
   if (e.data.tipo === 'modal-abierto') {
+    // OJO: hay que medir y "reservar" el alto del iframe ANTES de tocar su
+    // estilo — en cuanto pasa a position:fixed, sale del flujo normal del
+    // documento y el contenedor (que hasta ahora media lo mismo que el
+    // iframe, potencialmente miles de px) se colapsa a 0 de golpe. Eso
+    // reacomoda toda la página por debajo y el navegador cambia el scroll
+    // solo (a veces cientos de px), que es justo lo que NO queremos: la
+    // página tiene que quedarse exactamente donde estaba.
+    const contenedor = iframeOrigen.parentElement;
+    if (contenedor && contenedor.dataset.estiloPrevio === undefined) {
+      contenedor.dataset.estiloPrevio = contenedor.getAttribute('style') || '';
+      contenedor.style.minHeight = iframeOrigen.offsetHeight + 'px';
+      // El contenedor ".map-frame" tiene backdrop-filter (y overflow:hidden),
+      // y cualquier ancestro con backdrop-filter/filter/transform "atrapa" a
+      // los descendientes position:fixed dentro de su propia caja en vez de
+      // dejarlos cubrir la pantalla real — por eso hay que apagárselo
+      // mientras el iframe está en modo pantalla completa.
+      contenedor.style.backdropFilter = 'none';
+      contenedor.style.overflow = 'visible';
+    }
+
     if (iframeOrigen.dataset.estiloPrevio === undefined) {
       iframeOrigen.dataset.estiloPrevio = iframeOrigen.getAttribute('style') || '';
     }
@@ -2311,23 +2331,19 @@ window.addEventListener('message', e => {
     iframeOrigen.style.height = '100dvh';
     iframeOrigen.style.margin = '0';
     iframeOrigen.style.zIndex = '999';
-    // El contenedor ".map-frame" tiene backdrop-filter (y overflow:hidden),
-    // y cualquier ancestro con backdrop-filter/filter/transform "atrapa" a
-    // los descendientes position:fixed dentro de su propia caja en vez de
-    // dejarlos cubrir la pantalla real — por eso hay que apagárselo
-    // mientras el iframe está en modo pantalla completa.
-    const contenedor = iframeOrigen.parentElement;
-    if (contenedor && contenedor.dataset.estiloPrevio === undefined) {
-      contenedor.dataset.estiloPrevio = contenedor.getAttribute('style') || '';
-      contenedor.style.backdropFilter = 'none';
-      contenedor.style.overflow = 'visible';
-    }
   }
 
   if (e.data.tipo === 'modal-cerrado') {
     if (iframeOrigen.dataset.estiloPrevio !== undefined) {
-      iframeOrigen.setAttribute('style', iframeOrigen.dataset.estiloPrevio);
+      const previo = iframeOrigen.dataset.estiloPrevio;
+      // Restauramos el alto real SIN animación: si dejamos que la
+      // transición de la hoja de estilos anime el alto de vuelta, el
+      // documento queda más bajo un instante y el navegador recorta el
+      // scroll solo para que quepa — y no lo recupera al terminar la
+      // animación. Reactivamos la transición normal un frame después.
+      iframeOrigen.setAttribute('style', previo + ';transition:none;');
       delete iframeOrigen.dataset.estiloPrevio;
+      requestAnimationFrame(() => { iframeOrigen.style.transition = ''; });
     }
     const contenedor = iframeOrigen.parentElement;
     if (contenedor && contenedor.dataset.estiloPrevio !== undefined) {
