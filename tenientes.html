@@ -2470,6 +2470,29 @@ function habilitarPickerNativo(input) {
 cargarDatosServidor();
 window.addEventListener('load', avisarAltura);
 setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros de otras personas
+
+/* ============================================================
+   Mantener la posición de scroll de la página al abrir/cerrar
+   cualquier modal (antes se iba arriba de todo al cerrarlo).
+   ============================================================ */
+(function () {
+  const scrollStack = [];
+  const obs = new MutationObserver(mutList => {
+    for (const m of mutList) {
+      const el = m.target;
+      if (!(el instanceof Element) || !/modal-overlay/.test(el.className)) continue;
+      const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
+      const esOculto = el.classList.contains('hidden');
+      if (eraOculto && !esOculto) {
+        scrollStack.push(window.scrollY);
+      } else if (!eraOculto && esOculto) {
+        const y = scrollStack.pop();
+        if (y !== undefined) window.scrollTo(0, y);
+      }
+    }
+  });
+  obs.observe(document.body, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
+})();
 </script>
 
 </body>
