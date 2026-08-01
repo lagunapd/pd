@@ -2271,9 +2271,74 @@ closeTemarioBtn.addEventListener('click', () => {
   mostrarGridAcademia();
 });
 
+// ------------------------------------------------------------------
+// Poner el iframe en "pantalla completa y fijo" mientras tiene un modal
+// abierto adentro, y restaurarlo al cerrar. Esto queda en dos funciones
+// reutilizables porque hay DOS caminos que las disparan (ver más abajo):
+// el postMessage de las páginas hijas, y una observación directa del
+// documento del iframe hecha desde acá mismo (que es la que de verdad
+// soluciona el problema, sin depender de que el postMessage llegue).
+// ------------------------------------------------------------------
+function ponerIframeEnPantallaCompleta(iframeOrigen) {
+  // OJO: hay que medir y "reservar" el alto del iframe ANTES de tocar su
+  // estilo — en cuanto pasa a position:fixed, sale del flujo normal del
+  // documento y el contenedor (que hasta ahora medía lo mismo que el
+  // iframe, potencialmente miles de px) se colapsa a 0 de golpe. Eso
+  // reacomoda toda la página por debajo y el navegador cambia el scroll
+  // solo (a veces cientos de px), que es justo lo que NO queremos: la
+  // página tiene que quedarse exactamente donde estaba.
+  const contenedor = iframeOrigen.parentElement;
+  if (contenedor && contenedor.dataset.estiloPrevio === undefined) {
+    contenedor.dataset.estiloPrevio = contenedor.getAttribute('style') || '';
+    contenedor.style.minHeight = iframeOrigen.offsetHeight + 'px';
+    // El contenedor ".map-frame" tiene backdrop-filter (y overflow:hidden),
+    // y cualquier ancestro con backdrop-filter/filter/transform "atrapa" a
+    // los descendientes position:fixed dentro de su propia caja en vez de
+    // dejarlos cubrir la pantalla real — por eso hay que apagárselo
+    // mientras el iframe está en modo pantalla completa.
+    contenedor.style.backdropFilter = 'none';
+    contenedor.style.overflow = 'visible';
+  }
+
+  if (iframeOrigen.dataset.estiloPrevio === undefined) {
+    iframeOrigen.dataset.estiloPrevio = iframeOrigen.getAttribute('style') || '';
+  }
+  iframeOrigen.style.position = 'fixed';
+  iframeOrigen.style.top = '0';
+  iframeOrigen.style.left = '0';
+  iframeOrigen.style.right = '0';
+  iframeOrigen.style.width = '100%';
+  iframeOrigen.style.height = '100vh';
+  iframeOrigen.style.height = '100dvh';
+  iframeOrigen.style.margin = '0';
+  iframeOrigen.style.zIndex = '999';
+}
+
+function restaurarIframeNormal(iframeOrigen) {
+  if (iframeOrigen.dataset.estiloPrevio !== undefined) {
+    const previo = iframeOrigen.dataset.estiloPrevio;
+    // Restauramos el alto real SIN animación: si dejamos que la
+    // transición de la hoja de estilos anime el alto de vuelta, el
+    // documento queda más bajo un instante y el navegador recorta el
+    // scroll solo para que quepa — y no lo recupera al terminar la
+    // animación. Reactivamos la transición normal un frame después.
+    iframeOrigen.setAttribute('style', previo + ';transition:none;');
+    delete iframeOrigen.dataset.estiloPrevio;
+    requestAnimationFrame(() => { iframeOrigen.style.transition = ''; });
+  }
+  const contenedor = iframeOrigen.parentElement;
+  if (contenedor && contenedor.dataset.estiloPrevio !== undefined) {
+    contenedor.setAttribute('style', contenedor.dataset.estiloPrevio);
+    delete contenedor.dataset.estiloPrevio;
+  }
+}
+
 // Los iframes de asistencias.html / tenientes.html / capitanes.html avisan su
 // altura real (incluyendo popups abiertos) vía postMessage; acá la aplicamos
 // para que no haya doble scroll ni recortes, sea cual sea el que esté activo.
+// También escuchamos acá 'modal-abierto'/'modal-cerrado' como reaseguro,
+// pero el mecanismo que de verdad garantiza que esto funcione es el de
+// abajo (observarModalesDelIframe), que no depende de este mensaje.
 window.addEventListener('message', e => {
   if (!e.data) return;
   let iframeOrigen = null;
@@ -2291,67 +2356,58 @@ window.addEventListener('message', e => {
     }
   }
 
-  // El HTML embebido (asistencias/tenientes/capitanes/mayores/coroneles/
-  // evaluaciones) avisa cuando abre o cierra un modal. Mientras esté
-  // abierto, ponemos EL IFRAME MISMO en pantalla completa y fijo — así el
-  // "position: fixed" del modal (que adentro del iframe ya funciona bien
-  // solo) queda relativo a la pantalla real en vez de al documento
-  // completo del iframe, sin necesidad de tocar el scroll de esta página
-  // para nada.
-  if (e.data.tipo === 'modal-abierto') {
-    // OJO: hay que medir y "reservar" el alto del iframe ANTES de tocar su
-    // estilo — en cuanto pasa a position:fixed, sale del flujo normal del
-    // documento y el contenedor (que hasta ahora media lo mismo que el
-    // iframe, potencialmente miles de px) se colapsa a 0 de golpe. Eso
-    // reacomoda toda la página por debajo y el navegador cambia el scroll
-    // solo (a veces cientos de px), que es justo lo que NO queremos: la
-    // página tiene que quedarse exactamente donde estaba.
-    const contenedor = iframeOrigen.parentElement;
-    if (contenedor && contenedor.dataset.estiloPrevio === undefined) {
-      contenedor.dataset.estiloPrevio = contenedor.getAttribute('style') || '';
-      contenedor.style.minHeight = iframeOrigen.offsetHeight + 'px';
-      // El contenedor ".map-frame" tiene backdrop-filter (y overflow:hidden),
-      // y cualquier ancestro con backdrop-filter/filter/transform "atrapa" a
-      // los descendientes position:fixed dentro de su propia caja en vez de
-      // dejarlos cubrir la pantalla real — por eso hay que apagárselo
-      // mientras el iframe está en modo pantalla completa.
-      contenedor.style.backdropFilter = 'none';
-      contenedor.style.overflow = 'visible';
-    }
-
-    if (iframeOrigen.dataset.estiloPrevio === undefined) {
-      iframeOrigen.dataset.estiloPrevio = iframeOrigen.getAttribute('style') || '';
-    }
-    iframeOrigen.style.position = 'fixed';
-    iframeOrigen.style.top = '0';
-    iframeOrigen.style.left = '0';
-    iframeOrigen.style.right = '0';
-    iframeOrigen.style.width = '100%';
-    iframeOrigen.style.height = '100vh';
-    iframeOrigen.style.height = '100dvh';
-    iframeOrigen.style.margin = '0';
-    iframeOrigen.style.zIndex = '999';
-  }
-
-  if (e.data.tipo === 'modal-cerrado') {
-    if (iframeOrigen.dataset.estiloPrevio !== undefined) {
-      const previo = iframeOrigen.dataset.estiloPrevio;
-      // Restauramos el alto real SIN animación: si dejamos que la
-      // transición de la hoja de estilos anime el alto de vuelta, el
-      // documento queda más bajo un instante y el navegador recorta el
-      // scroll solo para que quepa — y no lo recupera al terminar la
-      // animación. Reactivamos la transición normal un frame después.
-      iframeOrigen.setAttribute('style', previo + ';transition:none;');
-      delete iframeOrigen.dataset.estiloPrevio;
-      requestAnimationFrame(() => { iframeOrigen.style.transition = ''; });
-    }
-    const contenedor = iframeOrigen.parentElement;
-    if (contenedor && contenedor.dataset.estiloPrevio !== undefined) {
-      contenedor.setAttribute('style', contenedor.dataset.estiloPrevio);
-      delete contenedor.dataset.estiloPrevio;
-    }
-  }
+  if (e.data.tipo === 'modal-abierto') ponerIframeEnPantallaCompleta(iframeOrigen);
+  if (e.data.tipo === 'modal-cerrado') restaurarIframeNormal(iframeOrigen);
 });
+
+// ------------------------------------------------------------------
+// Mecanismo directo (sin postMessage): como asistencias.html/tenientes.html/
+// etc. son del mismo origen que esta página, podemos leer su documento
+// directamente en vez de depender de que ellas nos avisen por postMessage.
+// Esto es lo que de verdad soluciona el bug de forma confiable: si por lo
+// que sea (navegador, forma de abrir el archivo, etc.) el postMessage de la
+// página hija no llega, esto igual detecta el modal y lo arregla.
+// ------------------------------------------------------------------
+function observarModalesDelIframe(iframeEl) {
+  if (!iframeEl) return;
+  let modalesAbiertos = 0;
+  let observerActual = null;
+
+  function conectar() {
+    let doc;
+    try { doc = iframeEl.contentDocument; } catch (err) { return; }
+    if (!doc || !doc.body) return;
+
+    if (observerActual) observerActual.disconnect();
+    modalesAbiertos = 0;
+
+    observerActual = new MutationObserver(mutList => {
+      for (const m of mutList) {
+        const el = m.target;
+        if (!el || el.nodeType !== 1 || !/modal-overlay/.test(el.className)) continue;
+        const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
+        const esOculto = el.classList.contains('hidden');
+        if (eraOculto && !esOculto) {
+          modalesAbiertos++;
+          ponerIframeEnPantallaCompleta(iframeEl);
+        } else if (!eraOculto && esOculto) {
+          modalesAbiertos = Math.max(0, modalesAbiertos - 1);
+          if (modalesAbiertos === 0) restaurarIframeNormal(iframeEl);
+        }
+      }
+    });
+    observerActual.observe(doc.body, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
+  }
+
+  // 'load' cubre tanto la carga inicial como cada cambio de pestaña
+  // (asistencias.html -> tenientes.html -> capitanes.html, etc.), ya que
+  // cada uno reemplaza el documento del iframe por uno nuevo.
+  iframeEl.addEventListener('load', conectar);
+  conectar(); // por si el iframe ya estaba cargado cuando corrió este script
+}
+
+observarModalesDelIframe(attendanceIframe);
+observarModalesDelIframe(evaluacionesIframe);
 
 /* ============================================================
    Mantener la posición de scroll de la página al abrir/cerrar
