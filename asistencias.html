@@ -2215,52 +2215,41 @@ setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros
 (function () {
   // Si esta página vive adentro de un iframe (como pasa cuando se abre
   // desde Academia en index.html), el scroll real ocurre en la página de
-  // arriba (window.top) — este documento no tiene scroll propio porque el
-  // iframe se agranda para mostrar todo el contenido. Eso también rompe
-  // "position: fixed": adentro del iframe, "fixed" queda pegado a la
-  // esquina del documento completo (no a lo que se ve en pantalla), por
-  // eso el modal aparecía siempre arriba de todo. Acá lo detectamos y lo
-  // corregimos a mano.
+  // arriba (window.top). Ahí "position: fixed" del modal queda relativo al
+  // documento COMPLETO del iframe (que es larguísimo, porque se agranda
+  // para mostrar toda la lista), no a la pantalla — por eso el modal se
+  // iba siempre arriba de todo. En vez de tratar de recalcular esa
+  // posición a mano, le avisamos a la página de arriba que ponga el
+  // iframe mismo en pantalla completa y fijo mientras el modal esté
+  // abierto: así el "fixed" del modal (que ya funciona bien solo) queda
+  // relativo a la pantalla real, sin tocar el scroll para nada.
   let ventanaSuperior = window;
-  let elementoIframe = null;
+  let esEmbebido = false;
   try {
-    if (window.top && window.top !== window && window.frameElement) {
+    if (window.top && window.top !== window) {
       ventanaSuperior = window.top;
-      elementoIframe = window.frameElement;
+      esEmbebido = true;
     }
   } catch (e) { /* iframe de otro origen: seguimos como si no hubiera iframe */ }
 
+  // Caso normal (esta página sola, sin iframe): guardamos el scroll ANTES
+  // de que corra el click que abre el modal (capture:true corre primero
+  // que cualquier otro listener), así tenemos el valor real de dónde
+  // estaba el usuario antes de que un .focus() lo mueva solo.
+  let scrollAntesDelClick = ventanaSuperior.scrollY;
+  const registrarScrollPrevio = () => { scrollAntesDelClick = ventanaSuperior.scrollY; };
+  document.addEventListener('pointerdown', registrarScrollPrevio, true);
+  document.addEventListener('touchstart', registrarScrollPrevio, { capture: true, passive: true });
+  document.addEventListener('click', registrarScrollPrevio, true);
+
   const scrollStack = [];
   function fijarScroll(y) {
-    // Algunos navegadores (sobre todo en celular) mueven la página sola al
-    // enfocar un campo dentro del modal recién abierto — la reforzamos un
-    // instante después para que no se vaya a otra parte de la página.
     ventanaSuperior.scrollTo(0, y);
     requestAnimationFrame(() => ventanaSuperior.scrollTo(0, y));
     setTimeout(() => ventanaSuperior.scrollTo(0, y), 60);
   }
 
-  let reubicarOverlays = null;
-  if (elementoIframe) {
-    document.body.classList.add('modal-en-iframe');
-    const estilo = document.createElement('style');
-    estilo.textContent = '.modal-en-iframe .modal-overlay, .modal-en-iframe .instructor-modal-overlay { position: absolute !important; }';
-    document.head.appendChild(estilo);
-
-    reubicarOverlays = function () {
-      const rect = elementoIframe.getBoundingClientRect();
-      const offset = Math.max(0, -rect.top);
-      const alto = ventanaSuperior.innerHeight || 700;
-      document.querySelectorAll('.modal-overlay:not(.hidden), .instructor-modal-overlay:not(.hidden)').forEach(el => {
-        el.style.top = offset + 'px';
-        el.style.bottom = 'auto';
-        el.style.height = alto + 'px';
-      });
-    };
-    ventanaSuperior.addEventListener('scroll', reubicarOverlays, { passive: true });
-    ventanaSuperior.addEventListener('resize', reubicarOverlays);
-  }
-
+  let modalesAbiertos = 0;
   const obs = new MutationObserver(mutList => {
     for (const m of mutList) {
       const el = m.target;
@@ -2268,16 +2257,24 @@ setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros
       const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
       const esOculto = el.classList.contains('hidden');
       if (eraOculto && !esOculto) {
-        if (reubicarOverlays) reubicarOverlays();
-        const y = ventanaSuperior.scrollY;
-        scrollStack.push(y);
-        fijarScroll(y);
+        modalesAbiertos++;
+        if (esEmbebido) {
+          try { window.parent.postMessage({ tipo: 'modal-abierto' }, '*'); } catch (e2) { /* ignorar */ }
+        } else {
+          const y = scrollAntesDelClick;
+          scrollStack.push(y);
+          fijarScroll(y);
+        }
       } else if (!eraOculto && esOculto) {
-        el.style.top = '';
-        el.style.bottom = '';
-        el.style.height = '';
-        const y = scrollStack.pop();
-        if (y !== undefined) fijarScroll(y);
+        modalesAbiertos = Math.max(0, modalesAbiertos - 1);
+        if (esEmbebido) {
+          if (modalesAbiertos === 0) {
+            try { window.parent.postMessage({ tipo: 'modal-cerrado' }, '*'); } catch (e2) { /* ignorar */ }
+          }
+        } else {
+          const y = scrollStack.pop();
+          if (y !== undefined) fijarScroll(y);
+        }
       }
     }
   });
