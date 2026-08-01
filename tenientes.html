@@ -2476,15 +2476,54 @@ setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros
    cualquier modal (antes se iba arriba de todo al cerrarlo).
    ============================================================ */
 (function () {
+  // Si esta página vive adentro de un iframe (como pasa cuando se abre
+  // desde Academia en index.html), el scroll real ocurre en la página de
+  // arriba (window.top) — este documento no tiene scroll propio porque el
+  // iframe se agranda para mostrar todo el contenido. Eso también rompe
+  // "position: fixed": adentro del iframe, "fixed" queda pegado a la
+  // esquina del documento completo (no a lo que se ve en pantalla), por
+  // eso el modal aparecía siempre arriba de todo. Acá lo detectamos y lo
+  // corregimos a mano.
+  let ventanaSuperior = window;
+  let elementoIframe = null;
+  try {
+    if (window.top && window.top !== window && window.frameElement) {
+      ventanaSuperior = window.top;
+      elementoIframe = window.frameElement;
+    }
+  } catch (e) { /* iframe de otro origen: seguimos como si no hubiera iframe */ }
+
   const scrollStack = [];
   function fijarScroll(y) {
     // Algunos navegadores (sobre todo en celular) mueven la página sola al
     // enfocar un campo dentro del modal recién abierto — la reforzamos un
     // instante después para que no se vaya a otra parte de la página.
-    window.scrollTo(0, y);
-    requestAnimationFrame(() => window.scrollTo(0, y));
-    setTimeout(() => window.scrollTo(0, y), 60);
+    ventanaSuperior.scrollTo(0, y);
+    requestAnimationFrame(() => ventanaSuperior.scrollTo(0, y));
+    setTimeout(() => ventanaSuperior.scrollTo(0, y), 60);
   }
+
+  let reubicarOverlays = null;
+  if (elementoIframe) {
+    document.body.classList.add('modal-en-iframe');
+    const estilo = document.createElement('style');
+    estilo.textContent = '.modal-en-iframe .modal-overlay, .modal-en-iframe .instructor-modal-overlay { position: absolute !important; }';
+    document.head.appendChild(estilo);
+
+    reubicarOverlays = function () {
+      const rect = elementoIframe.getBoundingClientRect();
+      const offset = Math.max(0, -rect.top);
+      const alto = ventanaSuperior.innerHeight || 700;
+      document.querySelectorAll('.modal-overlay:not(.hidden), .instructor-modal-overlay:not(.hidden)').forEach(el => {
+        el.style.top = offset + 'px';
+        el.style.bottom = 'auto';
+        el.style.height = alto + 'px';
+      });
+    };
+    ventanaSuperior.addEventListener('scroll', reubicarOverlays, { passive: true });
+    ventanaSuperior.addEventListener('resize', reubicarOverlays);
+  }
+
   const obs = new MutationObserver(mutList => {
     for (const m of mutList) {
       const el = m.target;
@@ -2492,10 +2531,14 @@ setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros
       const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
       const esOculto = el.classList.contains('hidden');
       if (eraOculto && !esOculto) {
-        const y = window.scrollY;
+        if (reubicarOverlays) reubicarOverlays();
+        const y = ventanaSuperior.scrollY;
         scrollStack.push(y);
         fijarScroll(y);
       } else if (!eraOculto && esOculto) {
+        el.style.top = '';
+        el.style.bottom = '';
+        el.style.height = '';
         const y = scrollStack.pop();
         if (y !== undefined) fijarScroll(y);
       }
