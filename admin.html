@@ -643,6 +643,10 @@
     color: var(--accent2);
   }
   .admin-instructor-count.cero { color: var(--muted); font-weight: 400; }
+  .th-ordenable { cursor: pointer; user-select: none; white-space: nowrap; }
+  .th-ordenable:hover { color: var(--accent2); }
+  .th-ordenable.sort-asc::after { content: ' ▲'; font-size: 0.7em; }
+  .th-ordenable.sort-desc::after { content: ' ▼'; font-size: 0.7em; }
 </style>
 </head>
 <body>
@@ -778,7 +782,13 @@
     </div>
     <div id="reporteResumen"></div>
     <table class="admin-tabla" id="tablaReporte">
-      <thead><tr><th>Nombre</th><th>Lista</th><th>Rango</th><th class="num">Clases</th><th>Procedimientos</th></tr></thead>
+      <thead><tr>
+        <th data-sort="nombre" class="th-ordenable sort-asc">Nombre</th>
+        <th data-sort="lista" class="th-ordenable">Lista</th>
+        <th data-sort="rango" class="th-ordenable">Rango</th>
+        <th data-sort="clases" class="th-ordenable num">Clases</th>
+        <th data-sort="procedimientos" class="th-ordenable">Procedimientos</th>
+      </tr></thead>
       <tbody id="reporteBody"></tbody>
     </table>
   </section>
@@ -789,6 +799,33 @@
     <div class="admin-row">
       <button class="btn btn-secundario" id="btnRefrescarInstructores">🔄 Refrescar</button>
     </div>
+
+    <div class="admin-sub-titulo">Generar reporte</div>
+    <div class="admin-row">
+      <div class="admin-field">
+        <label>Período</label>
+        <select id="instructorReporteTipo">
+          <option value="todo">Todo el historial</option>
+          <option value="dia">Un día puntual</option>
+          <option value="rango">Rango de fechas</option>
+        </select>
+      </div>
+      <div class="admin-field" id="instructorReporteDiaWrap" style="display:none;">
+        <label>Día</label>
+        <input type="date" id="instructorReporteDia">
+      </div>
+      <div class="admin-field" id="instructorReporteDesdeWrap" style="display:none;">
+        <label>Desde</label>
+        <input type="date" id="instructorReporteDesde">
+      </div>
+      <div class="admin-field" id="instructorReporteHastaWrap" style="display:none;">
+        <label>Hasta</label>
+        <input type="date" id="instructorReporteHasta">
+      </div>
+      <button class="btn btn-primario" id="btnDescargarReporteInstructores">⬇️ Descargar reporte</button>
+    </div>
+    <div class="admin-msg" id="instructorReporteMsg"></div>
+
     <table class="admin-tabla" id="tablaAsistenciaInstructores">
       <thead><tr><th>Nombre</th><th style="width:14%">Rol</th><th class="num" style="width:80px">Total</th><th>Fechas registradas</th><th style="width:170px"></th></tr></thead>
       <tbody id="asistenciaInstructoresBody"></tbody>
@@ -1430,6 +1467,18 @@ function tieneProcedimientosDe(p) {
 
 let todasLasPersonas = [];
 let tabActivo = 'todos';
+let ordenReporte = { columna: 'nombre', direccion: 1 }; // direccion: 1 = ascendente, -1 = descendente
+
+function valorOrdenReporte(p, columna) {
+  switch (columna) {
+    case 'nombre': return p.nombre.toLowerCase();
+    case 'lista': return RANGOS[p.lista] || p.lista;
+    case 'rango': return (p.rango || '').toLowerCase();
+    case 'clases': return puntosDe(p);
+    case 'procedimientos': return tieneProcedimientosDe(p) ? 1 : 0;
+    default: return '';
+  }
+}
 
 async function cargarReporteCombinado() {
   const resumen = document.getElementById('reporteResumen');
@@ -1462,7 +1511,12 @@ function renderReporte() {
 
   const filtradas = (tabActivo === 'todos' ? todasLasPersonas : todasLasPersonas.filter(p => p.lista === tabActivo))
     .slice()
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    .sort((a, b) => {
+      const va = valorOrdenReporte(a, ordenReporte.columna);
+      const vb = valorOrdenReporte(b, ordenReporte.columna);
+      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * ordenReporte.direccion;
+      return String(va).localeCompare(String(vb), 'es') * ordenReporte.direccion;
+    });
 
   body.innerHTML = filtradas.length
     ? filtradas.map(p => `
@@ -1478,6 +1532,20 @@ function renderReporte() {
 }
 
 document.getElementById('btnCargarReporte').addEventListener('click', cargarReporteCombinado);
+
+document.querySelectorAll('#tablaReporte thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const columna = th.dataset.sort;
+    if (ordenReporte.columna === columna) {
+      ordenReporte.direccion *= -1;
+    } else {
+      ordenReporte = { columna, direccion: 1 };
+    }
+    document.querySelectorAll('#tablaReporte thead th[data-sort]').forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
+    th.classList.add(ordenReporte.direccion === 1 ? 'sort-asc' : 'sort-desc');
+    renderReporte();
+  });
+});
 
 document.querySelectorAll('#reporteTabs .btn-tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -1860,6 +1928,103 @@ asistenciaInstructoresBody.addEventListener('click', async e => {
       asistenciaInstructoresMsg.className = 'admin-msg error';
     }
   }
+});
+
+/* ----- reporte de asistencia de instructores: por día, por rango, o todo ----- */
+function actualizarVisibilidadReporteInstructores() {
+  const tipo = document.getElementById('instructorReporteTipo').value;
+  document.getElementById('instructorReporteDiaWrap').style.display = tipo === 'dia' ? '' : 'none';
+  document.getElementById('instructorReporteDesdeWrap').style.display = tipo === 'rango' ? '' : 'none';
+  document.getElementById('instructorReporteHastaWrap').style.display = tipo === 'rango' ? '' : 'none';
+}
+document.getElementById('instructorReporteTipo').addEventListener('change', actualizarVisibilidadReporteInstructores);
+actualizarVisibilidadReporteInstructores();
+
+document.getElementById('btnDescargarReporteInstructores').addEventListener('click', async () => {
+  const msg = document.getElementById('instructorReporteMsg');
+  msg.textContent = '';
+  msg.className = 'admin-msg';
+
+  const tipo = document.getElementById('instructorReporteTipo').value;
+  let desde = null;
+  let hasta = null;
+  let etiquetaPeriodo = 'Todo el historial';
+  let sufijoArchivo = 'completo';
+
+  if (tipo === 'dia') {
+    const dia = document.getElementById('instructorReporteDia').value;
+    if (!dia) {
+      msg.textContent = 'Elegí un día.';
+      msg.className = 'admin-msg error';
+      return;
+    }
+    desde = hasta = dia;
+    etiquetaPeriodo = `Día puntual: ${dia}`;
+    sufijoArchivo = dia;
+  } else if (tipo === 'rango') {
+    desde = document.getElementById('instructorReporteDesde').value;
+    hasta = document.getElementById('instructorReporteHasta').value;
+    if (!desde || !hasta) {
+      msg.textContent = 'Completá las dos fechas del rango.';
+      msg.className = 'admin-msg error';
+      return;
+    }
+    if (desde > hasta) {
+      msg.textContent = 'La fecha "Desde" no puede ser posterior a "Hasta".';
+      msg.className = 'admin-msg error';
+      return;
+    }
+    etiquetaPeriodo = `Del ${desde} al ${hasta}`;
+    sufijoArchivo = `${desde}_a_${hasta}`;
+  }
+
+  // Igual que en la tabla: manda el roster actual (instructores +
+  // instructores a prueba), completado con cualquier nombre que ya no
+  // esté en el roster pero tenga historial guardado, para no perder a
+  // nadie del reporte.
+  const enRoster = [
+    ...rosterNombres.instructores.map(nombre => ({ nombre, rol: 'Instructor' })),
+    ...rosterNombres.instructoresPrueba.map(nombre => ({ nombre, rol: 'Instructor a prueba' })),
+  ];
+  const nombresEnRoster = new Set(enRoster.map(p => p.nombre.toLowerCase()));
+  const fueraDeRoster = asistenciaInstructoresLocal
+    .filter(p => !nombresEnRoster.has(p.nombre.toLowerCase()))
+    .map(p => ({ nombre: p.nombre, rol: '(fuera del roster)' }));
+  const todos = [...enRoster, ...fueraDeRoster].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+  const ahora = new Date();
+  const lineas = [];
+  lineas.push('REPORTE DE ASISTENCIA DE INSTRUCTORES — DEPARTAMENTO DE POLICÍA DE LAGUNA');
+  lineas.push(etiquetaPeriodo);
+  lineas.push(`Generado: ${ahora.toLocaleDateString('es-AR')} ${ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
+  lineas.push('');
+
+  let cumplieron = 0;
+  for (const { nombre, rol } of todos) {
+    const todasFechas = fechasDeInstructor(nombre);
+    const enPeriodo = (desde && hasta) ? todasFechas.filter(f => f >= desde && f <= hasta) : todasFechas;
+    if (enPeriodo.length) cumplieron++;
+    const detalle = enPeriodo.length
+      ? `${enPeriodo.length} asistencia${enPeriodo.length === 1 ? '' : 's'}: ${enPeriodo.join(', ')}`
+      : 'NO REGISTRÓ asistencia en este período';
+    lineas.push(`${nombre} (${rol}) — ${detalle}`);
+  }
+  lineas.push('');
+  lineas.push(`Total: ${cumplieron} de ${todos.length} instructores con al menos una asistencia en el período.`);
+
+  const texto = lineas.join('\n');
+  const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `reporte-asistencia-instructores-${sufijoArchivo}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  msg.textContent = 'Listo — se descargó el reporte.';
+  msg.className = 'admin-msg ok';
 });
 
 </script>
