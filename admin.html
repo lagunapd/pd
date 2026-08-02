@@ -571,31 +571,64 @@
     margin: 12px 0 6px;
   }
   .admin-check-field { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+  /* --- Pestañas del reporte combinado: pegadas a la tabla, como un
+     archivero sci-fi — mismo concepto que las pestañas de la lista de
+     asistencia (Asistencias/Tenientes/Capitanes/...) en index.html --- */
+  .reporte-tabs-archivero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 3px;
+    margin: 14px 0 0;
+    padding: 0 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .reporte-tabs-archivero::-webkit-scrollbar { height: 4px; }
   .btn-tab {
     position: relative;
+    flex-shrink: 0;
     overflow: hidden;
-    background: var(--card);
-    border: 1px solid var(--border);
+    white-space: nowrap;
+    background: rgba(15,17,21,0.75);
+    border: 1px solid rgba(255,184,79,0.3);
+    border-bottom: none;
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
     color: var(--muted);
     padding: 9px 16px;
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     cursor: pointer;
-    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    transition: background 0.2s, color 0.2s;
   }
-  .btn-tab:hover { border-color: var(--accent2); color: var(--text); }
+  .btn-tab:hover { color: var(--text); border-color: rgba(255,184,79,0.5); }
   .btn-tab .tab-count {
     margin-left: 7px;
     font-weight: 700;
     color: var(--accent2);
   }
   .btn-tab.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #201400;
+    position: relative;
+    z-index: 2;
+    margin-bottom: -1px;
+    padding-bottom: 10px;
+    border-color: rgba(255,184,79,0.6);
+    color: var(--accent2);
+    background: rgba(255,184,79,0.1);
+    box-shadow: 0 -4px 14px rgba(255,184,79,0.12);
   }
-  .btn-tab.active .tab-count { color: #201400; }
+  .btn-tab.active .tab-count { color: var(--accent2); }
+  .reporte-tabla-wrap {
+    position: relative;
+    z-index: 0;
+    border: 1px solid rgba(255,184,79,0.45);
+    background: rgba(5,7,10,0.35);
+    padding: 2px;
+    margin-bottom: 12px;
+  }
+  .reporte-tabla-wrap #tablaReporte { margin-bottom: 0; }
 
   /* --- Menú principal del panel: tarjetas grandes, mismo estilo que
      "Lista de asistencias" / "Evaluaciones" en la sección Academia --- */
@@ -849,7 +882,7 @@
       <button class="btn btn-secundario" id="btnCargarReporte">🔄 Cargar / actualizar</button>
       <button class="btn btn-primario" id="btnDescargarReporte">⬇️ Descargar reporte de esta pestaña</button>
     </div>
-    <div class="admin-row" id="reporteTabs">
+    <div class="reporte-tabs-archivero" id="reporteTabs">
       <button class="btn-tab active" data-tab="todos">Todos</button>
       <button class="btn-tab" data-tab="asistencias">Uniformado</button>
       <button class="btn-tab" data-tab="tenientes">Teniente</button>
@@ -857,16 +890,17 @@
       <button class="btn-tab" data-tab="mayores">Mayor</button>
       <button class="btn-tab" data-tab="coroneles">Coronel</button>
     </div>
-    <table class="admin-tabla" id="tablaReporte">
-      <thead><tr>
-        <th data-sort="nombre" class="th-ordenable sort-asc">Nombre</th>
-        <th data-sort="lista" class="th-ordenable">Lista</th>
-        <th data-sort="rango" class="th-ordenable">Rango</th>
-        <th data-sort="clases" class="th-ordenable num">Clases</th>
-        <th data-sort="procedimientos" class="th-ordenable">Procedimientos</th>
-      </tr></thead>
-      <tbody id="reporteBody"></tbody>
-    </table>
+    <div class="reporte-tabla-wrap">
+      <table class="admin-tabla" id="tablaReporte">
+        <thead><tr>
+          <th data-sort="nombre" class="th-ordenable sort-asc">Nombre</th>
+          <th data-sort="rango" class="th-ordenable">Rango</th>
+          <th data-sort="clases" class="th-ordenable num">Clases</th>
+          <th data-sort="procedimientos" class="th-ordenable">Procedimientos</th>
+        </tr></thead>
+        <tbody id="reporteBody"></tbody>
+      </table>
+    </div>
   </section>
 
   <section class="admin-seccion admin-panel-tab" id="tabInstructores">
@@ -962,11 +996,6 @@
         <label>Fecha</label>
         <input type="date" id="instructorInputFecha">
       </div>
-      <div class="modal-field flex1">
-        <label>Turno / Clase</label>
-        <input type="text" id="instructorInputTurno" list="instructorTurnosList" placeholder="Escribí o elegí el turno..." autocomplete="off">
-        <datalist id="instructorTurnosList"></datalist>
-      </div>
     </div>
 
     <div class="modal-row">
@@ -975,13 +1004,19 @@
         <input type="text" id="instructorInputNombre" list="instructorNombresList" placeholder="Escribí o elegí un nombre..." autocomplete="off">
         <datalist id="instructorNombresList"></datalist>
       </div>
+      <div class="modal-field flex1">
+        <label>Turno / Clase</label>
+        <input type="text" id="instructorInputTurno" list="instructorTurnosList" placeholder="Escribí o elegí el turno..." autocomplete="off">
+        <datalist id="instructorTurnosList"></datalist>
+      </div>
       <button class="btn btn-primario btn-agregar-fila" id="btnInstructorAgregarFila">+ Agregar</button>
     </div>
     <div class="modal-error" id="instructorNombreError"></div>
+    <div class="modal-sub" style="margin:-4px 0 8px;">Si alguien acompañó en más de un turno el mismo día, agregalo de nuevo con el turno siguiente — queda una fila por cada turno.</div>
 
     <div class="mini-lista-wrap" id="instructorMiniListaWrap">
       <table class="mini-lista">
-        <thead><tr><th>Nombre</th><th></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Turno</th><th></th></tr></thead>
         <tbody id="instructorMiniListaBody"></tbody>
       </table>
     </div>
@@ -1588,7 +1623,6 @@ let ordenReporte = { columna: 'nombre', direccion: 1 }; // direccion: 1 = ascend
 function valorOrdenReporte(p, columna) {
   switch (columna) {
     case 'nombre': return p.nombre.toLowerCase();
-    case 'lista': return RANGOS[p.lista] || p.lista;
     case 'rango': return (p.rango || '').toLowerCase();
     case 'clases': return puntosDe(p);
     case 'procedimientos': return tieneProcedimientosDe(p) ? 1 : 0;
@@ -1635,13 +1669,12 @@ function renderReporte() {
     ? filtradas.map(p => `
       <tr>
         <td class="nombre-cell" data-nombre="${escapeAttr(p.nombre)}" data-lista="${p.lista}">${escapeHtml(p.nombre)}</td>
-        <td>${p.lista}</td>
         <td>${escapeHtml(p.rango || '—')}</td>
         <td class="num">${puntosDe(p)}</td>
         <td>${tieneProcedimientosDe(p) ? '🛡️ Sí' : '—'}</td>
       </tr>
     `).join('')
-    : '<tr><td colspan="5"><div class="empty-msg">Todavía no hay nadie en esta pestaña.</div></td></tr>';
+    : '<tr><td colspan="4"><div class="empty-msg">Todavía no hay nadie en esta pestaña.</div></td></tr>';
 }
 
 document.getElementById('btnCargarReporte').addEventListener('click', cargarReporteCombinado);
@@ -2038,7 +2071,7 @@ const instructorNombreError = document.getElementById('instructorNombreError');
 const instructorMiniListaWrap = document.getElementById('instructorMiniListaWrap');
 const instructorMiniListaEmpty = document.getElementById('instructorMiniListaEmpty');
 const instructorMiniListaBody = document.getElementById('instructorMiniListaBody');
-let instructorMiniLista = []; // [{nombre}]
+let instructorMiniLista = []; // [{nombre, turno}]
 
 function poblarNombresInstructoresDatalist() {
   const nombres = [...new Set([...rosterNombres.instructores, ...rosterNombres.instructoresPrueba])]
@@ -2062,6 +2095,7 @@ function renderInstructorMiniLista() {
   instructorMiniListaBody.innerHTML = instructorMiniLista.map((item, i) => `
     <tr>
       <td>${escapeHtml(item.nombre)}</td>
+      <td>${escapeHtml(item.turno || '—')}</td>
       <td><span class="quitar" data-idx="${i}">✕</span></td>
     </tr>
   `).join('');
@@ -2089,18 +2123,20 @@ document.getElementById('btnAbrirRegistroInstructores').addEventListener('click'
 
 function agregarFilaInstructor() {
   const nombre = instructorInputNombre.value.trim();
+  const turno = instructorInputTurno.value.trim();
   if (!nombre) {
     instructorNombreError.textContent = 'Escribí o elegí un nombre primero.';
     return;
   }
   instructorNombreError.textContent = '';
-  instructorMiniLista.push({ nombre });
+  instructorMiniLista.push({ nombre, turno });
   instructorInputNombre.value = '';
   instructorInputNombre.focus();
   renderInstructorMiniLista();
 }
 document.getElementById('btnInstructorAgregarFila').addEventListener('click', agregarFilaInstructor);
 instructorInputNombre.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarFilaInstructor(); } });
+instructorInputTurno.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarFilaInstructor(); } });
 
 instructorMiniListaBody.addEventListener('click', e => {
   const el = e.target.closest('.quitar');
@@ -2122,8 +2158,7 @@ btnInstructorConfirmarRegistro.addEventListener('click', async () => {
     return;
   }
   const fecha = instructorInputFecha.value || hoyISO();
-  const turno = instructorInputTurno.value.trim();
-  const entries = instructorMiniLista.map(item => ({ nombre: item.nombre, fecha, turno }));
+  const entries = instructorMiniLista.map(item => ({ nombre: item.nombre, fecha, turno: item.turno }));
 
   instructorNombreError.textContent = '';
   btnInstructorConfirmarRegistro.disabled = true;
