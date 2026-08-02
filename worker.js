@@ -414,18 +414,39 @@ async function manejarHorarios(request, env, payload) {
 }
 
 // ==================== asistencia de instructores ====================
-// Registro simple y aparte del sistema de "clases" de los cadetes: acá NO
-// hay tipos (verde/amarillo) ni rangos ni ascensos — cada instructor tiene
-// nada más que una lista de fechas en las que se le marcó presente. Lo usa
-// el panel de administración para llevar un pulso de quién está viniendo.
-// El roster de nombres (quién puede aparecer acá) sale en vivo del recurso
-// "codigos" (instructores + instructores a prueba) — este KV solo guarda
-// las fechas marcadas para los nombres que ya tuvieron al menos una.
+// Registro aparte del sistema de "clases" de los cadetes: acá NO hay tipos
+// (verde/amarillo) ni rangos ni ascensos — cada instructor tiene una lista
+// de "registros" {fecha, turno, registrador}, uno por cada clase/turno en
+// el que se lo marcó presente (puede haber varios el mismo día si dio más
+// de una clase). Lo usa el panel de administración para llevar un pulso de
+// quién está viniendo. El roster de nombres (quién puede aparecer acá) sale
+// en vivo del recurso "codigos" (instructores + instructores a prueba) —
+// este KV solo guarda los registros para los nombres que ya tuvieron al
+// menos uno.
+// Acepta también el formato viejo ({fechas: [...]} de puras fechas sueltas)
+// y lo migra solo a registros con turno "—" y registrador "Desconocido",
+// para no perder historial de antes de este cambio.
 function limpiarAsistenciaInstructor(p) {
-  const fechas = Array.isArray(p && p.fechas) ? p.fechas : [];
-  const limpias = [...new Set(fechas.map((f) => String(f || "").trim()).filter(Boolean))];
-  limpias.sort();
-  return { nombre: (p && p.nombre) || "", fechas: limpias };
+  const registrosCrudos = Array.isArray(p && p.registros)
+    ? p.registros
+    : Array.isArray(p && p.fechas)
+      ? p.fechas.map((f) => ({ fecha: f, turno: "—", registrador: "Desconocido" }))
+      : [];
+
+  const vistos = new Set();
+  const registros = [];
+  for (const r of registrosCrudos) {
+    const fecha = String((r && r.fecha) || "").trim();
+    if (!fecha) continue;
+    const turno = String((r && r.turno) || "").trim() || "—";
+    const registrador = String((r && r.registrador) || "").trim() || "Desconocido";
+    const key = fecha + "|||" + turno.toLowerCase();
+    if (vistos.has(key)) continue;
+    vistos.add(key);
+    registros.push({ fecha, turno, registrador });
+  }
+  registros.sort((a, b) => (a.fecha + "|" + a.turno).localeCompare(b.fecha + "|" + b.turno));
+  return { nombre: (p && p.nombre) || "", registros };
 }
 
 async function manejarAsistenciaInstructores(request, env, payload) {
@@ -437,35 +458,56 @@ async function manejarAsistenciaInstructores(request, env, payload) {
     return json({ asistenciaInstructores: lista, ultimaActualizacion });
   }
 
-  // agregar: marca una fecha (hoy por default) como presente para una
-  // persona. Si todavía no tenía ninguna fecha cargada, se crea su
-  // entrada. No duplica si la fecha ya estaba marcada.
-  if (payload.accion === "agregar" && payload.nombre) {
-    const nombreLimpio = String(payload.nombre).trim();
-    if (!nombreLimpio) return json({ error: "Falta el nombre." }, 400);
-    const fecha = String(payload.fecha || "").trim() || new Date().toISOString().slice(0, 10);
+  // agregar: registra uno o varios {nombre, fecha, turno} de una sola vez —
+  // así se puede cargar, en un solo modal, la asistencia de varios
+  // instructores a la vez y para varias clases/turnos del mismo día. Si a
+  // alguno todavía no le había marcado ningún registro, se crea su entrada.
+  // No duplica si esa persona ya tenía marcado ese mismo fecha+turno.
+  if (payload.accion === "agregar") {
+    const entries = Array.isArray(payload.entries)
+      ? payload.entries
+      : payload.nombre
+        ? [{ nombre: payload.nombre, fecha: payload.fecha, turno: payload.turno }]
+        : [];
+    if (!entries.length) return json({ error: "Falta el nombre." }, 400);
+    const registrador = String(payload.registrador || "Desconocido").trim() || "Desconocido";
 
-    let persona = lista.find((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
-    if (!persona) {
-      persona = { nombre: nombreLimpio, fechas: [] };
-      lista.push(persona);
-    }
-    if (!persona.fechas.includes(fecha)) {
-      persona.fechas.push(fecha);
-      persona.fechas.sort();
+    for (const entry of entries) {
+      if (!entry || !entry.nombre) continue;
+      const nombreLimpio = String(entry.nombre).trim();
+      if (!nombreLimpio) continue;
+      const fecha = String(entry.fecha || "").trim() || new Date().toISOString().slice(0, 10);
+      const turno = String(entry.turno || "").trim() || "—";
+
+      let persona = lista.find((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
+      if (!persona) {
+        persona = { nombre: nombreLimpio, registros: [] };
+        lista.push(persona);
+      }
+      const yaExiste = persona.registros.some(
+        (r) => r.fecha === fecha && r.turno.toLowerCase() === turno.toLowerCase()
+      );
+      if (!yaExiste) {
+        persona.registros.push({ fecha, turno, registrador });
+        persona.registros.sort((a, b) => (a.fecha + "|" + a.turno).localeCompare(b.fecha + "|" + b.turno));
+      }
     }
 
     const estado = await guardarLista(env, KV_KEY_ASISTENCIA_INSTRUCTORES, "asistenciaInstructores", lista);
     return json({ asistenciaInstructores: estado.asistenciaInstructores, ultimaActualizacion: estado.ultimaActualizacion });
   }
 
-  // quitar: saca una fecha puntual (para corregir una carga hecha por
-  // error), sin tocar el resto de las fechas de esa persona.
+  // quitar: saca un registro puntual (fecha + turno), para corregir una
+  // carga hecha por error, sin tocar el resto de los registros de esa
+  // persona.
   if (payload.accion === "quitar" && payload.nombre && payload.fecha) {
     const nombreLimpio = String(payload.nombre).trim();
+    const turno = String(payload.turno || "").trim() || "—";
     const persona = lista.find((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
     if (persona) {
-      persona.fechas = persona.fechas.filter((f) => f !== payload.fecha);
+      persona.registros = persona.registros.filter(
+        (r) => !(r.fecha === payload.fecha && r.turno.toLowerCase() === turno.toLowerCase())
+      );
       const estado = await guardarLista(env, KV_KEY_ASISTENCIA_INSTRUCTORES, "asistenciaInstructores", lista);
       return json({ asistenciaInstructores: estado.asistenciaInstructores, ultimaActualizacion: estado.ultimaActualizacion });
     }

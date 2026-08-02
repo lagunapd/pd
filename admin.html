@@ -568,6 +568,13 @@
     background: rgba(15,17,21,0.4);
   }
   .admin-turno-card .admin-row:last-child { margin-bottom: 0; }
+  .admin-tarjeta-titulo {
+    font-family: 'Bebas Neue', -apple-system, sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    color: var(--accent2);
+    margin: 0 0 12px;
+  }
   .admin-sub-titulo {
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -668,8 +675,7 @@
   <div class="admin-nav" id="adminNav">
     <div class="admin-nav-btn active" data-admin-tab="codigos">📋 Códigos de acceso</div>
     <div class="admin-nav-btn" data-admin-tab="horarios">📅 Horarios de Academia</div>
-    <div class="admin-nav-btn" data-admin-tab="rango">🎖️ Cambiar rango</div>
-    <div class="admin-nav-btn" data-admin-tab="personas">➕ Personas</div>
+    <div class="admin-nav-btn" data-admin-tab="personal">🧑‍🤝‍🧑 Personal</div>
     <div class="admin-nav-btn" data-admin-tab="reportes">📊 Reportes combinados</div>
     <div class="admin-nav-btn" data-admin-tab="instructores">🗓️ Asistencia de Instructores</div>
   </div>
@@ -699,71 +705,67 @@
     <div class="admin-msg" id="horariosMsg"></div>
   </section>
 
-  <section class="admin-seccion admin-panel-tab" id="tabRango">
-    <h2>🎖️ Cambiar rango a mano</h2>
-    <div class="admin-row">
-      <div class="admin-field">
-        <label>Lista</label>
-        <select id="rangoLista">
-          <option value="asistencias">Asistencias</option>
-          <option value="tenientes">Tenientes</option>
-          <option value="capitanes">Capitanes</option>
-          <option value="mayores">Mayores</option>
-          <option value="coroneles">Coroneles</option>
-        </select>
-      </div>
-      <div class="admin-field" style="flex:1">
-        <label>Nombre</label>
-        <input type="text" id="rangoNombre" list="rangoNombresList" placeholder="Escribí o elegí un nombre..." autocomplete="off">
-        <datalist id="rangoNombresList"></datalist>
-      </div>
-      <div class="admin-field">
-        <label>Rango nuevo</label>
-        <select id="rangoNuevo">
-          <option value="Uniformado">Uniformado</option>
-          <option value="Teniente">Teniente</option>
-          <option value="Capitán">Capitán</option>
-          <option value="Mayor">Mayor</option>
-          <option value="Coronel">Coronel</option>
-        </select>
-      </div>
-      <button class="btn btn-primario" id="btnCambiarRango">Cambiar rango</button>
-    </div>
-    <div class="admin-msg" id="rangoMsg"></div>
-  </section>
+  <section class="admin-seccion admin-panel-tab" id="tabPersonal">
+    <h2>🧑‍🤝‍🧑 Personal</h2>
 
-  <section class="admin-seccion admin-panel-tab" id="tabPersonas">
-    <h2>➕ Agregar / 🗑 Eliminar personas</h2>
-    <div class="admin-row">
-      <div class="admin-field">
-        <label>Lista</label>
-        <select id="altaLista">
-          <option value="asistencias">Asistencias</option>
-          <option value="tenientes">Tenientes</option>
-          <option value="capitanes">Capitanes</option>
-          <option value="mayores">Mayores</option>
-          <option value="coroneles">Coroneles</option>
-        </select>
+    <div class="admin-turno-card">
+      <div class="admin-tarjeta-titulo">🎖️ Cambiar rango a mano</div>
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>Lista</label>
+          <select id="rangoLista">
+            <option value="asistencias">Asistencias</option>
+            <option value="tenientes">Tenientes</option>
+            <option value="capitanes">Capitanes</option>
+            <option value="mayores">Mayores</option>
+            <option value="coroneles">Coroneles</option>
+          </select>
+        </div>
+        <div class="admin-field" style="flex:1">
+          <label>Nombre</label>
+          <input type="text" id="rangoNombre" list="rangoNombresList" placeholder="Escribí o elegí un nombre..." autocomplete="off">
+          <datalist id="rangoNombresList"></datalist>
+        </div>
+        <div class="admin-field">
+          <label>Rango nuevo</label>
+          <select id="rangoNuevo">
+            <option value="Uniformado">Uniformado</option>
+            <option value="Teniente">Teniente</option>
+            <option value="Capitán">Capitán</option>
+            <option value="Mayor">Mayor</option>
+            <option value="Coronel">Coronel</option>
+          </select>
+        </div>
+        <button class="btn btn-primario" id="btnCambiarRango">Cambiar rango</button>
       </div>
-      <div class="admin-field" style="flex:1">
-        <label>Nombre a agregar</label>
-        <input type="text" id="altaNombre" placeholder="Nombre completo..." autocomplete="off">
-      </div>
-      <div class="admin-field">
-        <label>Rango inicial</label>
-        <select id="altaRango"></select>
-      </div>
-      <button class="btn btn-registrar" id="btnAgregarPersona">Agregar</button>
+      <div class="admin-msg" id="rangoMsg"></div>
     </div>
-    <div class="admin-row">
-      <div class="admin-field" style="flex:1">
-        <label>Nombre a eliminar (de la lista de arriba)</label>
-        <input type="text" id="bajaNombre" list="bajaNombresList" placeholder="Escribí o elegí un nombre..." autocomplete="off">
-        <datalist id="bajaNombresList"></datalist>
+
+    <div class="admin-turno-card">
+      <div class="admin-tarjeta-titulo">➕ Agregar persona</div>
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>Lista</label>
+          <select id="altaLista">
+            <option value="asistencias">Asistencias</option>
+            <option value="tenientes">Tenientes</option>
+            <option value="capitanes">Capitanes</option>
+            <option value="mayores">Mayores</option>
+            <option value="coroneles">Coroneles</option>
+          </select>
+        </div>
+        <div class="admin-field" style="flex:1">
+          <label>Nombre a agregar</label>
+          <input type="text" id="altaNombre" placeholder="Nombre completo..." autocomplete="off">
+        </div>
+        <div class="admin-field">
+          <label>Rango inicial</label>
+          <select id="altaRango"></select>
+        </div>
+        <button class="btn btn-registrar" id="btnAgregarPersona">Agregar</button>
       </div>
-      <button class="btn btn-peligro" id="btnEliminarPersona">🗑 Eliminar</button>
+      <div class="admin-msg" id="altaMsg"></div>
     </div>
-    <div class="admin-msg" id="altaMsg"></div>
   </section>
 
   <section class="admin-seccion admin-panel-tab" id="tabReportes">
@@ -795,8 +797,9 @@
 
   <section class="admin-seccion admin-panel-tab" id="tabInstructores">
     <h2>🗓️ Asistencia de Instructores</h2>
-    <div class="modal-sub">Lista simple para llevar el pulso de quién está viniendo: acá no hay tipos de clase ni rangos, solo se marca si un instructor estuvo presente en una fecha o no. El listado de nombres sale solo del roster (Instructores + Instructores a prueba) — no hace falta agregarlos a mano.</div>
+    <div class="modal-sub">Funciona igual que en las listas de asistencias de cadetes: se abre un modal donde elegís la fecha y el turno/clase, y ahí podés agregar de una sola vez a varios instructores — incluidas varias clases distintas del mismo día. Acá no se elige un "instructor" aparte, porque cada nombre que agregás ya ES el instructor que fue a dar esa clase. El listado de nombres sale solo del roster (Instructores + Instructores a prueba) — no hace falta agregarlos a mano.</div>
     <div class="admin-row">
+      <button class="btn btn-registrar" id="btnAbrirRegistroInstructores">🟢 Registrar Asistencias</button>
       <button class="btn btn-secundario" id="btnRefrescarInstructores">🔄 Refrescar</button>
     </div>
 
@@ -827,7 +830,7 @@
     <div class="admin-msg" id="instructorReporteMsg"></div>
 
     <table class="admin-tabla" id="tablaAsistenciaInstructores">
-      <thead><tr><th>Nombre</th><th style="width:14%">Rol</th><th class="num" style="width:80px">Total</th><th>Fechas registradas</th><th style="width:170px"></th></tr></thead>
+      <thead><tr><th>Nombre</th><th style="width:14%">Rol</th><th class="num" style="width:80px">Total</th><th>Registros</th></tr></thead>
       <tbody id="asistenciaInstructoresBody"></tbody>
     </table>
     <div class="admin-msg" id="asistenciaInstructoresMsg"></div>
@@ -870,6 +873,48 @@
         <button class="btn btn-secundario" id="btnCerrarPersona">Cancelar</button>
         <button class="btn btn-primario" id="btnGuardarPersona">Guardar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modalRegistroInstructores">
+  <div class="modal-box modal-box-lg">
+    <h2>Registrar Asistencia de Instructores</h2>
+    <div class="modal-sub" id="registroInstructoresInfo"></div>
+
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Fecha</label>
+        <input type="date" id="instructorInputFecha">
+      </div>
+      <div class="modal-field flex1">
+        <label>Turno / Clase</label>
+        <input type="text" id="instructorInputTurno" list="instructorTurnosList" placeholder="Escribí o elegí el turno..." autocomplete="off">
+        <datalist id="instructorTurnosList"></datalist>
+      </div>
+    </div>
+
+    <div class="modal-row">
+      <div class="modal-field flex1">
+        <label>Nombre</label>
+        <input type="text" id="instructorInputNombre" list="instructorNombresList" placeholder="Escribí o elegí un nombre..." autocomplete="off">
+        <datalist id="instructorNombresList"></datalist>
+      </div>
+      <button class="btn btn-primario btn-agregar-fila" id="btnInstructorAgregarFila">+ Agregar</button>
+    </div>
+    <div class="modal-error" id="instructorNombreError"></div>
+
+    <div class="mini-lista-wrap" id="instructorMiniListaWrap">
+      <table class="mini-lista">
+        <thead><tr><th>Nombre</th><th></th></tr></thead>
+        <tbody id="instructorMiniListaBody"></tbody>
+      </table>
+    </div>
+    <div class="mini-lista-empty" id="instructorMiniListaEmpty">Todavía no agregaste a nadie.</div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secundario" id="btnInstructorCancelarRegistro">Cancelar</button>
+      <button class="btn btn-primario" id="btnInstructorConfirmarRegistro">Agregar</button>
     </div>
   </div>
 </div>
@@ -1357,13 +1402,24 @@ function actualizarDatalists() {
   const listaRango = document.getElementById('rangoLista').value;
   document.getElementById('rangoNombresList').innerHTML = personasPorLista[listaRango]
     .map(p => `<option value="${escapeAttr(p.nombre)}">`).join('');
-
-  const listaAlta = document.getElementById('altaLista').value;
-  document.getElementById('bajaNombresList').innerHTML = personasPorLista[listaAlta]
-    .map(p => `<option value="${escapeAttr(p.nombre)}">`).join('');
 }
-document.getElementById('rangoLista').addEventListener('change', actualizarDatalists);
+document.getElementById('rangoLista').addEventListener('change', () => { actualizarDatalists(); actualizarRangoAutofill(); });
 document.getElementById('altaLista').addEventListener('change', actualizarDatalists);
+
+// Al elegir/escribir un nombre que ya existe en la lista seleccionada, el
+// desplegable de "Rango nuevo" se autocompleta con su rango actual (sigue
+// siendo editable, es solo para no tener que buscarlo a mano antes de
+// cambiarlo).
+function actualizarRangoAutofill() {
+  const listaRango = document.getElementById('rangoLista').value;
+  const nombre = document.getElementById('rangoNombre').value.trim().toLowerCase();
+  if (!nombre) return;
+  const match = (personasPorLista[listaRango] || []).find(p => p.nombre.toLowerCase() === nombre);
+  if (match && match.rango) {
+    document.getElementById('rangoNuevo').value = match.rango;
+  }
+}
+document.getElementById('rangoNombre').addEventListener('input', actualizarRangoAutofill);
 
 /* ============================================================
    SECCIÓN 2: Cambiar rango
@@ -1423,30 +1479,6 @@ document.getElementById('btnAgregarPersona').addEventListener('click', async () 
     actualizarDatalists();
   } catch (e) {
     altaMsg.textContent = e && e.message ? e.message : 'No se pudo agregar.';
-    altaMsg.className = 'admin-msg error';
-  }
-});
-
-document.getElementById('btnEliminarPersona').addEventListener('click', async () => {
-  const recurso = document.getElementById('altaLista').value;
-  const nombre = document.getElementById('bajaNombre').value.trim();
-  if (!nombre) {
-    altaMsg.textContent = 'Escribí o elegí un nombre para eliminar.';
-    altaMsg.className = 'admin-msg error';
-    return;
-  }
-  if (!confirm(`¿Seguro que querés eliminar a "${nombre}" de la lista de ${recurso}? No se puede deshacer.`)) return;
-  altaMsg.textContent = 'Eliminando...';
-  altaMsg.className = 'admin-msg';
-  try {
-    await postAccion(recurso, { delete: { nombre } });
-    altaMsg.textContent = `Listo — ${nombre} fue eliminado/a de la lista de ${recurso}.`;
-    altaMsg.className = 'admin-msg ok';
-    document.getElementById('bajaNombre').value = '';
-    personasPorLista[recurso] = await fetchLista(recurso);
-    actualizarDatalists();
-  } catch (e) {
-    altaMsg.textContent = e && e.message ? e.message : 'No se pudo eliminar.';
     altaMsg.className = 'admin-msg error';
   }
 });
@@ -1812,13 +1844,17 @@ document.getElementById('btnEliminarPersonaModal').addEventListener('click', asy
 /* ============================================================
    SECCIÓN: Asistencia de Instructores (en vivo, contra el KV del Worker)
    ============================================================
-   Simple a propósito: no hay tipos de clase (verde/amarillo) ni rangos acá
-   — cada instructor tiene una lista de fechas en las que se lo marcó
-   presente, nada más. El listado de NOMBRES sale del roster (recurso
-   "codigos": instructores + instructores a prueba, ya cargado en
-   rosterNombres más arriba); las FECHAS salen de este recurso aparte.
+   No hay tipos de clase (verde/amarillo) ni rangos acá — cada instructor
+   tiene una lista de "registros" {fecha, turno, registrador}, uno por cada
+   clase/turno en el que se lo marcó presente (puede haber más de uno el
+   mismo día). El listado de NOMBRES sale del roster (recurso "codigos":
+   instructores + instructores a prueba, ya cargado en rosterNombres más
+   arriba); los REGISTROS salen de este recurso aparte. Funciona igual que
+   el modal de "Registrar Asistencias" de las listas de cadetes, salvo que
+   acá no se elige un instructor aparte: cada nombre agregado ya ES el
+   instructor que fue a dar esa clase.
    ============================================================ */
-let asistenciaInstructoresLocal = []; // [{nombre, fechas: [...]}], tal cual la devuelve el servidor
+let asistenciaInstructoresLocal = []; // [{nombre, registros: [{fecha, turno, registrador}]}]
 const asistenciaInstructoresBody = document.getElementById('asistenciaInstructoresBody');
 const asistenciaInstructoresMsg = document.getElementById('asistenciaInstructoresMsg');
 
@@ -1844,16 +1880,16 @@ async function cargarAsistenciaInstructoresDesdeServidor() {
   }
 }
 
-function fechasDeInstructor(nombre) {
+function registrosDeInstructor(nombre) {
   const persona = asistenciaInstructoresLocal.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
-  return persona ? persona.fechas : [];
+  return persona ? persona.registros : [];
 }
 
 function renderTablaAsistenciaInstructores() {
   // El roster manda: se muestra a TODOS los instructores/instructores a
-  // prueba actuales (aunque todavía no tengan ninguna fecha marcada), y
-  // además a cualquiera que tenga fechas guardadas pero ya no esté en el
-  // roster (para no perder el historial si alguien fue dado de baja).
+  // prueba actuales (aunque todavía no tengan ningún registro), y además a
+  // cualquiera que tenga registros guardados pero ya no esté en el roster
+  // (para no perder el historial si alguien fue dado de baja).
   const enRoster = [
     ...rosterNombres.instructores.map(nombre => ({ nombre, rol: 'Instructor' })),
     ...rosterNombres.instructoresPrueba.map(nombre => ({ nombre, rol: 'Instructor a prueba' })),
@@ -1866,29 +1902,26 @@ function renderTablaAsistenciaInstructores() {
   const filas = [...enRoster, ...fueraDeRoster].sort((a, b) => a.nombre.localeCompare(b.nombre));
 
   if (!filas.length) {
-    asistenciaInstructoresBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);">No hay instructores ni instructores a prueba en el roster todavía.</td></tr>';
+    asistenciaInstructoresBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">No hay instructores ni instructores a prueba en el roster todavía.</td></tr>';
     return;
   }
 
   asistenciaInstructoresBody.innerHTML = filas.map(({ nombre, rol }) => {
-    const fechas = fechasDeInstructor(nombre);
-    const chips = fechas.length
-      ? fechas.map(f => `
+    const registros = registrosDeInstructor(nombre);
+    const chips = registros.length
+      ? registros.map(r => `
           <span class="admin-instructor-fecha-chip">
-            ${escapeHtml(f)}
-            <span class="quitar" data-nombre="${escapeAttr(nombre)}" data-fecha="${escapeAttr(f)}" title="Quitar esta fecha">✕</span>
+            ${escapeHtml(r.fecha)}${r.turno && r.turno !== '—' ? ` · ${escapeHtml(r.turno)}` : ''}
+            <span class="quitar" data-nombre="${escapeAttr(nombre)}" data-fecha="${escapeAttr(r.fecha)}" data-turno="${escapeAttr(r.turno)}" title="Quitar este registro">✕</span>
           </span>
         `).join('')
-      : '<span style="color:var(--muted);font-size:0.78rem;">— sin fechas registradas —</span>';
+      : '<span style="color:var(--muted);font-size:0.78rem;">— sin registros —</span>';
     return `
       <tr>
         <td>${escapeHtml(nombre)}</td>
         <td style="color:var(--muted);font-size:0.78rem;">${escapeHtml(rol)}</td>
-        <td class="num"><span class="admin-instructor-count ${fechas.length ? '' : 'cero'}">${fechas.length}</span></td>
+        <td class="num"><span class="admin-instructor-count ${registros.length ? '' : 'cero'}">${registros.length}</span></td>
         <td><div class="admin-instructor-fechas">${chips}</div></td>
-        <td>
-          <button class="btn btn-registrar btn-instructor-agregar" data-nombre="${escapeAttr(nombre)}" style="font-size:0.78rem;padding:6px 10px;">+ Registrar hoy</button>
-        </td>
       </tr>
     `;
   }).join('');
@@ -1897,36 +1930,134 @@ function renderTablaAsistenciaInstructores() {
 document.getElementById('btnRefrescarInstructores').addEventListener('click', cargarAsistenciaInstructoresDesdeServidor);
 
 asistenciaInstructoresBody.addEventListener('click', async e => {
-  const btnAgregar = e.target.closest('.btn-instructor-agregar');
-  if (btnAgregar) {
-    const nombre = btnAgregar.dataset.nombre;
-    btnAgregar.disabled = true;
-    try {
-      const data = await postAccion('asistenciaInstructores', { accion: 'agregar', nombre });
-      asistenciaInstructoresLocal = Array.isArray(data.asistenciaInstructores) ? data.asistenciaInstructores : asistenciaInstructoresLocal;
-      renderTablaAsistenciaInstructores();
-    } catch (err) {
-      asistenciaInstructoresMsg.textContent = err && err.message ? err.message : 'No se pudo registrar la asistencia.';
-      asistenciaInstructoresMsg.className = 'admin-msg error';
-    } finally {
-      btnAgregar.disabled = false;
-    }
-    return;
-  }
-
   const btnQuitar = e.target.closest('.quitar[data-fecha]');
   if (btnQuitar) {
     const nombre = btnQuitar.dataset.nombre;
     const fecha = btnQuitar.dataset.fecha;
-    if (!confirm(`¿Quitar la asistencia del ${fecha} para ${nombre}?`)) return;
+    const turno = btnQuitar.dataset.turno;
+    const etiquetaTurno = turno && turno !== '—' ? ` (${turno})` : '';
+    if (!confirm(`¿Quitar el registro del ${fecha}${etiquetaTurno} para ${nombre}?`)) return;
     try {
-      const data = await postAccion('asistenciaInstructores', { accion: 'quitar', nombre, fecha });
+      const data = await postAccion('asistenciaInstructores', { accion: 'quitar', nombre, fecha, turno });
       asistenciaInstructoresLocal = Array.isArray(data.asistenciaInstructores) ? data.asistenciaInstructores : asistenciaInstructoresLocal;
       renderTablaAsistenciaInstructores();
     } catch (err) {
-      asistenciaInstructoresMsg.textContent = err && err.message ? err.message : 'No se pudo quitar esa fecha.';
+      asistenciaInstructoresMsg.textContent = err && err.message ? err.message : 'No se pudo quitar ese registro.';
       asistenciaInstructoresMsg.className = 'admin-msg error';
     }
+  }
+});
+
+/* ----- modal: registrar asistencia de varios instructores a la vez ----- */
+const modalRegistroInstructores = document.getElementById('modalRegistroInstructores');
+const instructorInputFecha = document.getElementById('instructorInputFecha');
+const instructorInputTurno = document.getElementById('instructorInputTurno');
+const instructorInputNombre = document.getElementById('instructorInputNombre');
+const instructorNombreError = document.getElementById('instructorNombreError');
+const instructorMiniListaWrap = document.getElementById('instructorMiniListaWrap');
+const instructorMiniListaEmpty = document.getElementById('instructorMiniListaEmpty');
+const instructorMiniListaBody = document.getElementById('instructorMiniListaBody');
+let instructorMiniLista = []; // [{nombre}]
+
+function poblarNombresInstructoresDatalist() {
+  const nombres = [...new Set([...rosterNombres.instructores, ...rosterNombres.instructoresPrueba])]
+    .sort((a, b) => a.localeCompare(b, 'es'));
+  document.getElementById('instructorNombresList').innerHTML = nombres.map(n => `<option value="${escapeAttr(n)}">`).join('');
+}
+
+function poblarTurnosInstructoresDatalist() {
+  const titulos = [...new Set(horariosLocal.map(t => t.titulo).filter(Boolean))];
+  document.getElementById('instructorTurnosList').innerHTML = titulos.map(t => `<option value="${escapeAttr(t)}">`).join('');
+}
+
+function renderInstructorMiniLista() {
+  if (instructorMiniLista.length === 0) {
+    instructorMiniListaWrap.style.display = 'none';
+    instructorMiniListaEmpty.style.display = 'block';
+    return;
+  }
+  instructorMiniListaWrap.style.display = 'block';
+  instructorMiniListaEmpty.style.display = 'none';
+  instructorMiniListaBody.innerHTML = instructorMiniLista.map((item, i) => `
+    <tr>
+      <td>${escapeHtml(item.nombre)}</td>
+      <td><span class="quitar" data-idx="${i}">✕</span></td>
+    </tr>
+  `).join('');
+}
+
+function abrirModalRegistroInstructores() {
+  document.getElementById('registroInstructoresInfo').innerHTML = `Registrando como: <b>${escapeHtml(adminNombre.textContent)}</b>`;
+  instructorInputFecha.value = hoyISO();
+  instructorInputTurno.value = '';
+  instructorInputNombre.value = '';
+  instructorNombreError.textContent = '';
+  instructorMiniLista = [];
+  poblarNombresInstructoresDatalist();
+  poblarTurnosInstructoresDatalist();
+  renderInstructorMiniLista();
+  modalRegistroInstructores.classList.remove('hidden');
+  setTimeout(() => instructorInputNombre.focus(), 50);
+}
+
+function cerrarModalRegistroInstructores() {
+  modalRegistroInstructores.classList.add('hidden');
+}
+
+document.getElementById('btnAbrirRegistroInstructores').addEventListener('click', abrirModalRegistroInstructores);
+
+function agregarFilaInstructor() {
+  const nombre = instructorInputNombre.value.trim();
+  if (!nombre) {
+    instructorNombreError.textContent = 'Escribí o elegí un nombre primero.';
+    return;
+  }
+  instructorNombreError.textContent = '';
+  instructorMiniLista.push({ nombre });
+  instructorInputNombre.value = '';
+  instructorInputNombre.focus();
+  renderInstructorMiniLista();
+}
+document.getElementById('btnInstructorAgregarFila').addEventListener('click', agregarFilaInstructor);
+instructorInputNombre.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarFilaInstructor(); } });
+
+instructorMiniListaBody.addEventListener('click', e => {
+  const el = e.target.closest('.quitar');
+  if (!el) return;
+  const idx = Number(el.dataset.idx);
+  instructorMiniLista.splice(idx, 1);
+  renderInstructorMiniLista();
+});
+
+document.getElementById('btnInstructorCancelarRegistro').addEventListener('click', () => {
+  instructorMiniLista = [];
+  cerrarModalRegistroInstructores();
+});
+
+const btnInstructorConfirmarRegistro = document.getElementById('btnInstructorConfirmarRegistro');
+btnInstructorConfirmarRegistro.addEventListener('click', async () => {
+  if (instructorMiniLista.length === 0) {
+    cerrarModalRegistroInstructores();
+    return;
+  }
+  const fecha = instructorInputFecha.value || hoyISO();
+  const turno = instructorInputTurno.value.trim();
+  const entries = instructorMiniLista.map(item => ({ nombre: item.nombre, fecha, turno }));
+
+  instructorNombreError.textContent = '';
+  btnInstructorConfirmarRegistro.disabled = true;
+  btnInstructorConfirmarRegistro.textContent = 'Guardando...';
+  try {
+    const data = await postAccion('asistenciaInstructores', { accion: 'agregar', entries, registrador: adminNombre.textContent });
+    asistenciaInstructoresLocal = Array.isArray(data.asistenciaInstructores) ? data.asistenciaInstructores : asistenciaInstructoresLocal;
+    renderTablaAsistenciaInstructores();
+    instructorMiniLista = [];
+    cerrarModalRegistroInstructores();
+  } catch (err) {
+    instructorNombreError.textContent = err && err.message ? err.message : 'No se pudo guardar. Volvé a intentar.';
+  } finally {
+    btnInstructorConfirmarRegistro.disabled = false;
+    btnInstructorConfirmarRegistro.textContent = 'Agregar';
   }
 });
 
@@ -2001,11 +2132,11 @@ document.getElementById('btnDescargarReporteInstructores').addEventListener('cli
 
   let cumplieron = 0;
   for (const { nombre, rol } of todos) {
-    const todasFechas = fechasDeInstructor(nombre);
-    const enPeriodo = (desde && hasta) ? todasFechas.filter(f => f >= desde && f <= hasta) : todasFechas;
+    const todosRegistros = registrosDeInstructor(nombre);
+    const enPeriodo = (desde && hasta) ? todosRegistros.filter(r => r.fecha >= desde && r.fecha <= hasta) : todosRegistros;
     if (enPeriodo.length) cumplieron++;
     const detalle = enPeriodo.length
-      ? `${enPeriodo.length} asistencia${enPeriodo.length === 1 ? '' : 's'}: ${enPeriodo.join(', ')}`
+      ? `${enPeriodo.length} asistencia${enPeriodo.length === 1 ? '' : 's'}: ${enPeriodo.map(r => r.turno && r.turno !== '—' ? `${r.fecha} (${r.turno})` : r.fecha).join(', ')}`
       : 'NO REGISTRÓ asistencia en este período';
     lineas.push(`${nombre} (${rol}) — ${detalle}`);
   }
