@@ -549,17 +549,6 @@
     border-radius: 4px;
     margin-top: 10px;
   }
-  .admin-resumen-card {
-    display: inline-block;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 16px;
-    margin: 0 8px 8px 0;
-    text-align: center;
-    min-width: 110px;
-  }
-  .admin-resumen-num { font-size: 1.5rem; font-weight: 700; color: var(--accent2); }
-  .admin-resumen-label { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); }
   .admin-turno-card {
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -583,46 +572,129 @@
   }
   .admin-check-field { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
   .btn-tab {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 7px 16px;
-    border-radius: 4px;
-    font-size: 0.82rem;
-    cursor: pointer;
-  }
-  .btn-tab.active {
-    background: var(--accent2);
-    border-color: var(--accent2);
-    color: #14161b;
-    font-weight: 600;
-  }
-  .admin-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 14px;
-  }
-  .admin-nav-btn {
+    position: relative;
+    overflow: hidden;
     background: var(--card);
     border: 1px solid var(--border);
     color: var(--muted);
     padding: 9px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    white-space: nowrap;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   }
-  .admin-nav-btn.active {
-    background: var(--accent2);
-    border-color: var(--accent2);
-    color: #14161b;
-    font-weight: 600;
+  .btn-tab:hover { border-color: var(--accent2); color: var(--text); }
+  .btn-tab .tab-count {
+    margin-left: 7px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .btn-tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #201400;
+  }
+  .btn-tab.active .tab-count { color: #201400; }
+
+  /* --- Menú principal del panel: tarjetas grandes, mismo estilo que
+     "Lista de asistencias" / "Evaluaciones" en la sección Academia --- */
+  .admin-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .admin-nav-btn {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: rgba(26, 29, 36, 0.55);
+    border: 1px solid var(--border);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: background 0.25s, box-shadow 0.25s;
+  }
+  .admin-nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,184,79,0.25), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+  }
+  .admin-nav-btn:hover::before {
+    left: 140%;
+    transition: left 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .admin-nav-btn:hover {
+    background: rgba(38, 33, 15, 0.65);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,184,79,0.4),
+      inset 0 0 14px rgba(255,184,79,0.2),
+      0 0 8px rgba(255,184,79,0.25);
+  }
+  .admin-nav-btn-titulo {
+    font-family: 'Bebas Neue', -apple-system, sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    color: var(--accent2);
+  }
+  .admin-nav-btn-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.4;
   }
   .admin-panel-tab { display: none; }
   .admin-panel-tab.active { display: block; }
+
+  /* --- Botón "Volver" de cada sección, mismo estilo que el de Academia --- */
+  .admin-back-btn {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 6px 16px;
+    background: rgba(26, 29, 36, 0.75);
+    border: 1px solid var(--accent2);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    color: var(--accent2);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  .admin-back-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,184,79,0.35), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+  }
+  .admin-back-btn:hover::before {
+    left: 140%;
+    transition: left 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .admin-back-btn:hover {
+    color: #ffcf80;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,184,79,0.5),
+      inset 0 0 14px rgba(255,184,79,0.2),
+      0 0 8px rgba(255,184,79,0.3);
+  }
   .admin-instructor-fechas {
     display: flex;
     flex-wrap: wrap;
@@ -673,14 +745,26 @@
   <div class="admin-bienvenida">Entraste como <b id="adminNombre"></b> · <span id="btnSalirAdmin" style="cursor:pointer; text-decoration:underline;">Salir</span></div>
 
   <div class="admin-nav" id="adminNav">
-    <div class="admin-nav-btn active" data-admin-tab="codigos">📋 Códigos de acceso</div>
-    <div class="admin-nav-btn" data-admin-tab="horarios">📅 Horarios de Academia</div>
-    <div class="admin-nav-btn" data-admin-tab="personal">🧑‍🤝‍🧑 Personal</div>
-    <div class="admin-nav-btn" data-admin-tab="reportes">📊 Reportes combinados</div>
-    <div class="admin-nav-btn" data-admin-tab="instructores">🗓️ Asistencia de Instructores</div>
+    <div class="admin-nav-btn" data-admin-tab="codigos">
+      <div class="admin-nav-btn-titulo">📋 Códigos de acceso</div>
+      <div class="admin-nav-btn-desc">Administrar códigos y roles de acceso</div>
+    </div>
+    <div class="admin-nav-btn" data-admin-tab="horarios">
+      <div class="admin-nav-btn-titulo">📅 Horarios de Academia</div>
+      <div class="admin-nav-btn-desc">Editar los turnos de instrucción</div>
+    </div>
+    <div class="admin-nav-btn" data-admin-tab="personal">
+      <div class="admin-nav-btn-titulo">🧑‍🤝‍🧑 Personal</div>
+      <div class="admin-nav-btn-desc">Rangos, altas y reporte combinado</div>
+    </div>
+    <div class="admin-nav-btn" data-admin-tab="instructores">
+      <div class="admin-nav-btn-titulo">🗓️ Asistencia de Instructores</div>
+      <div class="admin-nav-btn-desc">Registrar y reportar asistencias</div>
+    </div>
   </div>
 
-  <section class="admin-seccion admin-panel-tab active" id="tabCodigos">
+  <section class="admin-seccion admin-panel-tab" id="tabCodigos">
+    <button class="admin-back-btn" data-volver="1">← VOLVER</button>
     <h2>📋 Códigos de acceso</h2>
     <div class="modal-sub">Los códigos viven en el servidor (KV del Worker), no en ningún archivo del repo — los cambios que hagas acá se guardan en vivo apenas tocás "Guardar cambios", sin descargar ni subir nada.</div>
     <table class="admin-tabla" id="tablaCodigos">
@@ -695,6 +779,7 @@
   </section>
 
   <section class="admin-seccion admin-panel-tab" id="tabHorarios">
+    <button class="admin-back-btn" data-volver="1">← VOLVER</button>
     <h2>📅 Horarios de Academia</h2>
     <div class="modal-sub">Esto es lo que se ve en la grilla de "Horarios de Instrucciones" de la sección Academia (index.html) — vive en el KV del Worker, se guarda apenas tocás "Guardar cambios".</div>
     <div id="horariosLista"></div>
@@ -706,6 +791,7 @@
   </section>
 
   <section class="admin-seccion admin-panel-tab" id="tabPersonal">
+    <button class="admin-back-btn" data-volver="1">← VOLVER</button>
     <h2>🧑‍🤝‍🧑 Personal</h2>
 
     <div class="admin-turno-card">
@@ -743,17 +829,8 @@
 
     <div class="admin-turno-card">
       <div class="admin-tarjeta-titulo">➕ Agregar persona</div>
+      <div class="modal-sub">La persona se agrega automáticamente a la lista que le corresponde según el rango inicial que elijas — no hace falta elegir la lista a mano.</div>
       <div class="admin-row">
-        <div class="admin-field">
-          <label>Lista</label>
-          <select id="altaLista">
-            <option value="asistencias">Asistencias</option>
-            <option value="tenientes">Tenientes</option>
-            <option value="capitanes">Capitanes</option>
-            <option value="mayores">Mayores</option>
-            <option value="coroneles">Coroneles</option>
-          </select>
-        </div>
         <div class="admin-field" style="flex:1">
           <label>Nombre a agregar</label>
           <input type="text" id="altaNombre" placeholder="Nombre completo..." autocomplete="off">
@@ -766,23 +843,20 @@
       </div>
       <div class="admin-msg" id="altaMsg"></div>
     </div>
-  </section>
 
-  <section class="admin-seccion admin-panel-tab" id="tabReportes">
-    <h2>📊 Reportes combinados</h2>
+    <div class="admin-sub-titulo" style="margin-top:22px;">📊 Reporte combinado</div>
     <div class="admin-row">
       <button class="btn btn-secundario" id="btnCargarReporte">🔄 Cargar / actualizar</button>
       <button class="btn btn-primario" id="btnDescargarReporte">⬇️ Descargar reporte de esta pestaña</button>
     </div>
     <div class="admin-row" id="reporteTabs">
-      <button class="btn btn-tab active" data-tab="todos">Todos</button>
-      <button class="btn btn-tab" data-tab="asistencias">Uniformado</button>
-      <button class="btn btn-tab" data-tab="tenientes">Teniente</button>
-      <button class="btn btn-tab" data-tab="capitanes">Capitán</button>
-      <button class="btn btn-tab" data-tab="mayores">Mayor</button>
-      <button class="btn btn-tab" data-tab="coroneles">Coronel</button>
+      <button class="btn-tab active" data-tab="todos">Todos</button>
+      <button class="btn-tab" data-tab="asistencias">Uniformado</button>
+      <button class="btn-tab" data-tab="tenientes">Teniente</button>
+      <button class="btn-tab" data-tab="capitanes">Capitán</button>
+      <button class="btn-tab" data-tab="mayores">Mayor</button>
+      <button class="btn-tab" data-tab="coroneles">Coronel</button>
     </div>
-    <div id="reporteResumen"></div>
     <table class="admin-tabla" id="tablaReporte">
       <thead><tr>
         <th data-sort="nombre" class="th-ordenable sort-asc">Nombre</th>
@@ -796,6 +870,7 @@
   </section>
 
   <section class="admin-seccion admin-panel-tab" id="tabInstructores">
+    <button class="admin-back-btn" data-volver="1">← VOLVER</button>
     <h2>🗓️ Asistencia de Instructores</h2>
     <div class="modal-sub">Funciona igual que en las listas de asistencias de cadetes: se abre un modal donde elegís la fecha y el turno/clase, y ahí podés agregar de una sola vez a varios instructores — incluidas varias clases distintas del mismo día. Acá no se elige un "instructor" aparte, porque cada nombre que agregás ya ES el instructor que fue a dar esa clase. El listado de nombres sale solo del roster (Instructores + Instructores a prueba) — no hace falta agregarlos a mano.</div>
     <div class="admin-row">
@@ -1012,21 +1087,28 @@ function iniciarPanel() {
   })();
   cargarReporteCombinado(); // ya arma personasPorLista + todasLasPersonas y pinta la tabla, sin esperar el botón "Cargar / actualizar"
   cargarAsistenciaInstructoresDesdeServidor();
-  document.getElementById('altaRango').innerHTML = LISTAS.map(r => `<option value="${RANGOS[r]}">${RANGOS[r]}</option>`).join('');
+  document.getElementById('altaRango').innerHTML = LISTAS.map(r => `<option value="${RANGOS[r]}" data-recurso="${r}">${RANGOS[r]}</option>`).join('');
 }
 
 /* ============================================================
    PESTAÑAS PRINCIPALES DEL PANEL
    ============================================================ */
-document.getElementById('adminNav').addEventListener('click', e => {
-  const btn = e.target.closest('.admin-nav-btn');
-  if (!btn) return;
-  const destino = btn.dataset.adminTab;
-  document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.toggle('active', b === btn));
+function abrirSeccionAdmin(destino) {
+  document.getElementById('adminNav').classList.add('hidden');
   document.querySelectorAll('.admin-panel-tab').forEach(sec => {
     sec.classList.toggle('active', sec.id === 'tab' + destino.charAt(0).toUpperCase() + destino.slice(1));
   });
+}
+function volverAlMenuAdmin() {
+  document.querySelectorAll('.admin-panel-tab').forEach(sec => sec.classList.remove('active'));
+  document.getElementById('adminNav').classList.remove('hidden');
+}
+document.getElementById('adminNav').addEventListener('click', e => {
+  const btn = e.target.closest('.admin-nav-btn');
+  if (!btn) return;
+  abrirSeccionAdmin(btn.dataset.adminTab);
 });
+document.querySelectorAll('.admin-back-btn').forEach(btn => btn.addEventListener('click', volverAlMenuAdmin));
 
 /* ============================================================
    SECCIÓN 1: Códigos (en vivo, contra el KV del Worker)
@@ -1404,7 +1486,6 @@ function actualizarDatalists() {
     .map(p => `<option value="${escapeAttr(p.nombre)}">`).join('');
 }
 document.getElementById('rangoLista').addEventListener('change', () => { actualizarDatalists(); actualizarRangoAutofill(); });
-document.getElementById('altaLista').addEventListener('change', actualizarDatalists);
 
 // Al elegir/escribir un nombre que ya existe en la lista seleccionada, el
 // desplegable de "Rango nuevo" se autocompleta con su rango actual (sigue
@@ -1460,9 +1541,11 @@ document.getElementById('btnCambiarRango').addEventListener('click', async () =>
    ============================================================ */
 const altaMsg = document.getElementById('altaMsg');
 document.getElementById('btnAgregarPersona').addEventListener('click', async () => {
-  const recurso = document.getElementById('altaLista').value;
+  const altaRangoEl = document.getElementById('altaRango');
+  const opcionElegida = altaRangoEl.selectedOptions[0];
+  const recurso = (opcionElegida && opcionElegida.dataset.recurso) || LISTAS[0];
   const nombre = document.getElementById('altaNombre').value.trim();
-  const rango = document.getElementById('altaRango').value;
+  const rango = altaRangoEl.value;
   if (!nombre) {
     altaMsg.textContent = 'Escribí un nombre.';
     altaMsg.className = 'admin-msg error';
@@ -1472,11 +1555,12 @@ document.getElementById('btnAgregarPersona').addEventListener('click', async () 
   altaMsg.className = 'admin-msg';
   try {
     await postAccion(recurso, { edit: { nombre, rango, registrador: adminNombre.textContent } });
-    altaMsg.textContent = `Listo — ${nombre} fue agregado/a a la lista de ${recurso} con rango "${rango}".`;
+    altaMsg.textContent = `Listo — ${nombre} fue agregado/a a la lista de ${RANGOS[recurso]} con rango "${rango}".`;
     altaMsg.className = 'admin-msg ok';
     document.getElementById('altaNombre').value = '';
     personasPorLista[recurso] = await fetchLista(recurso);
     actualizarDatalists();
+    if (todasLasPersonas.length) await cargarReporteCombinado();
   } catch (e) {
     altaMsg.textContent = e && e.message ? e.message : 'No se pudo agregar.';
     altaMsg.className = 'admin-msg error';
@@ -1513,9 +1597,7 @@ function valorOrdenReporte(p, columna) {
 }
 
 async function cargarReporteCombinado() {
-  const resumen = document.getElementById('reporteResumen');
   const body = document.getElementById('reporteBody');
-  resumen.innerHTML = 'Cargando...';
   body.innerHTML = '';
 
   todasLasPersonas = [];
@@ -1531,15 +1613,14 @@ async function cargarReporteCombinado() {
 }
 
 function renderReporte() {
-  const resumen = document.getElementById('reporteResumen');
   const body = document.getElementById('reporteBody');
 
-  resumen.innerHTML = LISTAS.map(r => `
-    <div class="admin-resumen-card">
-      <div class="admin-resumen-num">${personasPorLista[r].length}</div>
-      <div class="admin-resumen-label">${RANGOS[r]}</div>
-    </div>
-  `).join('');
+  document.querySelectorAll('#reporteTabs .btn-tab').forEach(tab => {
+    const clave = tab.dataset.tab;
+    const nombreBase = clave === 'todos' ? 'Todos' : RANGOS[clave];
+    const total = clave === 'todos' ? todasLasPersonas.length : (personasPorLista[clave] ? personasPorLista[clave].length : 0);
+    tab.innerHTML = `${nombreBase}<span class="tab-count">${total}</span>`;
+  });
 
   const filtradas = (tabActivo === 'todos' ? todasLasPersonas : todasLasPersonas.filter(p => p.lista === tabActivo))
     .slice()
