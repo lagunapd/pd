@@ -32,6 +32,7 @@ const KV_KEY_ASISTENCIAS = "asistencias";
 const KV_KEY_EVALUACIONES = "evaluaciones"; // legacy, ya no lo usa nada activo
 const KV_KEY_CODIGOS = "codigos_acceso";
 const KV_KEY_HORARIOS = "horarios_academia";
+const KV_KEY_ASISTENCIA_INSTRUCTORES = "asistencia_instructores";
 
 // Semilla inicial de los horarios de Academia (la grilla que se ve en
 // index.html). Solo se usa la primera vez, si todavía no hay nada guardado
@@ -410,6 +411,68 @@ async function manejarHorarios(request, env, payload) {
   }
 
   return json({ error: "Acción de horarios no reconocida." }, 400);
+}
+
+// ==================== asistencia de instructores ====================
+// Registro simple y aparte del sistema de "clases" de los cadetes: acá NO
+// hay tipos (verde/amarillo) ni rangos ni ascensos — cada instructor tiene
+// nada más que una lista de fechas en las que se le marcó presente. Lo usa
+// el panel de administración para llevar un pulso de quién está viniendo.
+// El roster de nombres (quién puede aparecer acá) sale en vivo del recurso
+// "codigos" (instructores + instructores a prueba) — este KV solo guarda
+// las fechas marcadas para los nombres que ya tuvieron al menos una.
+function limpiarAsistenciaInstructor(p) {
+  const fechas = Array.isArray(p && p.fechas) ? p.fechas : [];
+  const limpias = [...new Set(fechas.map((f) => String(f || "").trim()).filter(Boolean))];
+  limpias.sort();
+  return { nombre: (p && p.nombre) || "", fechas: limpias };
+}
+
+async function manejarAsistenciaInstructores(request, env, payload) {
+  const cargaInicial = await cargarLista(env, KV_KEY_ASISTENCIA_INSTRUCTORES, "asistenciaInstructores");
+  let lista = cargaInicial.lista.map(limpiarAsistenciaInstructor);
+  let ultimaActualizacion = cargaInicial.ultimaActualizacion;
+
+  if (request.method === "GET") {
+    return json({ asistenciaInstructores: lista, ultimaActualizacion });
+  }
+
+  // agregar: marca una fecha (hoy por default) como presente para una
+  // persona. Si todavía no tenía ninguna fecha cargada, se crea su
+  // entrada. No duplica si la fecha ya estaba marcada.
+  if (payload.accion === "agregar" && payload.nombre) {
+    const nombreLimpio = String(payload.nombre).trim();
+    if (!nombreLimpio) return json({ error: "Falta el nombre." }, 400);
+    const fecha = String(payload.fecha || "").trim() || new Date().toISOString().slice(0, 10);
+
+    let persona = lista.find((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
+    if (!persona) {
+      persona = { nombre: nombreLimpio, fechas: [] };
+      lista.push(persona);
+    }
+    if (!persona.fechas.includes(fecha)) {
+      persona.fechas.push(fecha);
+      persona.fechas.sort();
+    }
+
+    const estado = await guardarLista(env, KV_KEY_ASISTENCIA_INSTRUCTORES, "asistenciaInstructores", lista);
+    return json({ asistenciaInstructores: estado.asistenciaInstructores, ultimaActualizacion: estado.ultimaActualizacion });
+  }
+
+  // quitar: saca una fecha puntual (para corregir una carga hecha por
+  // error), sin tocar el resto de las fechas de esa persona.
+  if (payload.accion === "quitar" && payload.nombre && payload.fecha) {
+    const nombreLimpio = String(payload.nombre).trim();
+    const persona = lista.find((p) => p.nombre.toLowerCase() === nombreLimpio.toLowerCase());
+    if (persona) {
+      persona.fechas = persona.fechas.filter((f) => f !== payload.fecha);
+      const estado = await guardarLista(env, KV_KEY_ASISTENCIA_INSTRUCTORES, "asistenciaInstructores", lista);
+      return json({ asistenciaInstructores: estado.asistenciaInstructores, ultimaActualizacion: estado.ultimaActualizacion });
+    }
+    return json({ asistenciaInstructores: lista, ultimaActualizacion });
+  }
+
+  return json({ error: "Acción de asistencia de instructores no reconocida." }, 400);
 }
 
 // ==================== evaluaciones (legacy, orfanato) ====================
@@ -845,6 +908,9 @@ export default {
         if (recurso === "horarios") {
           return await manejarHorarios(request, env, {});
         }
+        if (recurso === "asistenciaInstructores") {
+          return await manejarAsistenciaInstructores(request, env, {});
+        }
         if (recurso === "evaluacionesVisor") {
           return await manejarEvaluacionesVisor(request, env);
         }
@@ -870,6 +936,9 @@ export default {
         }
         if (payload.recurso === "horarios") {
           return await manejarHorarios(request, env, payload);
+        }
+        if (payload.recurso === "asistenciaInstructores") {
+          return await manejarAsistenciaInstructores(request, env, payload);
         }
         if (payload.recurso === "evaluacionesLegacy") {
           return await manejarEvaluacionesLegacy(request, env, payload);

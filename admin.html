@@ -590,6 +590,59 @@
     color: #14161b;
     font-weight: 600;
   }
+  .admin-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+  .admin-nav-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .admin-nav-btn.active {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #14161b;
+    font-weight: 600;
+  }
+  .admin-panel-tab { display: none; }
+  .admin-panel-tab.active { display: block; }
+  .admin-instructor-fechas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-width: 320px;
+  }
+  .admin-instructor-fecha-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(15,17,21,0.6);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px 2px 8px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .admin-instructor-fecha-chip .quitar {
+    cursor: pointer;
+    color: var(--red);
+    font-weight: 700;
+  }
+  .admin-instructor-count {
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .admin-instructor-count.cero { color: var(--muted); font-weight: 400; }
 </style>
 </head>
 <body>
@@ -608,7 +661,16 @@
 <div id="panelContenido" class="hidden">
   <div class="admin-bienvenida">Entraste como <b id="adminNombre"></b> · <span id="btnSalirAdmin" style="cursor:pointer; text-decoration:underline;">Salir</span></div>
 
-  <section class="admin-seccion">
+  <div class="admin-nav" id="adminNav">
+    <div class="admin-nav-btn active" data-admin-tab="codigos">📋 Códigos de acceso</div>
+    <div class="admin-nav-btn" data-admin-tab="horarios">📅 Horarios de Academia</div>
+    <div class="admin-nav-btn" data-admin-tab="rango">🎖️ Cambiar rango</div>
+    <div class="admin-nav-btn" data-admin-tab="personas">➕ Personas</div>
+    <div class="admin-nav-btn" data-admin-tab="reportes">📊 Reportes combinados</div>
+    <div class="admin-nav-btn" data-admin-tab="instructores">🗓️ Asistencia de Instructores</div>
+  </div>
+
+  <section class="admin-seccion admin-panel-tab active" id="tabCodigos">
     <h2>📋 Códigos de acceso</h2>
     <div class="modal-sub">Los códigos viven en el servidor (KV del Worker), no en ningún archivo del repo — los cambios que hagas acá se guardan en vivo apenas tocás "Guardar cambios", sin descargar ni subir nada.</div>
     <table class="admin-tabla" id="tablaCodigos">
@@ -622,7 +684,7 @@
     <div class="admin-msg" id="codigosMsg"></div>
   </section>
 
-  <section class="admin-seccion">
+  <section class="admin-seccion admin-panel-tab" id="tabHorarios">
     <h2>📅 Horarios de Academia</h2>
     <div class="modal-sub">Esto es lo que se ve en la grilla de "Horarios de Instrucciones" de la sección Academia (index.html) — vive en el KV del Worker, se guarda apenas tocás "Guardar cambios".</div>
     <div id="horariosLista"></div>
@@ -633,7 +695,7 @@
     <div class="admin-msg" id="horariosMsg"></div>
   </section>
 
-  <section class="admin-seccion">
+  <section class="admin-seccion admin-panel-tab" id="tabRango">
     <h2>🎖️ Cambiar rango a mano</h2>
     <div class="admin-row">
       <div class="admin-field">
@@ -666,7 +728,7 @@
     <div class="admin-msg" id="rangoMsg"></div>
   </section>
 
-  <section class="admin-seccion">
+  <section class="admin-seccion admin-panel-tab" id="tabPersonas">
     <h2>➕ Agregar / 🗑 Eliminar personas</h2>
     <div class="admin-row">
       <div class="admin-field">
@@ -700,7 +762,7 @@
     <div class="admin-msg" id="altaMsg"></div>
   </section>
 
-  <section class="admin-seccion">
+  <section class="admin-seccion admin-panel-tab" id="tabReportes">
     <h2>📊 Reportes combinados</h2>
     <div class="admin-row">
       <button class="btn btn-secundario" id="btnCargarReporte">🔄 Cargar / actualizar</button>
@@ -719,6 +781,19 @@
       <thead><tr><th>Nombre</th><th>Lista</th><th>Rango</th><th class="num">Clases</th><th>Procedimientos</th></tr></thead>
       <tbody id="reporteBody"></tbody>
     </table>
+  </section>
+
+  <section class="admin-seccion admin-panel-tab" id="tabInstructores">
+    <h2>🗓️ Asistencia de Instructores</h2>
+    <div class="modal-sub">Lista simple para llevar el pulso de quién está viniendo: acá no hay tipos de clase ni rangos, solo se marca si un instructor estuvo presente en una fecha o no. El listado de nombres sale solo del roster (Instructores + Instructores a prueba) — no hace falta agregarlos a mano.</div>
+    <div class="admin-row">
+      <button class="btn btn-secundario" id="btnRefrescarInstructores">🔄 Refrescar</button>
+    </div>
+    <table class="admin-tabla" id="tablaAsistenciaInstructores">
+      <thead><tr><th>Nombre</th><th style="width:14%">Rol</th><th class="num" style="width:80px">Total</th><th>Fechas registradas</th><th style="width:170px"></th></tr></thead>
+      <tbody id="asistenciaInstructoresBody"></tbody>
+    </table>
+    <div class="admin-msg" id="asistenciaInstructoresMsg"></div>
   </section>
 </div>
 
@@ -854,8 +929,22 @@ function iniciarPanel() {
     await cargarHorariosDesdeServidor();
   })();
   cargarReporteCombinado(); // ya arma personasPorLista + todasLasPersonas y pinta la tabla, sin esperar el botón "Cargar / actualizar"
+  cargarAsistenciaInstructoresDesdeServidor();
   document.getElementById('altaRango').innerHTML = LISTAS.map(r => `<option value="${RANGOS[r]}">${RANGOS[r]}</option>`).join('');
 }
+
+/* ============================================================
+   PESTAÑAS PRINCIPALES DEL PANEL
+   ============================================================ */
+document.getElementById('adminNav').addEventListener('click', e => {
+  const btn = e.target.closest('.admin-nav-btn');
+  if (!btn) return;
+  const destino = btn.dataset.adminTab;
+  document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.toggle('active', b === btn));
+  document.querySelectorAll('.admin-panel-tab').forEach(sec => {
+    sec.classList.toggle('active', sec.id === 'tab' + destino.charAt(0).toUpperCase() + destino.slice(1));
+  });
+});
 
 /* ============================================================
    SECCIÓN 1: Códigos (en vivo, contra el KV del Worker)
@@ -1651,6 +1740,128 @@ document.getElementById('btnEliminarPersonaModal').addEventListener('click', asy
   });
   obs.observe(document.body, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
 })();
+
+/* ============================================================
+   SECCIÓN: Asistencia de Instructores (en vivo, contra el KV del Worker)
+   ============================================================
+   Simple a propósito: no hay tipos de clase (verde/amarillo) ni rangos acá
+   — cada instructor tiene una lista de fechas en las que se lo marcó
+   presente, nada más. El listado de NOMBRES sale del roster (recurso
+   "codigos": instructores + instructores a prueba, ya cargado en
+   rosterNombres más arriba); las FECHAS salen de este recurso aparte.
+   ============================================================ */
+let asistenciaInstructoresLocal = []; // [{nombre, fechas: [...]}], tal cual la devuelve el servidor
+const asistenciaInstructoresBody = document.getElementById('asistenciaInstructoresBody');
+const asistenciaInstructoresMsg = document.getElementById('asistenciaInstructoresMsg');
+
+async function cargarAsistenciaInstructoresDesdeServidor() {
+  asistenciaInstructoresMsg.textContent = 'Cargando...';
+  asistenciaInstructoresMsg.className = 'admin-msg';
+  try {
+    // El roster de nombres puede no haber llegado todavía si esto corre en
+    // paralelo con cargarRosterNombres() — nos aseguramos de tenerlo antes
+    // de pintar, si no la tabla saldría vacía la primera vez.
+    if (!rosterNombres.instructores.length && !rosterNombres.instructoresPrueba.length) {
+      await cargarRosterNombres();
+    }
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=asistenciaInstructores', { method: 'GET' });
+    if (!resp.ok) throw new Error(await errorDe(resp));
+    const data = await resp.json();
+    asistenciaInstructoresLocal = Array.isArray(data.asistenciaInstructores) ? data.asistenciaInstructores : [];
+    renderTablaAsistenciaInstructores();
+    asistenciaInstructoresMsg.textContent = '';
+  } catch (e) {
+    asistenciaInstructoresMsg.textContent = e && e.message ? e.message : 'No se pudo cargar la asistencia de instructores.';
+    asistenciaInstructoresMsg.className = 'admin-msg error';
+  }
+}
+
+function fechasDeInstructor(nombre) {
+  const persona = asistenciaInstructoresLocal.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+  return persona ? persona.fechas : [];
+}
+
+function renderTablaAsistenciaInstructores() {
+  // El roster manda: se muestra a TODOS los instructores/instructores a
+  // prueba actuales (aunque todavía no tengan ninguna fecha marcada), y
+  // además a cualquiera que tenga fechas guardadas pero ya no esté en el
+  // roster (para no perder el historial si alguien fue dado de baja).
+  const enRoster = [
+    ...rosterNombres.instructores.map(nombre => ({ nombre, rol: 'Instructor' })),
+    ...rosterNombres.instructoresPrueba.map(nombre => ({ nombre, rol: 'Instructor a prueba' })),
+  ];
+  const nombresEnRoster = new Set(enRoster.map(p => p.nombre.toLowerCase()));
+  const fueraDeRoster = asistenciaInstructoresLocal
+    .filter(p => !nombresEnRoster.has(p.nombre.toLowerCase()))
+    .map(p => ({ nombre: p.nombre, rol: '(fuera del roster)' }));
+
+  const filas = [...enRoster, ...fueraDeRoster].sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+  if (!filas.length) {
+    asistenciaInstructoresBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);">No hay instructores ni instructores a prueba en el roster todavía.</td></tr>';
+    return;
+  }
+
+  asistenciaInstructoresBody.innerHTML = filas.map(({ nombre, rol }) => {
+    const fechas = fechasDeInstructor(nombre);
+    const chips = fechas.length
+      ? fechas.map(f => `
+          <span class="admin-instructor-fecha-chip">
+            ${escapeHtml(f)}
+            <span class="quitar" data-nombre="${escapeAttr(nombre)}" data-fecha="${escapeAttr(f)}" title="Quitar esta fecha">✕</span>
+          </span>
+        `).join('')
+      : '<span style="color:var(--muted);font-size:0.78rem;">— sin fechas registradas —</span>';
+    return `
+      <tr>
+        <td>${escapeHtml(nombre)}</td>
+        <td style="color:var(--muted);font-size:0.78rem;">${escapeHtml(rol)}</td>
+        <td class="num"><span class="admin-instructor-count ${fechas.length ? '' : 'cero'}">${fechas.length}</span></td>
+        <td><div class="admin-instructor-fechas">${chips}</div></td>
+        <td>
+          <button class="btn btn-registrar btn-instructor-agregar" data-nombre="${escapeAttr(nombre)}" style="font-size:0.78rem;padding:6px 10px;">+ Registrar hoy</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+document.getElementById('btnRefrescarInstructores').addEventListener('click', cargarAsistenciaInstructoresDesdeServidor);
+
+asistenciaInstructoresBody.addEventListener('click', async e => {
+  const btnAgregar = e.target.closest('.btn-instructor-agregar');
+  if (btnAgregar) {
+    const nombre = btnAgregar.dataset.nombre;
+    btnAgregar.disabled = true;
+    try {
+      const data = await postAccion('asistenciaInstructores', { accion: 'agregar', nombre });
+      asistenciaInstructoresLocal = Array.isArray(data.asistenciaInstructores) ? data.asistenciaInstructores : asistenciaInstructoresLocal;
+      renderTablaAsistenciaInstructores();
+    } catch (err) {
+      asistenciaInstructoresMsg.textContent = err && err.message ? err.message : 'No se pudo registrar la asistencia.';
+      asistenciaInstructoresMsg.className = 'admin-msg error';
+    } finally {
+      btnAgregar.disabled = false;
+    }
+    return;
+  }
+
+  const btnQuitar = e.target.closest('.quitar[data-fecha]');
+  if (btnQuitar) {
+    const nombre = btnQuitar.dataset.nombre;
+    const fecha = btnQuitar.dataset.fecha;
+    if (!confirm(`¿Quitar la asistencia del ${fecha} para ${nombre}?`)) return;
+    try {
+      const data = await postAccion('asistenciaInstructores', { accion: 'quitar', nombre, fecha });
+      asistenciaInstructoresLocal = Array.isArray(data.asistenciaInstructores) ? data.asistenciaInstructores : asistenciaInstructoresLocal;
+      renderTablaAsistenciaInstructores();
+    } catch (err) {
+      asistenciaInstructoresMsg.textContent = err && err.message ? err.message : 'No se pudo quitar esa fecha.';
+      asistenciaInstructoresMsg.className = 'admin-msg error';
+    }
+  }
+});
+
 </script>
 </body>
 </html>
