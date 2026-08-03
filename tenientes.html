@@ -516,10 +516,6 @@
         <label>Fecha</label>
         <input type="date" id="reporteFecha">
       </div>
-      <div class="modal-field">
-        <label>Turno</label>
-        <select id="reporteTurno"></select>
-      </div>
     </div>
     <div class="modal-error" id="reporteEspecificoError"></div>
     <div class="modal-actions">
@@ -546,8 +542,7 @@
     <tr>
       <th class="rank">#</th>
       <th>Nombre</th>
-      <th class="num">🟢</th>
-      <th class="num">🟡</th>
+      <th class="num" title="Procedimientos aprobados">🛡️</th>
       <th class="num">Clases</th>
       <th class="num">🎥</th>
       <th class="num col-eliminar"></th>
@@ -557,7 +552,7 @@
 </table>
 
 <div class="note">
-  Al registrar una clase, elegí el rango de cada persona en su fila: así se puede cargar una sola clase con gente mezclada de distintos rangos desde cualquiera de las 5 listas (Asistencias, Tenientes, Capitanes, Mayores, Coroneles) — cada quien queda anotado en su lista correspondiente, no en la que tenías abierta. Pasá el mouse sobre cualquier punto 🟢, 🟡, 🛡️ o ❗ para ver quién lo registró, en qué fecha, turno e instructor (o motivo, si es una llamada de atención). El 🛡️ marca específicamente una clase de Procedimientos. El ❗ es una llamada de atención: cada una exige una clase de Procedimientos extra antes de poder evaluar — apenas se registra una clase real, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos</b> (ya descontadas las llamadas sin compensar) <b>y 10 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. La clase de Procedimientos solo la pueden registrar evaluadores o administradores (no aparece como opción de turno para instructores comunes). Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam". Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos y 10 BodyCams aprobadas (y tiene el rango de Teniente asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Capitanes (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
+  De Teniente para arriba ya no hay clases generales: lo único que se registra es <b>Procedimientos</b>, en dos estados — <b>✅ Asistió</b> o <b>🛡️ Aprobó</b> — sin medios puntos. Al registrar, elegí el rango de cada persona en su fila: así se puede cargar una sola clase con gente mezclada de distintos rangos desde cualquiera de las 5 listas (Asistencias, Tenientes, Capitanes, Mayores, Coroneles) — cada quien queda anotado en su lista correspondiente, no en la que tenías abierta. Pasá el mouse sobre cualquier punto 🛡️ o ❗ para ver quién lo registró, en qué fecha e instructor (o motivo, si es una llamada de atención). El ❗ es una llamada de atención: cada una exige una clase de Procedimientos <b>aprobada</b> extra antes de poder evaluar — apenas se registra una, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos aprobadas</b> (ya descontadas las llamadas sin compensar) <b>y 10 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. Esta clase solo la pueden registrar evaluadores o administradores. Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam". Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos aprobadas y 10 BodyCams aprobadas (y tiene el rango de Teniente asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Capitanes (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
 </div>
 
 <!-- Modal 1: código de registrador -->
@@ -586,10 +581,6 @@
         <input type="date" id="inputFecha">
       </div>
       <div class="modal-field">
-        <label>Turno</label>
-        <select id="inputTurno"></select>
-      </div>
-      <div class="modal-field">
         <label>Instructor</label>
         <select id="inputInstructor"></select>
       </div>
@@ -612,10 +603,10 @@
         </select>
       </div>
       <div class="modal-field">
-        <label>Punto</label>
+        <label>Procedimientos</label>
         <div class="tipo-selector">
-          <button type="button" class="tipo-btn tipo-verde active" data-tipo="verde" id="btnTipoVerde">🟢 Verde</button>
-          <button type="button" class="tipo-btn tipo-amarillo" data-tipo="amarillo" id="btnTipoAmarillo">🟡 Amarillo</button>
+          <button type="button" class="tipo-btn tipo-verde active" data-tipo="verde" id="btnTipoVerde">🛡️ Aprobó</button>
+          <button type="button" class="tipo-btn tipo-amarillo" data-tipo="amarillo" id="btnTipoAmarillo">✅ Asistió</button>
         </div>
       </div>
       <button class="btn btn-primario btn-agregar-fila" id="btnAgregarFila">+ Agregar</button>
@@ -711,20 +702,16 @@
         <input type="date" id="claseNuevaFecha">
       </div>
       <div class="modal-field">
-        <label>Turno</label>
-        <select id="claseNuevaTurno"></select>
-      </div>
-      <div class="modal-field">
         <label>Instructor</label>
         <select id="claseNuevaInstructor"></select>
       </div>
     </div>
     <div class="modal-row" id="clasesAgregarRow2">
       <div class="modal-field">
-        <label>Punto</label>
+        <label>Procedimientos</label>
         <div class="tipo-selector">
-          <button type="button" class="tipo-btn tipo-verde active" data-tipo="verde" id="claseNuevaBtnVerde">🟢 Verde</button>
-          <button type="button" class="tipo-btn tipo-amarillo" data-tipo="amarillo" id="claseNuevaBtnAmarillo">🟡 Amarillo</button>
+          <button type="button" class="tipo-btn tipo-verde active" data-tipo="verde" id="claseNuevaBtnVerde">🛡️ Aprobó</button>
+          <button type="button" class="tipo-btn tipo-amarillo" data-tipo="amarillo" id="claseNuevaBtnAmarillo">✅ Asistió</button>
         </div>
       </div>
       <button class="btn btn-primario btn-agregar-fila" id="btnAgregarClase">+ Agregar Clase</button>
@@ -732,7 +719,7 @@
 
     <div class="mini-lista-wrap" id="clasesListaWrap">
       <table class="mini-lista clases-tabla">
-        <thead><tr><th>Fecha</th><th>Turno</th><th>Instructor</th><th>Punto</th><th id="clasesAccionHeader"></th></tr></thead>
+        <thead><tr><th>Fecha</th><th>Instructor</th><th>Estado</th><th id="clasesAccionHeader"></th></tr></thead>
         <tbody id="clasesListaBody"></tbody>
       </table>
     </div>
@@ -960,10 +947,13 @@ async function cargarDatosServidor() {
 // -------------------- helpers --------------------
 function verdesDe(p) { return p.registros.filter(r => r.tipo === 'verde').length; }
 function amarillosDe(p) { return p.registros.filter(r => r.tipo === 'amarillo').length; }
-function puntos(p) { return verdesDe(p) + bodycamsDe(p).length; } // de Teniente para arriba: el amarillo no cuenta para el puntaje, solo verde (incluye Procedimientos) + BodyCams
+function puntos(p) { return verdesDe(p) + bodycamsDe(p).length; } // de Teniente para arriba: "asistió" no cuenta para el puntaje, solo Procedimientos aprobado + BodyCams
 function fmtPuntos(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
-function tieneProcedimientos(p) { return p.registros.some(r => r.turno === TURNO_PROCEDIMIENTOS); }
-function procedimientosDe(p) { return p.registros.filter(r => r.turno === TURNO_PROCEDIMIENTOS).length; }
+function tieneProcedimientos(p) { return p.registros.some(r => r.tipo === 'verde'); }
+// Solo las clases de Procedimientos APROBADAS cuentan para el requisito —
+// "asistió" (antes: amarillo) queda registrado en el historial pero no
+// suma, no hay medios puntos.
+function procedimientosDe(p) { return p.registros.filter(r => r.tipo === 'verde').length; }
 function llamadasDe(p) { return Array.isArray(p.llamadas) ? p.llamadas : []; }
 function bodycamsDe(p) { return Array.isArray(p.bodycams) ? p.bodycams : []; }
 // Cada llamada de atención exige una clase de Procedimientos extra antes de
@@ -1045,7 +1035,7 @@ function render() {
   countEl.innerHTML = `<span>${filtered.length} persona${filtered.length !== 1 ? 's' : ''}</span><span>${fmtUltimaActualizacion()}</span>`;
 
   if (ordenados.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-msg">${tenientes.length === 0 ? 'Todavía no hay nadie en la lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-msg">${tenientes.length === 0 ? 'Todavía no hay nadie en la lista.' : 'No se encontraron resultados.'}</div></td></tr>`;
     return;
   }
 
@@ -1056,12 +1046,8 @@ function render() {
       <td class="rank">${i + 1}</td>
       <td class="nombre-cell" data-nombre="${escapeAttr(a.nombre)}">${escapeHtml(a.nombre)}${top ? '<span class="badge-lista">✔ LISTO PARA EVALUAR</span>' : ''}</td>
       <td class="num col-verde">
-        <span class="dots-desktop">${dotsFor(a, 'verde', '🟢')}</span>
-        <span class="count-mobile ${tieneProcedimientos(a) ? 'count-procedimientos' : 'count-verde'}">${verdesDe(a)}</span>
-      </td>
-      <td class="num col-amarillo">
-        <span class="dots-desktop">${dotsFor(a, 'amarillo', '🟡')}</span>
-        <span class="count-mobile count-amarillo">${amarillosDe(a)}</span>
+        <span class="dots-desktop">${dotsFor(a, 'verde', '🛡️')}</span>
+        <span class="count-mobile count-procedimientos">${verdesDe(a)}</span>
       </td>
       <td class="num puntos">${fmtPuntos(puntos(a))}</td>
       <td class="num puntos" title="BodyCams aprobadas">${bodycamsDe(a).length}/${REQUISITO_BODYCAMS}</td>
@@ -1131,6 +1117,10 @@ async function validarCodigo() {
     codigoError.textContent = 'Ese código no tiene permisos para registrar clases.';
     return;
   }
+  if (flujoPendienteCodigo === 'clase' && !rolAlcanza(usuario.rol, 'evaluador')) {
+    codigoError.textContent = 'Solo evaluadores o administradores pueden registrar clases de Procedimientos.';
+    return;
+  }
   registradorActual = usuario.nombre;
   registradorActualRol = usuario.rol;
   cerrarModalCodigo();
@@ -1148,11 +1138,6 @@ inputCodigo.addEventListener('keydown', e => { if (e.key === 'Enter') validarCod
 const modalRegistro = document.getElementById('modalRegistro');
 const registradorInfo = document.getElementById('registradorInfo');
 const inputFecha = document.getElementById('inputFecha');
-const inputTurno = document.getElementById('inputTurno');
-inputTurno.addEventListener('change', () => {
-  actualizarEtiquetaVerde(btnTipoVerde, inputTurno.value === TURNO_PROCEDIMIENTOS);
-  renderMiniLista();
-});
 const inputInstructor = document.getElementById('inputInstructor');
 const inputNombre = document.getElementById('inputNombre');
 const inputRango = document.getElementById('inputRango');
@@ -1163,12 +1148,6 @@ const miniListaWrap = document.getElementById('miniListaWrap');
 const miniListaEmpty = document.getElementById('miniListaEmpty');
 const btnTipoVerde = document.getElementById('btnTipoVerde');
 const btnTipoAmarillo = document.getElementById('btnTipoAmarillo');
-// Cuando el turno elegido es Procedimientos, la opción "Verde" pasa a
-// mostrarse como el escudo 🛡️ en vez del punto genérico, en cualquiera de
-// los dos formularios que tienen selector de tipo + turno.
-function actualizarEtiquetaVerde(btnVerde, esProcedimientos) {
-  btnVerde.textContent = esProcedimientos ? '🛡️ Procedimientos' : '🟢 Verde';
-}
 
 let tipoSeleccionado = 'verde';
 let miniLista = []; // { nombre, tipo }
@@ -1220,7 +1199,6 @@ function poblarListaNombresDesde(personas) {
 async function abrirModalRegistro() {
   registradorInfo.innerHTML = `Registrando como: <b>${escapeHtml(registradorActual)}</b>`;
   inputFecha.value = hoyISO();
-  inputTurno.innerHTML = opcionesTurno(null, true);
   inputInstructor.innerHTML = opcionesInstructor(registradorActual, true);
   inputNombre.value = '';
   inputRango.value = RANGO_PROPIO;
@@ -1229,7 +1207,6 @@ async function abrirModalRegistro() {
   tipoSeleccionado = 'verde';
   btnTipoVerde.classList.add('active');
   btnTipoAmarillo.classList.remove('active');
-  actualizarEtiquetaVerde(btnTipoVerde, inputTurno.value === TURNO_PROCEDIMIENTOS);
   miniLista = [];
   // Mostramos de una la propia lista (ya la tenemos en memoria) y de fondo
   // pedimos las otras 4 para poder buscar/autocompletar a cualquiera, sin
@@ -1254,12 +1231,11 @@ function renderMiniLista() {
   }
   miniListaWrap.style.display = 'block';
   miniListaEmpty.style.display = 'none';
-  const esProcedimientos = inputTurno.value === TURNO_PROCEDIMIENTOS;
   miniListaBody.innerHTML = miniLista.map((item, i) => `
     <tr>
       <td>${escapeHtml(item.nombre)}</td>
       <td>${escapeHtml(item.rango)}</td>
-      <td>${item.tipo === 'verde' ? (esProcedimientos ? '🛡️ Procedimientos' : '🟢 Verde') : '🟡 Amarillo'}</td>
+      <td>${item.tipo === 'verde' ? '🛡️ Aprobó' : '✅ Asistió'}</td>
       <td><span class="quitar" data-idx="${i}">✕</span></td>
     </tr>
   `).join('');
@@ -1333,7 +1309,7 @@ btnConfirmarRegistro.addEventListener('click', async () => {
     return;
   }
   const fecha = inputFecha.value || hoyISO();
-  const turno = inputTurno.value;
+  const turno = TURNO_PROCEDIMIENTOS;
   const instructor = inputInstructor.value;
 
   // Agrupamos por lista destino según el rango elegido en cada fila: una
@@ -1604,7 +1580,7 @@ inputCodigoEditar.addEventListener('keydown', e => { if (e.key === 'Enter') vali
 
 // -------------------- eliminar persona (reutilizable: fila con ✕ o popup de editar) --------------------
 async function eliminarPersona(nombre) {
-  const confirmado = confirm(`¿Seguro que querés eliminar TODO el registro de "${nombre}"? Esto borra todos sus puntos verdes y amarillos, y no se puede deshacer.`);
+  const confirmado = confirm(`¿Seguro que querés eliminar TODO el registro de "${nombre}"? Esto borra todo su historial de Procedimientos (aprobó/asistió), y no se puede deshacer.`);
   if (!confirmado) return false;
 
   if (!API_URL || API_URL.includes('PEGA_AQUI')) {
@@ -1766,7 +1742,6 @@ const modalReporte = document.getElementById('modalReporte');
 const reporteBoxInicial = document.getElementById('reporteBoxInicial');
 const reporteBoxEspecifico = document.getElementById('reporteBoxEspecifico');
 const reporteFecha = document.getElementById('reporteFecha');
-const reporteTurno = document.getElementById('reporteTurno');
 const reporteEspecificoError = document.getElementById('reporteEspecificoError');
 
 function abrirModalReporte() {
@@ -1774,7 +1749,6 @@ function abrirModalReporte() {
   reporteBoxEspecifico.classList.add('hidden');
   reporteEspecificoError.textContent = '';
   reporteFecha.value = hoyISO();
-  reporteTurno.innerHTML = opcionesTurno(null, false);
   modalReporte.classList.remove('hidden');
 }
 function cerrarModalReporte() {
@@ -1796,56 +1770,52 @@ document.getElementById('btnVolverReporteInicial').addEventListener('click', () 
 });
 document.getElementById('btnGenerarReporteEspecifico').addEventListener('click', () => {
   const fecha = reporteFecha.value;
-  const turno = reporteTurno.value;
   if (!fecha) {
     reporteEspecificoError.textContent = 'Elegí una fecha.';
     return;
   }
   reporteEspecificoError.textContent = '';
   cerrarModalReporte();
-  generarReporteEspecifico(fecha, turno);
+  generarReporteEspecifico(fecha);
 });
 modalReporte.addEventListener('click', e => { if (e.target === modalReporte) cerrarModalReporte(); });
 
 document.getElementById('btnGenerarReporte').addEventListener('click', abrirModalReporte);
 
-function generarReporteEspecifico(fecha, turno) {
+function generarReporteEspecifico(fecha) {
   const asistentes = [];
   tenientes.forEach(p => {
     p.registros.forEach(r => {
-      if (r.fecha === fecha && r.turno === turno) {
+      if (r.fecha === fecha) {
         asistentes.push({ nombre: p.nombre, tipo: r.tipo, instructor: r.instructor || '—' });
       }
     });
   });
 
   asistentes.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-  const verdes = asistentes.filter(a => a.tipo === 'verde').length;
-  const amarillos = asistentes.filter(a => a.tipo === 'amarillo').length;
-
-  const esProcedimientos = turno === TURNO_PROCEDIMIENTOS;
-  const emojiVerde = esProcedimientos ? '🛡️' : '🟢';
+  const aprobados = asistentes.filter(a => a.tipo === 'verde').length;
+  const asistieron = asistentes.filter(a => a.tipo === 'amarillo').length;
 
   const ahora = new Date();
   const lineas = [];
   lineas.push('REPORTE DE CLASE ESPECÍFICA — TENIENTES, LAGUNA PD');
   lineas.push(`Generado: ${ahora.toLocaleDateString('es-AR')} ${ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`);
   lineas.push(`Fecha de la clase: ${fecha}`);
-  lineas.push(`Turno: ${turno}`);
+  lineas.push(`Turno: ${TURNO_PROCEDIMIENTOS}`);
   lineas.push('');
   lineas.push('====================================');
-  lineas.push(`ASISTENTES (${asistentes.length}) — ${emojiVerde} ${verdes} · 🟡 ${amarillos}`);
+  lineas.push(`ASISTENTES (${asistentes.length}) — 🛡️ Aprobó ${aprobados} · ✅ Asistió ${asistieron}`);
   lineas.push('====================================');
   lineas.push(...(asistentes.length
-    ? asistentes.map(a => `${a.tipo === 'verde' ? emojiVerde : '🟡'} ${a.nombre}`)
-    : ['(nadie registrado en esta fecha/turno)']));
+    ? asistentes.map(a => `${a.tipo === 'verde' ? '🛡️ Aprobó' : '✅ Asistió'} — ${a.nombre}`)
+    : ['(nadie registrado en esta fecha)']));
 
   const texto = lineas.join('\n');
   const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `reporte-${fecha}-${turno.replace(/\s+/g, '-')}.txt`;
+  a.download = `reporte-${fecha}-procedimientos.txt`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1871,10 +1841,6 @@ const clasesAccionHeader = document.getElementById('clasesAccionHeader');
 const btnAbrirEvaluacion = document.getElementById('btnAbrirEvaluacion');
 const btnEvaluarVista = document.getElementById('btnEvaluarVista');
 const claseNuevaFecha = document.getElementById('claseNuevaFecha');
-const claseNuevaTurno = document.getElementById('claseNuevaTurno');
-claseNuevaTurno.addEventListener('change', () => {
-  actualizarEtiquetaVerde(document.getElementById('claseNuevaBtnVerde'), claseNuevaTurno.value === TURNO_PROCEDIMIENTOS);
-});
 const claseNuevaInstructor = document.getElementById('claseNuevaInstructor');
 const btnAgregarClase = document.getElementById('btnAgregarClase');
 const llamadasAgregarRow = document.getElementById('llamadasAgregarRow');
@@ -1895,17 +1861,6 @@ let llamadasLocal = []; // copia editable de persona.llamadas mientras el modal 
 let bodycamsLocal = []; // copia editable de persona.bodycams mientras el modal está abierto
 let claseNuevoTipo = 'verde';
 
-const TURNOS_CLASE = ["Primera Clase", "Segunda Clase", "Tercera Clase", "Cuarta Clase", "Quinta Clase", TURNO_PROCEDIMIENTOS];
-// restringir = true: si quien registra no llega a evaluador (es instructor
-// común), no puede elegir "Procedimientos" — esa clase solo la registran
-// evaluadores o administradores. Los administradores (por ejemplo, en el
-// modo edición) siempre ven la lista completa.
-function opcionesTurno(seleccionado, restringir) {
-  const disponibles = (restringir && !rolAlcanza(registradorActualRol, 'evaluador'))
-    ? TURNOS_CLASE.filter(t => t !== TURNO_PROCEDIMIENTOS)
-    : TURNOS_CLASE;
-  return disponibles.map(t => `<option value="${escapeAttr(t)}" ${t === seleccionado ? 'selected' : ''}>${t}</option>`).join('');
-}
 // restringir = true: si quien registra no es administrador, solo puede
 // elegir su propio nombre como instructor (no puede atribuirle la clase a
 // otra persona). Los administradores (por ejemplo, en el modo edición)
@@ -1966,7 +1921,7 @@ function renderClasesLista(editable) {
   clasesListaEmpty.style.display = 'none';
   clasesAccionHeader.textContent = editable ? '' : '';
   clasesListaBody.innerHTML = clasesLocal.map((r, i) => {
-    const emoji = r.tipo === 'amarillo' ? '🟡' : (r.turno === TURNO_PROCEDIMIENTOS ? '🛡️' : '🟢');
+    const emoji = r.tipo === 'amarillo' ? '✅' : '🛡️';
     const puntoCell = editable
       ? `<span class="clase-punto-toggle" data-idx="${i}" title="Tocá para cambiar">${emoji}</span>`
       : `<span>${emoji}</span>`;
@@ -1977,15 +1932,11 @@ function renderClasesLista(editable) {
     const fechaCell = editable
       ? `<input type="date" class="clase-campo-fecha" data-idx="${i}" value="${escapeAttr(fechaVal)}">`
       : escapeHtml(r.fecha || '—');
-    const turnoCell = editable
-      ? `<select class="clase-campo-turno" data-idx="${i}">${opcionesTurno(r.turno, false)}</select>`
-      : escapeHtml(r.turno || '—');
     const instructorCell = editable
       ? `<select class="clase-campo-instructor" data-idx="${i}">${opcionesInstructor(r.instructor, false)}</select>`
       : escapeHtml(r.instructor || '—');
     return `<tr>
       <td>${fechaCell}</td>
-      <td>${turnoCell}</td>
       <td>${instructorCell}</td>
       <td>${puntoCell}</td>
       <td>${accionCell}</td>
@@ -2081,12 +2032,10 @@ function abrirModalEditar() {
   if (editable) {
     inputEditarNombre.value = personaEditando;
     claseNuevaFecha.value = hoyISO();
-    claseNuevaTurno.innerHTML = opcionesTurno(null, false);
     claseNuevaInstructor.innerHTML = opcionesInstructor(null, false);
     claseNuevoTipo = 'verde';
     document.getElementById('claseNuevaBtnVerde').classList.add('active');
     document.getElementById('claseNuevaBtnAmarillo').classList.remove('active');
-    actualizarEtiquetaVerde(document.getElementById('claseNuevaBtnVerde'), claseNuevaTurno.value === TURNO_PROCEDIMIENTOS);
     llamadaNuevaFecha.value = hoyISO();
     llamadaNuevoMotivo.value = '';
   }
@@ -2115,7 +2064,7 @@ btnAgregarClase.addEventListener('click', () => {
   clasesLocal.push({
     tipo: claseNuevoTipo,
     fecha: claseNuevaFecha.value || hoyISO(),
-    turno: claseNuevaTurno.value,
+    turno: TURNO_PROCEDIMIENTOS,
     instructor: claseNuevaInstructor.value,
     registrador: `Agregado por ${editorActual}`,
   });
@@ -2142,12 +2091,6 @@ clasesListaBody.addEventListener('change', e => {
   const fechaInput = e.target.closest('.clase-campo-fecha');
   if (fechaInput) {
     clasesLocal[Number(fechaInput.dataset.idx)].fecha = fechaInput.value || '—';
-    return;
-  }
-  const turnoSelect = e.target.closest('.clase-campo-turno');
-  if (turnoSelect) {
-    clasesLocal[Number(turnoSelect.dataset.idx)].turno = turnoSelect.value;
-    renderClasesLista(true);
     return;
   }
   const instructorSelect = e.target.closest('.clase-campo-instructor');
@@ -2387,20 +2330,17 @@ document.addEventListener('mouseover', e => {
       <div class="tt-registrador">Registró: ${escapeHtml(dot.dataset.registrador)}</div>
       <div class="tt-detalle">${escapeHtml(dot.dataset.fecha)}</div>
       <div class="tt-detalle">Motivo: ${escapeHtml(dot.dataset.motivo || '—')}</div>
-      <div class="tt-detalle">Se compensa con una clase verde extra.</div>
+      <div class="tt-detalle">Se compensa con una clase de Procedimientos aprobada extra.</div>
     `;
     customTooltip.style.display = 'block';
     posicionarTooltip(e);
     return;
   }
-  const esProcedimientos = dot.dataset.turno === TURNO_PROCEDIMIENTOS;
-  const etiqueta = esProcedimientos
-    ? '🛡️ Procedimientos'
-    : (tipo === 'verde' ? '🟢 Verde' : '🟡 Amarillo');
+  const etiqueta = tipo === 'verde' ? '🛡️ Aprobó' : '✅ Asistió';
   customTooltip.innerHTML = `
     <div class="tt-tipo ${tipo}">${etiqueta}</div>
     <div class="tt-registrador">Registró: ${escapeHtml(dot.dataset.registrador)}</div>
-    <div class="tt-detalle">${escapeHtml(dot.dataset.fecha)} · ${escapeHtml(dot.dataset.turno)}</div>
+    <div class="tt-detalle">${escapeHtml(dot.dataset.fecha)} · Procedimientos</div>
     <div class="tt-detalle">Instructor: ${escapeHtml(dot.dataset.instructor)}</div>
   `;
   customTooltip.style.display = 'block';
