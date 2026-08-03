@@ -1326,7 +1326,7 @@ body.mapa-fullscreen .academia-placeholder {
     <div class="academia-map" id="academiaAttendance">
       <button class="map-back-btn" id="closeAttendanceBtn">← VOLVER</button>
       <div class="evaluaciones-tabs">
-        <button class="eval-tab active" data-lista="asistencias.html">Asistencias</button>
+        <button class="eval-tab active" data-lista="asistencias.html">Uniformados</button>
         <button class="eval-tab" data-lista="tenientes.html">Tenientes</button>
         <button class="eval-tab" data-lista="capitanes.html">Capitanes</button>
         <button class="eval-tab" data-lista="mayores.html">Mayores</button>
@@ -2338,25 +2338,6 @@ if (attendanceIframe) attendanceIframe.addEventListener('load', () => avisarFran
 if (evaluacionesIframe) evaluacionesIframe.addEventListener('load', () => avisarFranjaVisible(evaluacionesIframe));
 programarAvisoFranjas();
 
-// Bloquear el scroll de ESTA página mientras haya un modal abierto adentro
-// del iframe — si no, se podría seguir scrolleando el fondo (y la franja
-// visible que le pasamos al modal quedaría desactualizada hasta el próximo
-// scroll). Contamos cuántos "bloqueos" están pedidos por si en algún
-// momento hay más de un modal encimado, para no desbloquear de más.
-let bloqueosDeScroll = 0;
-function bloquearScrollPagina() {
-  bloqueosDeScroll++;
-  document.documentElement.style.overflow = 'hidden';
-  document.body.style.overflow = 'hidden';
-}
-function desbloquearScrollPagina() {
-  bloqueosDeScroll = Math.max(0, bloqueosDeScroll - 1);
-  if (bloqueosDeScroll === 0) {
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-  }
-}
-
 // Los iframes de asistencias.html / tenientes.html / capitanes.html avisan su
 // altura real (incluyendo popups abiertos) vía postMessage; acá la aplicamos
 // para que no haya doble scroll ni recortes. También pueden pedirnos la
@@ -2375,85 +2356,7 @@ window.addEventListener('message', e => {
   if (e.data.tipo === 'pedir-franja-visible') {
     avisarFranjaVisible(iframeOrigen);
   }
-  if (e.data.tipo === 'bloquear-scroll') bloquearScrollPagina();
-  if (e.data.tipo === 'desbloquear-scroll') desbloquearScrollPagina();
 });
-
-
-
-
-/* ============================================================
-   Mantener la posición de scroll de la página al abrir/cerrar
-   cualquier modal (antes se iba arriba de todo al cerrarlo).
-   ============================================================ */
-(function () {
-  // Si esta página vive adentro de un iframe (como pasa cuando se abre
-  // desde Academia en index.html), el scroll real ocurre en la página de
-  // arriba (window.top). Ahí "position: fixed" del modal queda relativo al
-  // documento COMPLETO del iframe (que es larguísimo, porque se agranda
-  // para mostrar toda la lista), no a la pantalla — por eso el modal se
-  // iba siempre arriba de todo. En vez de tratar de recalcular esa
-  // posición a mano, le avisamos a la página de arriba que ponga el
-  // iframe mismo en pantalla completa y fijo mientras el modal esté
-  // abierto: así el "fixed" del modal (que ya funciona bien solo) queda
-  // relativo a la pantalla real, sin tocar el scroll para nada.
-  let ventanaSuperior = window;
-  let esEmbebido = false;
-  try {
-    if (window.top && window.top !== window) {
-      ventanaSuperior = window.top;
-      esEmbebido = true;
-    }
-  } catch (e) { /* iframe de otro origen: seguimos como si no hubiera iframe */ }
-
-  // Caso normal (esta página sola, sin iframe): guardamos el scroll ANTES
-  // de que corra el click que abre el modal (capture:true corre primero
-  // que cualquier otro listener), así tenemos el valor real de dónde
-  // estaba el usuario antes de que un .focus() lo mueva solo.
-  let scrollAntesDelClick = ventanaSuperior.scrollY;
-  const registrarScrollPrevio = () => { scrollAntesDelClick = ventanaSuperior.scrollY; };
-  document.addEventListener('pointerdown', registrarScrollPrevio, true);
-  document.addEventListener('touchstart', registrarScrollPrevio, { capture: true, passive: true });
-  document.addEventListener('click', registrarScrollPrevio, true);
-
-  const scrollStack = [];
-  function fijarScroll(y) {
-    ventanaSuperior.scrollTo(0, y);
-    requestAnimationFrame(() => ventanaSuperior.scrollTo(0, y));
-    setTimeout(() => ventanaSuperior.scrollTo(0, y), 60);
-  }
-
-  let modalesAbiertos = 0;
-  const obs = new MutationObserver(mutList => {
-    for (const m of mutList) {
-      const el = m.target;
-      if (!(el instanceof Element) || !/modal-overlay/.test(el.className)) continue;
-      const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
-      const esOculto = el.classList.contains('hidden');
-      if (eraOculto && !esOculto) {
-        modalesAbiertos++;
-        if (esEmbebido) {
-          try { window.parent.postMessage({ tipo: 'modal-abierto' }, '*'); } catch (e2) { /* ignorar */ }
-        } else {
-          const y = scrollAntesDelClick;
-          scrollStack.push(y);
-          fijarScroll(y);
-        }
-      } else if (!eraOculto && esOculto) {
-        modalesAbiertos = Math.max(0, modalesAbiertos - 1);
-        if (esEmbebido) {
-          if (modalesAbiertos === 0) {
-            try { window.parent.postMessage({ tipo: 'modal-cerrado' }, '*'); } catch (e2) { /* ignorar */ }
-          }
-        } else {
-          const y = scrollStack.pop();
-          if (y !== undefined) fijarScroll(y);
-        }
-      }
-    }
-  });
-  obs.observe(document.body, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
-})();
 </script>
 
 <div class="siren-glow-left"></div>

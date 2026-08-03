@@ -49,6 +49,15 @@
     color: var(--accent2);
     text-align: center;
     margin: 4px 0 2px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .title-icon {
+    width: 32px;
+    height: 32px;
   }
   .subtitle {
     text-align: center;
@@ -481,7 +490,10 @@
 </head>
 <body>
 
-<h1>🎖️ Lista de Tenientes</h1>
+<h1>
+    <img src="2-Teniente.svg" alt="" class="title-icon">
+    Tenientes
+</h1>
 <div class="subtitle">Departamento de Policía de Laguna</div>
 
 <div class="accion-bar">
@@ -2402,129 +2414,54 @@ window.addEventListener('load', avisarAltura);
 setInterval(cargarDatosServidor, 20000); // refresca cada 20s para ver registros de otras personas
 
 /* ============================================================
-   Mantener la posición de scroll de la página al abrir/cerrar
-   cualquier modal (antes se iba arriba de todo al cerrarlo).
+   Posicionar el modal dentro de la franja visible cuando esta página
+   vive adentro del iframe de index.html (si no, position:fixed ya
+   funciona solo). Ya NO bloqueamos el scroll de fondo mientras un
+   modal está abierto — se sacó a pedido.
    ============================================================ */
 (function () {
-  // ¿Esta página vive sola, o adentro del iframe de index.html? Comparar
-  // referencias de ventana (window.top !== window) nunca tira error, pase
-  // lo que pase con permisos entre orígenes — así que esto es seguro tal
-  // cual, sin try/catch.
   const esEmbebido = !!(window.top && window.top !== window);
+  if (!esEmbebido) return;
 
-  if (esEmbebido) {
-    // ------------------------------------------------------------
-    // Embebido dentro de index.html: NO tocamos nada de la ventana de
-    // arriba (ni scroll, ni tamaño del iframe) — eso taparía el resto de
-    // esa página. En cambio, index.html nos avisa constantemente qué
-    // franja vertical de ESTA página es la que se ve ahora mismo en la
-    // pantalla real (según su propio scroll). Con eso, dibujamos el modal
-    // ahí mismo usando position:absolute (en vez de position:fixed, que
-    // acá adentro quedaría relativo a todo el documento larguísimo, no a
-    // lo que se ve). También le pedimos que bloquee su propio scroll
-    // mientras el modal esté abierto, para que la franja visible no se
-    // desactualice si alguien scrollea el fondo.
-    // ------------------------------------------------------------
-    let ultimaFranja = { top: 0, alto: window.innerHeight };
-    let modalesAbiertosEmb = 0;
-    window.addEventListener('message', e => {
-      if (e.data && e.data.tipo === 'franja-visible') {
-        ultimaFranja = { top: e.data.top, alto: e.data.alto };
-      }
-    });
-    try { window.parent.postMessage({ tipo: 'pedir-franja-visible' }, '*'); } catch (e) { /* ignorar */ }
-
-    function posicionarModal(el) {
-      el.style.position = 'absolute';
-      el.style.top = ultimaFranja.top + 'px';
-      el.style.left = '0';
-      el.style.right = '0';
-      el.style.height = ultimaFranja.alto + 'px';
-      el.style.margin = '0';
+  let ultimaFranja = { top: 0, alto: window.innerHeight };
+  window.addEventListener('message', e => {
+    if (e.data && e.data.tipo === 'franja-visible') {
+      ultimaFranja = { top: e.data.top, alto: e.data.alto };
     }
-    function despejarModal(el) {
-      el.style.position = '';
-      el.style.top = '';
-      el.style.left = '';
-      el.style.right = '';
-      el.style.height = '';
-      el.style.margin = '';
-    }
+  });
+  try { window.parent.postMessage({ tipo: 'pedir-franja-visible' }, '*'); } catch (e) { /* ignorar */ }
 
-    const obsEmb = new MutationObserver(mutList => {
-      for (const m of mutList) {
-        const el = m.target;
-        if (!el || el.nodeType !== 1 || !/modal-overlay/.test(el.className)) continue;
-        const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
-        const esOculto = el.classList.contains('hidden');
-        if (eraOculto && !esOculto) {
-          posicionarModal(el);
-          modalesAbiertosEmb++;
-          if (modalesAbiertosEmb === 1) {
-            try { window.parent.postMessage({ tipo: 'bloquear-scroll' }, '*'); } catch (e2) {}
-          }
-        } else if (!eraOculto && esOculto) {
-          despejarModal(el);
-          modalesAbiertosEmb = Math.max(0, modalesAbiertosEmb - 1);
-          if (modalesAbiertosEmb === 0) {
-            try { window.parent.postMessage({ tipo: 'desbloquear-scroll' }, '*'); } catch (e2) {}
-          }
-        }
-      }
-    });
-    obsEmb.observe(document.body, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
-    return;
+  function posicionarModal(el) {
+    el.style.position = 'absolute';
+    el.style.top = ultimaFranja.top + 'px';
+    el.style.left = '0';
+    el.style.right = '0';
+    el.style.height = ultimaFranja.alto + 'px';
+    el.style.margin = '0';
+  }
+  function despejarModal(el) {
+    el.style.position = '';
+    el.style.top = '';
+    el.style.left = '';
+    el.style.right = '';
+    el.style.height = '';
+    el.style.margin = '';
   }
 
-  // ------------------------------------------------------------
-  // Página sola (sin iframe): guardamos el scroll ANTES de que corra el
-  // click que abre el modal (capture:true corre primero que cualquier
-  // otro listener), así tenemos el valor real de dónde estaba el usuario
-  // antes de que un .focus() lo mueva solo, y lo restauramos al cerrar.
-  // También bloqueamos el scroll de la página mientras el modal esté
-  // abierto.
-  // ------------------------------------------------------------
-  let scrollAntesDelClick = window.scrollY;
-  const registrarScrollPrevio = () => { scrollAntesDelClick = window.scrollY; };
-  document.addEventListener('pointerdown', registrarScrollPrevio, true);
-  document.addEventListener('touchstart', registrarScrollPrevio, { capture: true, passive: true });
-  document.addEventListener('click', registrarScrollPrevio, true);
-
-  const scrollStack = [];
-  function fijarScroll(y) {
-    window.scrollTo(0, y);
-    requestAnimationFrame(() => window.scrollTo(0, y));
-    setTimeout(() => window.scrollTo(0, y), 60);
-  }
-
-  let modalesAbiertosSolo = 0;
-  const obs = new MutationObserver(mutList => {
+  const obsEmb = new MutationObserver(mutList => {
     for (const m of mutList) {
       const el = m.target;
-      if (!(el instanceof Element) || !/modal-overlay/.test(el.className)) continue;
+      if (!el || el.nodeType !== 1 || !/modal-overlay/.test(el.className)) continue;
       const eraOculto = (m.oldValue || '').split(' ').includes('hidden');
       const esOculto = el.classList.contains('hidden');
       if (eraOculto && !esOculto) {
-        const y = scrollAntesDelClick;
-        scrollStack.push(y);
-        fijarScroll(y);
-        modalesAbiertosSolo++;
-        if (modalesAbiertosSolo === 1) {
-          document.documentElement.style.overflow = 'hidden';
-          document.body.style.overflow = 'hidden';
-        }
+        posicionarModal(el);
       } else if (!eraOculto && esOculto) {
-        modalesAbiertosSolo = Math.max(0, modalesAbiertosSolo - 1);
-        if (modalesAbiertosSolo === 0) {
-          document.documentElement.style.overflow = '';
-          document.body.style.overflow = '';
-        }
-        const y = scrollStack.pop();
-        if (y !== undefined) fijarScroll(y);
+        despejarModal(el);
       }
     }
   });
-  obs.observe(document.body, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
+  obsEmb.observe(document.body, { attributes: true, attributeFilter: ['class'], attributeOldValue: true, subtree: true });
 })();
 </script>
 
