@@ -148,7 +148,11 @@ const CODIGOS_SEED = {
 // "instructor" a propósito (su único permiso, ver Macros de Instrucción, se
 // chequea aparte en el cliente); "lider"/"sublider" quedan al mismo nivel
 // que "administrador" (mismos permisos, pero categorías separadas — máximo
-// 1 líder y 2 sublíderes, validado más abajo al guardar).
+// 1 líder y 2 sublíderes, validado más abajo al guardar). "bodycams" y
+// "lider_bodycams" NO están acá (son un permiso aparte, no un nivel — ver
+// puedeRegistrarBodycams en codigos.js); "lider_bodycams" tiene el mismo
+// permiso que "bodycams", pero como categoría separada tiene su propio
+// tope de 1, igual que "lider".
 const NIVELES_ROL = {
   instructor_prueba: 1,
   instructor: 2,
@@ -204,12 +208,15 @@ function limpiarLlamada(l) {
 
 // BodyCam aprobada: usado (por ahora, en Tenientes/Capitanes para arriba)
 // como requisito de evaluación junto con las clases de Procedimientos.
-// "aprobador" es un campo de texto libre por el momento (no está atado a
-// la lista de evaluadores/administradores).
+// "aprobador" ya no es un campo de texto libre: es siempre el dueño del
+// código con el que se registra (mismo nombre que "registrador"), y
+// "aprobadorRol" guarda su rol en ese momento — los manda el cliente ya
+// resueltos, acá solo se limpian.
 function limpiarBodycam(b) {
   return {
     fecha: (b && b.fecha) || "—",
     aprobador: (b && b.aprobador) || "—",
+    aprobadorRol: (b && b.aprobadorRol) || "—",
     observaciones: (b && b.observaciones) || "",
     registrador: (b && b.registrador) || "Desconocido",
   };
@@ -316,18 +323,27 @@ async function manejarCodigos(request, env, payload) {
       return json({ error: "Formato de códigos inválido." }, 400);
     }
     for (const [cod, u] of Object.entries(payload.codigos)) {
-      if (!cod || !u || !u.nombre || !u.rol || !NIVELES_ROL[u.rol]) {
+      // "bodycams" y "lider_bodycams" son roles válidos aparte de la
+      // escalera de NIVELES_ROL (no heredan ni son heredados por nadie —
+      // ver comentario en codigos.js), así que hay que aceptarlos acá
+      // explícitamente además de los que sí están en NIVELES_ROL.
+      const rolValido = u && u.rol && (NIVELES_ROL[u.rol] || u.rol === "bodycams" || u.rol === "lider_bodycams");
+      if (!cod || !u || !u.nombre || !rolValido) {
         return json({ error: `Entrada inválida para el código "${cod}".` }, 400);
       }
     }
     const entradas = Object.values(payload.codigos);
     const cantLideres = entradas.filter((u) => u.rol === "lider").length;
     const cantSublideres = entradas.filter((u) => u.rol === "sublider").length;
+    const cantLideresBodycams = entradas.filter((u) => u.rol === "lider_bodycams").length;
     if (cantLideres > 1) {
       return json({ error: "Solo puede haber un líder — hay más de uno marcado." }, 400);
     }
     if (cantSublideres > 2) {
       return json({ error: "Solo puede haber hasta dos sublíderes — hay más de dos marcados." }, 400);
+    }
+    if (cantLideresBodycams > 1) {
+      return json({ error: "Solo puede haber un líder de BodyCams — hay más de uno marcado." }, 400);
     }
     await guardarCodigos(env, payload.codigos);
     return json({ ok: true, codigos: payload.codigos });

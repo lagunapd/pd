@@ -671,10 +671,6 @@
         <label>Fecha</label>
         <input type="date" id="bodycamFecha">
       </div>
-      <div class="modal-field flex1">
-        <label>Aprobó (nombre)</label>
-        <input type="text" id="bodycamAprobador" placeholder="Quién la aprobó..." autocomplete="off">
-      </div>
     </div>
     <div class="modal-row">
       <div class="modal-field flex1">
@@ -1446,7 +1442,6 @@ btnConfirmarRegistro.addEventListener('click', async () => {
 const modalRegistroBodycam = document.getElementById('modalRegistroBodycam');
 const registradorInfoBodycam = document.getElementById('registradorInfoBodycam');
 const bodycamFecha = document.getElementById('bodycamFecha');
-const bodycamAprobador = document.getElementById('bodycamAprobador');
 const bodycamObservaciones = document.getElementById('bodycamObservaciones');
 const bodycamInputNombre = document.getElementById('bodycamInputNombre');
 const listaNombresBodycam = document.getElementById('listaNombresBodycam');
@@ -1466,9 +1461,11 @@ function poblarListaNombresBodycam() {
 }
 
 function abrirModalRegistroBodycam() {
-  registradorInfoBodycam.innerHTML = `Registrando como: <b>${escapeHtml(registradorActual)}</b>`;
+  // El que aprueba es siempre el dueño del código con el que se entró acá
+  // (no un campo de texto libre aparte): mismo nombre y rol que quedan
+  // guardados como "registrador".
+  registradorInfoBodycam.innerHTML = `Registrando y aprobando como: <b>${escapeHtml(registradorActual)}</b> (${escapeHtml(registradorActualRol)})`;
   bodycamFecha.value = hoyISO();
-  bodycamAprobador.value = '';
   bodycamObservaciones.value = '';
   bodycamInputNombre.value = '';
   bodycamNombreError.textContent = '';
@@ -1536,13 +1533,15 @@ btnConfirmarRegistroBodycam.addEventListener('click', async () => {
     return;
   }
   const fecha = bodycamFecha.value || hoyISO();
-  const aprobador = bodycamAprobador.value.trim();
   const observaciones = bodycamObservaciones.value.trim();
 
   const bodycamEntries = miniListaBodycam.map(item => ({
     nombre: item.nombre,
     fecha: fecha,
-    aprobador: aprobador,
+    // El aprobador es el mismo dueño del código (registradorActual), no un
+    // campo de texto libre — se manda también su rol para mostrarlo.
+    aprobador: registradorActual,
+    aprobadorRol: registradorActualRol,
     observaciones: observaciones,
     registrador: registradorActual,
   }));
@@ -2127,7 +2126,7 @@ function renderBodycamsLista(editable) {
   bodycamsListaBody.innerHTML = bodycamsLocal.map((b, i) => `
     <tr>
       <td>${escapeHtml(b.fecha || '—')}</td>
-      <td>${escapeHtml(b.aprobador || '—')}</td>
+      <td>${escapeHtml(b.aprobador || '—')}${b.aprobadorRol ? ` <span style="color:var(--muted)">(${escapeHtml(b.aprobadorRol)})</span>` : ''}</td>
       <td>${escapeHtml(b.observaciones || '—')}</td>
       <td>${escapeHtml(b.registrador || '—')}</td>
       <td>${editable ? `<span class="quitar" data-idx="${i}" style="cursor:pointer;color:var(--red);">✕</span>` : ''}</td>

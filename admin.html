@@ -1176,6 +1176,7 @@ function renderTablaCodigos() {
           <option value="instructor_prueba" ${c.rol === 'instructor_prueba' ? 'selected' : ''}>instructor a prueba</option>
           <option value="instructor" ${c.rol === 'instructor' ? 'selected' : ''}>instructor</option>
           <option value="bodycams" ${c.rol === 'bodycams' ? 'selected' : ''}>división BodyCams</option>
+          <option value="lider_bodycams" ${c.rol === 'lider_bodycams' ? 'selected' : ''}>líder de BodyCams</option>
           <option value="evaluador" ${c.rol === 'evaluador' ? 'selected' : ''}>evaluador</option>
           <option value="administrador" ${c.rol === 'administrador' ? 'selected' : ''}>administrador</option>
           <option value="sublider" ${c.rol === 'sublider' ? 'selected' : ''}>sublíder</option>
@@ -1231,6 +1232,7 @@ document.getElementById('btnGuardarCodigos').addEventListener('click', async () 
 
   const cantLideres = codigosLocal.filter(c => c.rol === 'lider').length;
   const cantSublideres = codigosLocal.filter(c => c.rol === 'sublider').length;
+  const cantLideresBodycams = codigosLocal.filter(c => c.rol === 'lider_bodycams').length;
   if (cantLideres > 1) {
     codigosMsg.textContent = 'Solo puede haber un líder — hay más de uno marcado.';
     codigosMsg.className = 'admin-msg error';
@@ -1238,6 +1240,11 @@ document.getElementById('btnGuardarCodigos').addEventListener('click', async () 
   }
   if (cantSublideres > 2) {
     codigosMsg.textContent = 'Solo puede haber hasta dos sublíderes — hay más de dos marcados.';
+    codigosMsg.className = 'admin-msg error';
+    return;
+  }
+  if (cantLideresBodycams > 1) {
+    codigosMsg.textContent = 'Solo puede haber un líder de BodyCams — hay más de uno marcado.';
     codigosMsg.className = 'admin-msg error';
     return;
   }
