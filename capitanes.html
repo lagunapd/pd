@@ -538,6 +538,11 @@
     🔓 Modo edición: <b id="modoEdicionNombre"></b>
     <button class="btn-salir-edicion" id="btnSalirModoEdicion">Salir</button>
   </span>
+  <span id="modoBodycamBadge" class="modo-edicion-badge hidden">
+    🎥 Modo BodyCams: <b id="modoBodycamNombre"></b>
+    <button class="btn-salir-edicion" id="btnCargarVariosBodycam">+ Varios a la vez</button>
+    <button class="btn-salir-edicion" id="btnSalirModoBodycam">Salir</button>
+  </span>
 </div>
 
 <div class="modal-overlay hidden" id="modalReporte">
@@ -596,7 +601,7 @@
 </table>
 
 <div class="note">
-  De Teniente para arriba ya no hay clases generales: lo único que se registra es <b>Procedimientos</b>, en dos estados — <b>✅ Asistió</b> o <b>🛡️ Aprobó</b> — sin medios puntos. Al registrar, elegí el rango de cada persona en su fila: así se puede cargar una sola clase con gente mezclada de distintos rangos desde cualquiera de las 5 listas (Asistencias, Tenientes, Capitanes, Mayores, Coroneles) — cada quien queda anotado en su lista correspondiente, no en la que tenías abierta. Pasá el mouse sobre cualquier punto 🛡️ o ❗ para ver quién lo registró, en qué fecha e instructor (o motivo, si es una llamada de atención). El ❗ es una llamada de atención: cada una exige una clase de Procedimientos <b>aprobada</b> extra antes de poder evaluar — apenas se registra una, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos aprobadas</b> (ya descontadas las llamadas sin compensar) <b>y 15 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. Esta clase solo la pueden registrar evaluadores o administradores. Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam" — hace falta código de instructor o superior, o de la <b>división de BodyCams</b> (un rol aparte que solo puede registrar BodyCams y nada más, ni clases ni evaluaciones; se asigna desde Códigos de acceso en el panel de administración). El botón "📄 Reporte de BodyCams" te muestra, sin editar nada, cuántas BodyCams aprobadas tiene cada persona y las observaciones de cada una — lo puede abrir cualquiera con ese mismo código. Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos aprobadas y 15 BodyCams aprobadas (y tiene el rango de Capitán asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Mayores (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
+  De Teniente para arriba ya no hay clases generales: lo único que se registra es <b>Procedimientos</b>, en dos estados — <b>✅ Asistió</b> o <b>🛡️ Aprobó</b> — sin medios puntos. Al registrar, elegí el rango de cada persona en su fila: así se puede cargar una sola clase con gente mezclada de distintos rangos desde cualquiera de las 5 listas (Asistencias, Tenientes, Capitanes, Mayores, Coroneles) — cada quien queda anotado en su lista correspondiente, no en la que tenías abierta. Pasá el mouse sobre cualquier punto 🛡️ o ❗ para ver quién lo registró, en qué fecha e instructor (o motivo, si es una llamada de atención). El ❗ es una llamada de atención: cada una exige una clase de Procedimientos <b>aprobada</b> extra antes de poder evaluar — apenas se registra una, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos aprobadas</b> (ya descontadas las llamadas sin compensar) <b>y 15 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. Esta clase solo la pueden registrar evaluadores o administradores. Las BodyCams se registran con el botón "🎥 Registrar BodyCam" — hace falta código de instructor o superior, o de la <b>división de BodyCams</b> (o su líder), un rol aparte que solo puede registrar BodyCams y nada más, ni clases ni evaluaciones (se asigna desde Códigos de acceso en el panel de administración). Al ingresar el código queda abierta una sesión (como con "✏️ Editar"): mientras esté activa podés tocar el nombre de cualquier persona y agregarle sus BodyCams ahí mismo, una por una, o usar "+ Varios a la vez" para cargar a varias juntas con la misma fecha — sin volver a pedir el código hasta que toques "Salir". El botón "📄 Reporte de BodyCams" te muestra, sin editar nada, cuántas BodyCams aprobadas tiene cada persona y las observaciones de cada una — lo puede abrir cualquiera con ese mismo código. Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos aprobadas y 15 BodyCams aprobadas (y tiene el rango de Capitán asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Mayores (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
 </div>
 
 <!-- Modal 1: código de registrador -->
@@ -794,7 +799,18 @@
     </div>
     <div class="mini-lista-empty" id="llamadasListaEmpty">No tiene llamadas de atención.</div>
 
-    <div class="modal-sub" style="margin-top:14px;">🎥 BodyCams Aprobadas (se agregan con el botón "Registrar BodyCam", acá solo se pueden borrar)</div>
+    <div class="modal-sub" style="margin-top:14px;">🎥 BodyCams Aprobadas</div>
+    <div class="modal-row hidden" id="bodycamsAgregarRow">
+      <div class="modal-field">
+        <label>Fecha</label>
+        <input type="date" id="bodycamNuevaFecha">
+      </div>
+      <div class="modal-field flex1">
+        <label>Observaciones</label>
+        <input type="text" id="bodycamNuevaObservaciones" placeholder="Observaciones (opcional)...">
+      </div>
+      <button class="btn btn-primario btn-agregar-fila" id="btnAgregarBodycam">+ Agregar BodyCam</button>
+    </div>
     <div class="mini-lista-wrap" id="bodycamsListaWrap">
       <table class="mini-lista">
         <thead><tr><th>Fecha</th><th>Aprobó</th><th>Observaciones</th><th>Registró</th><th id="bodycamsAccionHeader"></th></tr></thead>
@@ -825,6 +841,10 @@
     <div class="modal-actions" id="clasesAccionesVista">
       <button class="btn btn-evaluacion" id="btnEvaluarVista">📝 Evaluación</button>
       <button class="btn btn-secundario" id="btnCerrarVistaClases">Cerrar</button>
+    </div>
+    <div class="modal-actions" id="bodycamAccionesEdicion">
+      <button class="btn btn-secundario" id="btnCancelarEditarBodycam">Cancelar</button>
+      <button class="btn btn-primario" id="btnGuardarEditarBodycam">Guardar</button>
     </div>
   </div>
 </div>
@@ -1189,7 +1209,7 @@ async function validarCodigo() {
   registradorActualRol = usuario.rol;
   cerrarModalCodigo();
   if (flujoPendienteCodigo === 'bodycam') {
-    abrirModalRegistroBodycam();
+    activarModoBodycam(usuario.nombre, usuario.rol);
   } else if (flujoPendienteCodigo === 'reporte-bodycam') {
     abrirModalReporteBodycam();
   } else {
@@ -1679,6 +1699,29 @@ function salirModoEdicion() {
 
 document.getElementById('btnSalirModoEdicion').addEventListener('click', salirModoEdicion);
 
+// -------------------- sesión de modo BodyCams (como modo edición, pero solo para BodyCams) --------------------
+let modoBodycamActivo = false;
+const modoBodycamBadge = document.getElementById('modoBodycamBadge');
+const modoBodycamNombre = document.getElementById('modoBodycamNombre');
+
+function activarModoBodycam(nombre, rol) {
+  modoBodycamActivo = true;
+  registradorActual = nombre;
+  registradorActualRol = rol;
+  modoBodycamNombre.textContent = `${nombre} (${rol})`;
+  modoBodycamBadge.classList.remove('hidden');
+  document.getElementById('btnAbrirCodigoBodycam').classList.add('hidden');
+}
+
+function salirModoBodycam() {
+  modoBodycamActivo = false;
+  modoBodycamBadge.classList.add('hidden');
+  document.getElementById('btnAbrirCodigoBodycam').classList.remove('hidden');
+}
+
+document.getElementById('btnSalirModoBodycam').addEventListener('click', salirModoBodycam);
+document.getElementById('btnCargarVariosBodycam').addEventListener('click', abrirModalRegistroBodycam);
+
 function abrirModalCodigoEditar() {
   inputCodigoEditar.value = '';
   codigoEditarError.textContent = '';
@@ -1990,6 +2033,11 @@ const bodycamsListaBody = document.getElementById('bodycamsListaBody');
 const bodycamsListaWrap = document.getElementById('bodycamsListaWrap');
 const bodycamsListaEmpty = document.getElementById('bodycamsListaEmpty');
 const bodycamsAccionHeader = document.getElementById('bodycamsAccionHeader');
+const bodycamsAgregarRow = document.getElementById('bodycamsAgregarRow');
+const bodycamNuevaFecha = document.getElementById('bodycamNuevaFecha');
+const bodycamNuevaObservaciones = document.getElementById('bodycamNuevaObservaciones');
+const bodycamAccionesEdicion = document.getElementById('bodycamAccionesEdicion');
+const btnGuardarEditarBodycam = document.getElementById('btnGuardarEditarBodycam');
 
 let clasesLocal = []; // copia editable de persona.registros mientras el modal está abierto
 let llamadasLocal = []; // copia editable de persona.llamadas mientras el modal está abierto
@@ -2127,6 +2175,7 @@ btnAgregarLlamada.addEventListener('click', () => {
 });
 
 function renderBodycamsLista(editable) {
+  actualizarBotonEvaluacion();
   bodycamsAccionHeader.textContent = '';
   if (bodycamsLocal.length === 0) {
     bodycamsListaWrap.style.display = 'none';
@@ -2148,10 +2197,26 @@ function renderBodycamsLista(editable) {
 
 bodycamsListaBody.addEventListener('click', e => {
   const btn = e.target.closest('.quitar');
-  if (!btn || !modoEdicionActivo) return;
+  if (!btn || !(modoEdicionActivo || modoBodycamActivo)) return;
   bodycamsLocal.splice(Number(btn.dataset.idx), 1);
   renderBodycamsLista(true);
   actualizarBotonEvaluacion();
+});
+
+document.getElementById('btnAgregarBodycam').addEventListener('click', () => {
+  // El aprobador es el admin en modo edición, o quien entró con código de
+  // BodyCams en la sesión de modo BodyCams — nunca un campo de texto libre.
+  const aprobador = modoEdicionActivo ? editorActual : registradorActual;
+  const aprobadorRol = modoEdicionActivo ? 'administrador' : registradorActualRol;
+  bodycamsLocal.push({
+    fecha: bodycamNuevaFecha.value || hoyISO(),
+    aprobador,
+    aprobadorRol,
+    observaciones: bodycamNuevaObservaciones.value.trim(),
+    registrador: aprobador,
+  });
+  bodycamNuevaObservaciones.value = '';
+  renderBodycamsLista(true);
 });
 
 function abrirModalEditar() {
@@ -2162,21 +2227,32 @@ function abrirModalEditar() {
   const rangoTexto = (persona && persona.rango) || '—';
 
   const editable = modoEdicionActivo;
-  clasesTitulo.textContent = editable ? `Editar clases de ${personaEditando}` : `Clases de ${personaEditando}`;
+  // Además del modo edición (administrador), quien entró con código de
+  // BodyCams (o líder de BodyCams) también puede agregar BodyCams acá,
+  // persona por persona — sin poder tocar clases, llamadas ni el nombre.
+  const bodycamEditable = modoEdicionActivo || modoBodycamActivo;
+  clasesTitulo.textContent = editable
+    ? `Editar clases de ${personaEditando}`
+    : (modoBodycamActivo ? `BodyCams de ${personaEditando}` : `Clases de ${personaEditando}`);
   editarInfo.innerHTML = editable
     ? `Administrador: <b>${escapeHtml(editorActual)}</b> · Rango: <b>${escapeHtml(rangoTexto)}</b>`
-    : `Historial de clases (solo lectura) · Rango: <b>${escapeHtml(rangoTexto)}</b>`;
+    : (modoBodycamActivo
+        ? `Registrando BodyCams como: <b>${escapeHtml(registradorActual)}</b> (${escapeHtml(registradorActualRol)}) · Rango: <b>${escapeHtml(rangoTexto)}</b>`
+        : `Historial de clases (solo lectura) · Rango: <b>${escapeHtml(rangoTexto)}</b>`);
   editarError.textContent = '';
+
+  inputEditarNombre.value = personaEditando;
 
   clasesAgregarRow.classList.toggle('hidden', !editable);
   clasesAgregarRow2.classList.toggle('hidden', !editable);
   clasesRenombrarRow.classList.toggle('hidden', !editable);
   clasesAccionesEdicion.classList.toggle('hidden', !editable);
-  clasesAccionesVista.classList.toggle('hidden', editable);
+  clasesAccionesVista.classList.toggle('hidden', editable || bodycamEditable);
   llamadasAgregarRow.classList.toggle('hidden', !editable);
+  bodycamsAgregarRow.classList.toggle('hidden', !bodycamEditable);
+  bodycamAccionesEdicion.classList.toggle('hidden', !bodycamEditable || editable);
 
   if (editable) {
-    inputEditarNombre.value = personaEditando;
     claseNuevaFecha.value = hoyISO();
     claseNuevaInstructor.innerHTML = opcionesInstructor(null, false);
     claseNuevoTipo = 'verde';
@@ -2185,10 +2261,14 @@ function abrirModalEditar() {
     llamadaNuevaFecha.value = hoyISO();
     llamadaNuevoMotivo.value = '';
   }
+  if (bodycamEditable) {
+    bodycamNuevaFecha.value = hoyISO();
+    bodycamNuevaObservaciones.value = '';
+  }
 
   renderClasesLista(editable);
   renderLlamadasLista(editable);
-  renderBodycamsLista(editable);
+  renderBodycamsLista(bodycamEditable);
   modalEditar.classList.remove('hidden');
 }
 function cerrarModalEditar() {
@@ -2418,7 +2498,7 @@ btnGuardarEvaluacion.addEventListener('click', async () => {
   }
 });
 
-btnGuardarEditar.addEventListener('click', async () => {
+async function guardarEdicionPersona() {
   if (!API_URL || API_URL.includes('PEGA_AQUI')) {
     editarError.textContent = 'Falta configurar el servidor (API_URL). Revisá SETUP.md.';
     return;
@@ -2429,8 +2509,8 @@ btnGuardarEditar.addEventListener('click', async () => {
     return;
   }
   editarError.textContent = '';
-  btnGuardarEditar.disabled = true;
-  btnGuardarEditar.textContent = 'Guardando...';
+  const botonesGuardar = [btnGuardarEditar, btnGuardarEditarBodycam];
+  botonesGuardar.forEach(b => { b.disabled = true; b.textContent = 'Guardando...'; });
   try {
     const resp = await fetch(API_URL, {
       method: 'POST',
@@ -2443,7 +2523,9 @@ btnGuardarEditar.addEventListener('click', async () => {
           registros: clasesLocal,
           llamadas: llamadasLocal,
           bodycams: bodycamsLocal,
-          registrador: editorActual,
+          // Quien guarda es el administrador en modo edición, o quien
+          // entró con código de BodyCams agregando solo BodyCams.
+          registrador: modoEdicionActivo ? editorActual : registradorActual,
         },
       }),
     });
@@ -2456,10 +2538,12 @@ btnGuardarEditar.addEventListener('click', async () => {
   } catch (e) {
     editarError.textContent = e && e.message ? e.message : 'No se pudo guardar en el servidor. Intentá de nuevo.';
   } finally {
-    btnGuardarEditar.disabled = false;
-    btnGuardarEditar.textContent = 'Guardar';
+    botonesGuardar.forEach(b => { b.disabled = false; b.textContent = 'Guardar'; });
   }
-});
+}
+btnGuardarEditar.addEventListener('click', guardarEdicionPersona);
+btnGuardarEditarBodycam.addEventListener('click', guardarEdicionPersona);
+document.getElementById('btnCancelarEditarBodycam').addEventListener('click', cerrarModalEditar);
 
 // -------------------- tooltip con el tema de la página --------------------
 const customTooltip = document.getElementById('customTooltip');
