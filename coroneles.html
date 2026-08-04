@@ -693,13 +693,6 @@
     </div>
     <div class="modal-row">
       <div class="modal-field flex1">
-        <label>Observaciones</label>
-        <input type="text" id="bodycamObservaciones" placeholder="Observaciones (opcional)...">
-      </div>
-    </div>
-
-    <div class="modal-row">
-      <div class="modal-field flex1">
         <label>Nombre</label>
         <input type="text" id="bodycamInputNombre" list="listaNombresBodycam" placeholder="Escribí o elegí un nombre..." autocomplete="off">
         <datalist id="listaNombresBodycam"></datalist>
@@ -710,7 +703,7 @@
 
     <div class="mini-lista-wrap" id="miniListaBodycamWrap">
       <table class="mini-lista">
-        <thead><tr><th>Nombre</th><th></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Observaciones</th><th></th></tr></thead>
         <tbody id="miniListaBodycamBody"></tbody>
       </table>
     </div>
@@ -1449,7 +1442,6 @@ btnConfirmarRegistro.addEventListener('click', async () => {
 const modalRegistroBodycam = document.getElementById('modalRegistroBodycam');
 const registradorInfoBodycam = document.getElementById('registradorInfoBodycam');
 const bodycamFecha = document.getElementById('bodycamFecha');
-const bodycamObservaciones = document.getElementById('bodycamObservaciones');
 const bodycamInputNombre = document.getElementById('bodycamInputNombre');
 const listaNombresBodycam = document.getElementById('listaNombresBodycam');
 const bodycamNombreError = document.getElementById('bodycamNombreError');
@@ -1473,7 +1465,6 @@ function abrirModalRegistroBodycam() {
   // guardados como "registrador".
   registradorInfoBodycam.innerHTML = `Registrando y aprobando como: <b>${escapeHtml(registradorActual)}</b> (${escapeHtml(registradorActualRol)})`;
   bodycamFecha.value = hoyISO();
-  bodycamObservaciones.value = '';
   bodycamInputNombre.value = '';
   bodycamNombreError.textContent = '';
   miniListaBodycam = [];
@@ -1495,9 +1486,13 @@ function renderMiniListaBodycam() {
   }
   miniListaBodycamWrap.style.display = 'block';
   miniListaBodycamEmpty.style.display = 'none';
+  // Las observaciones son por persona (cada BodyCam se evalúa por
+  // separado), así que cada fila tiene su propio campo — no hay un campo
+  // de observaciones único para todo el lote.
   miniListaBodycamBody.innerHTML = miniListaBodycam.map((item, i) => `
     <tr>
       <td>${escapeHtml(item.nombre)}</td>
+      <td><input type="text" class="obs-bodycam-fila" data-idx="${i}" placeholder="Observaciones (opcional)..." value="${escapeAttr(item.observaciones || '')}"></td>
       <td><span class="quitar" data-idx="${i}">✕</span></td>
     </tr>
   `).join('');
@@ -1510,7 +1505,7 @@ function agregarFilaBodycam() {
     return;
   }
   bodycamNombreError.textContent = '';
-  miniListaBodycam.push({ nombre });
+  miniListaBodycam.push({ nombre, observaciones: '' });
   bodycamInputNombre.value = '';
   bodycamInputNombre.focus();
   renderMiniListaBodycam();
@@ -1527,6 +1522,13 @@ miniListaBodycamBody.addEventListener('click', e => {
   renderMiniListaBodycam();
 });
 
+miniListaBodycamBody.addEventListener('input', e => {
+  const el = e.target.closest('.obs-bodycam-fila');
+  if (!el) return;
+  const idx = Number(el.dataset.idx);
+  if (miniListaBodycam[idx]) miniListaBodycam[idx].observaciones = el.value;
+});
+
 document.getElementById('btnCancelarRegistroBodycam').addEventListener('click', () => {
   miniListaBodycam = [];
   cerrarModalRegistroBodycam();
@@ -1540,7 +1542,6 @@ btnConfirmarRegistroBodycam.addEventListener('click', async () => {
     return;
   }
   const fecha = bodycamFecha.value || hoyISO();
-  const observaciones = bodycamObservaciones.value.trim();
 
   const bodycamEntries = miniListaBodycam.map(item => ({
     nombre: item.nombre,
@@ -1549,7 +1550,9 @@ btnConfirmarRegistroBodycam.addEventListener('click', async () => {
     // campo de texto libre — se manda también su rol para mostrarlo.
     aprobador: registradorActual,
     aprobadorRol: registradorActualRol,
-    observaciones: observaciones,
+    // Cada persona tiene su propia observación (cada BodyCam se evalúa
+    // por separado), no una compartida para todo el lote.
+    observaciones: (item.observaciones || '').trim(),
     registrador: registradorActual,
   }));
 
