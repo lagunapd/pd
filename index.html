@@ -933,8 +933,6 @@ h1 {
   transition: height 0.15s ease;
 }
 .evaluaciones-tabs {
-  position: relative;
-  z-index: 1;
   display: flex;
   gap: 3px;
   margin: 0 0 -1px;
@@ -945,33 +943,27 @@ h1 {
 }
 .evaluaciones-tabs::-webkit-scrollbar { height: 4px; }
 .eval-tab {
-  position: relative;
   flex-shrink: 0;
-  overflow: hidden;
   white-space: nowrap;
   background: rgba(15,17,21,0.75);
   border: 1px solid rgba(255,184,79,0.3);
   border-bottom: none;
-  clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+  border-radius: 6px 6px 0 0;
   color: var(--muted);
   padding: 9px 18px;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
 }
-.eval-tab:hover { color: var(--text); border-color: rgba(255,184,79,0.5); }
 .eval-tab.active {
   position: relative;
   z-index: 2;
-  margin-bottom: -1px;
-  padding-bottom: 10px;
-  border-color: rgba(255,184,79,0.6);
+  border-color: rgba(255,184,79,0.5);
   color: var(--accent2);
-  background: rgba(255,184,79,0.1);
-  box-shadow: 0 -4px 14px rgba(255,184,79,0.12);
+  background: rgba(5,7,10,0.55);
 }
+.eval-tab:hover { color: var(--text); }
 .recruit-card:hover {
   box-shadow:
     inset 0 0 0 1px rgba(77,127,255,0.5),
@@ -1326,7 +1318,7 @@ body.mapa-fullscreen .academia-placeholder {
     <div class="academia-map" id="academiaAttendance">
       <button class="map-back-btn" id="closeAttendanceBtn">← VOLVER</button>
       <div class="evaluaciones-tabs">
-        <button class="eval-tab active" data-lista="asistencias.html">Uniformados</button>
+        <button class="eval-tab active" data-lista="asistencias.html">Asistencias</button>
         <button class="eval-tab" data-lista="tenientes.html">Tenientes</button>
         <button class="eval-tab" data-lista="capitanes.html">Capitanes</button>
         <button class="eval-tab" data-lista="mayores.html">Mayores</button>
@@ -2357,6 +2349,11 @@ window.addEventListener('message', e => {
     avisarFranjaVisible(iframeOrigen);
   }
 });
+
+
+
+
+/* El bloqueo de scroll de fondo al abrir un modal se sacó a pedido. */
 </script>
 
 <div class="siren-glow-left"></div>

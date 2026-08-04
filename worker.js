@@ -830,7 +830,14 @@ async function manejarListaClases(request, env, payload, recurso) {
     }
 
     if (!siguiente) {
-      return json({ error: "Todavía no está armado el siguiente rango." }, 400);
+      // Techo del escalafón (Coronel): "aprobado" no mueve a nadie a
+      // ningún lado porque no hay rango siguiente — se queda en esta
+      // misma lista, pero marcado como aprobado (con el intento sumado
+      // al historial, igual que un reprobado).
+      persona.historialEvaluaciones = historialNuevo;
+      persona.evaluacionAprobada = true;
+      const estado = await guardarLista(env, config.kvKey, recurso, lista);
+      return json({ [recurso]: estado[recurso], ultimaActualizacion: estado.ultimaActualizacion });
     }
 
     lista.splice(idx, 1);

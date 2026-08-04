@@ -30,3 +30,14 @@ const NIVELES_ROL = {
 function rolAlcanza(rolActual, rolRequerido) {
   return (NIVELES_ROL[rolActual] || 0) >= (NIVELES_ROL[rolRequerido] || 99);
 }
+
+// "bodycams" es un rol aparte, fuera de la escalera de arriba a propósito:
+// la división de BodyCams solo puede registrar BodyCams y generar su
+// reporte — nada de clases, edición ni evaluaciones. No se agrega a
+// NIVELES_ROL porque no es un nivel más (no hereda ni es heredado por
+// nadie), es un permiso independiente. Los roles que ya llegan a
+// "instructor" (instructor, evaluador, administrador, líder, sublíder)
+// siguen pudiendo registrar BodyCams también, como siempre.
+function puedeRegistrarBodycams(rol) {
+  return rol === 'bodycams' || rolAlcanza(rol, 'instructor');
+}

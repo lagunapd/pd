@@ -49,15 +49,6 @@
     color: var(--accent2);
     text-align: center;
     margin: 4px 0 2px 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  .title-icon {
-    width: 32px;
-    height: 32px;
   }
   .subtitle {
     text-align: center;
@@ -323,6 +314,37 @@
     clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
   }
   .modal-box-lg { max-width: 560px; }
+  .modal-box-reporte {
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    max-height: 82vh;
+  }
+  .reporte-bodycam-texto {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--text);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    padding: 12px;
+    margin: 6px 0 14px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 120px;
+  }
+  @media (max-width: 640px) {
+    .modal-box-reporte {
+      max-height: 90vh;
+      padding: 16px 14px;
+    }
+    .reporte-bodycam-texto {
+      font-size: 0.72rem;
+      padding: 10px;
+    }
+  }
   .modal-box h2 {
     font-family: 'Bebas Neue', sans-serif;
     letter-spacing: 0.03em;
@@ -490,16 +512,14 @@
 </head>
 <body>
 
-<h1>
-    <img src="2-Teniente.svg" alt="" class="title-icon">
-    Tenientes
-</h1>
+<h1>🎖️ Lista de Tenientes</h1>
 <div class="subtitle">Departamento de Policía de Laguna</div>
 
 <div class="accion-bar">
   <button class="btn btn-refrescar" id="btnRefrescarLista">🔄 Refrescar</button>
   <button class="btn btn-registrar" id="btnAbrirCodigo">🟢 Registrar Clase</button>
   <button class="btn btn-registrar" id="btnAbrirCodigoBodycam">🎥 Registrar BodyCam</button>
+  <button class="btn btn-reporte" id="btnAbrirCodigoReporteBodycam">📄 Reporte de BodyCams</button>
   <button class="btn btn-editar-global" id="btnAbrirEdicionGlobal">✏️ Editar</button>
   <button class="btn btn-reporte hidden" id="btnGenerarReporte">📄 Generar Reporte</button>
   <span id="modoEdicionBadge" class="modo-edicion-badge hidden">
@@ -564,7 +584,7 @@
 </table>
 
 <div class="note">
-  De Teniente para arriba ya no hay clases generales: lo único que se registra es <b>Procedimientos</b>, en dos estados — <b>✅ Asistió</b> o <b>🛡️ Aprobó</b> — sin medios puntos. Al registrar, elegí el rango de cada persona en su fila: así se puede cargar una sola clase con gente mezclada de distintos rangos desde cualquiera de las 5 listas (Asistencias, Tenientes, Capitanes, Mayores, Coroneles) — cada quien queda anotado en su lista correspondiente, no en la que tenías abierta. Pasá el mouse sobre cualquier punto 🛡️ o ❗ para ver quién lo registró, en qué fecha e instructor (o motivo, si es una llamada de atención). El ❗ es una llamada de atención: cada una exige una clase de Procedimientos <b>aprobada</b> extra antes de poder evaluar — apenas se registra una, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos aprobadas</b> (ya descontadas las llamadas sin compensar) <b>y 10 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. Esta clase solo la pueden registrar evaluadores o administradores. Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam". Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos aprobadas y 10 BodyCams aprobadas (y tiene el rango de Teniente asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Capitanes (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
+  De Teniente para arriba ya no hay clases generales: lo único que se registra es <b>Procedimientos</b>, en dos estados — <b>✅ Asistió</b> o <b>🛡️ Aprobó</b> — sin medios puntos. Al registrar, elegí el rango de cada persona en su fila: así se puede cargar una sola clase con gente mezclada de distintos rangos desde cualquiera de las 5 listas (Asistencias, Tenientes, Capitanes, Mayores, Coroneles) — cada quien queda anotado en su lista correspondiente, no en la que tenías abierta. Pasá el mouse sobre cualquier punto 🛡️ o ❗ para ver quién lo registró, en qué fecha e instructor (o motivo, si es una llamada de atención). El ❗ es una llamada de atención: cada una exige una clase de Procedimientos <b>aprobada</b> extra antes de poder evaluar — apenas se registra una, el ❗ se reemplaza solo por el escudo correspondiente. Las llamadas se agregan/quitan desde "✏️ Editar" (modo edición). El requisito para evaluar es <b>3 clases de Procedimientos aprobadas</b> (ya descontadas las llamadas sin compensar) <b>y 10 BodyCams aprobadas</b> — quienes lo cumplen se marcan en verde y suben al principio de la lista. Esta clase solo la pueden registrar evaluadores o administradores. Las BodyCams se registran aparte con el botón "🎥 Registrar BodyCam" — hace falta código de instructor o superior, o de la <b>división de BodyCams</b> (un rol aparte que solo puede registrar BodyCams y nada más, ni clases ni evaluaciones; se asigna desde Códigos de acceso en el panel de administración). El botón "📄 Reporte de BodyCams" te muestra, sin editar nada, cuántas BodyCams aprobadas tiene cada persona y las observaciones de cada una — lo puede abrir cualquiera con ese mismo código. Tocá "✏️ Editar" arriba e ingresá tu código de administrador para activar el modo edición: mientras esté activo, podés tocar el nombre de cualquier persona para editarle sus puntos, sus llamadas de atención, sus BodyCams o su nombre, o la ✕ roja de su fila para eliminarla directamente — sin volver a pedir el código hasta que toques "Salir". Dentro del detalle de cada persona (aunque no estés en modo edición) el botón "📝 Evaluación" te va a pedir tu código de evaluador o administrador, y se habilita recién cuando esa persona llega a 3 clases de Procedimientos aprobadas y 10 BodyCams aprobadas (y tiene el rango de Teniente asignado). Al guardar la evaluación: si <b>reprueba</b>, se queda en esta lista y se le puede volver a evaluar más adelante; si <b>aprueba</b>, pasa a la lista de Capitanes (con ese rango asignado automáticamente) y se elimina de esta lista. El botón "📄 Generar Reporte" descarga un archivo de texto con quiénes ya completaron los requisitos, quiénes no asisten hace más de una semana (con la fecha de su última clase) y el resto ordenado por cantidad de clases.
 </div>
 
 <!-- Modal 1: código de registrador -->
@@ -684,6 +704,22 @@
     <div class="modal-actions">
       <button class="btn btn-secundario" id="btnCancelarRegistroBodycam">Cancelar</button>
       <button class="btn btn-primario" id="btnConfirmarRegistroBodycam">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2c: reporte de BodyCams -->
+<div class="modal-overlay hidden" id="modalReporteBodycam">
+  <div class="modal-box modal-box-reporte">
+    <h2>Reporte de BodyCams</h2>
+    <div class="modal-sub">BodyCams aprobadas por persona, con fecha y observaciones de cada una.</div>
+    <pre class="reporte-bodycam-texto" id="reporteBodycamTexto"></pre>
+    <div class="modal-actions modal-actions-split">
+      <div class="modal-actions-left">
+        <button class="btn btn-secundario" id="btnCopiarReporteBodycam">📋 Copiar</button>
+        <button class="btn btn-secundario" id="btnDescargarReporteBodycam">⬇️ Descargar .txt</button>
+      </div>
+      <button class="btn btn-primario" id="btnCerrarReporteBodycam">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1079,7 +1115,7 @@ const codigoError = document.getElementById('codigoError');
 
 let registradorActual = null;
 let registradorActualRol = null;
-let flujoPendienteCodigo = 'clase'; // 'clase' | 'bodycam' — qué modal abrir después de validar el código
+let flujoPendienteCodigo = 'clase'; // 'clase' | 'bodycam' | 'reporte-bodycam' — qué hacer después de validar el código
 
 function abrirModalCodigo(flujo) {
   flujoPendienteCodigo = flujo || 'clase';
@@ -1113,6 +1149,13 @@ document.getElementById('btnAbrirCodigoBodycam').addEventListener('click', () =>
     abrirModalCodigo('bodycam');
   }
 });
+document.getElementById('btnAbrirCodigoReporteBodycam').addEventListener('click', () => {
+  if (modoEdicionActivo) {
+    abrirModalReporteBodycam();
+  } else {
+    abrirModalCodigo('reporte-bodycam');
+  }
+});
 document.getElementById('btnCancelarCodigo').addEventListener('click', cerrarModalCodigo);
 
 async function validarCodigo() {
@@ -1125,19 +1168,32 @@ async function validarCodigo() {
     codigoError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
-  if (!rolAlcanza(usuario.rol, 'instructor')) {
-    codigoError.textContent = 'Ese código no tiene permisos para registrar clases.';
-    return;
-  }
-  if (flujoPendienteCodigo === 'clase' && !rolAlcanza(usuario.rol, 'evaluador')) {
-    codigoError.textContent = 'Solo evaluadores o administradores pueden registrar clases de Procedimientos.';
-    return;
+  // La división de BodyCams (rol "bodycams") solo puede registrar BodyCams
+  // y ver su reporte — nada de clases de Procedimientos. Todo lo demás
+  // sigue exigiendo por lo menos "instructor" (y, para Procedimientos,
+  // "evaluador").
+  if (flujoPendienteCodigo === 'bodycam' || flujoPendienteCodigo === 'reporte-bodycam') {
+    if (!puedeRegistrarBodycams(usuario.rol)) {
+      codigoError.textContent = 'Ese código no tiene permisos para BodyCams.';
+      return;
+    }
+  } else {
+    if (!rolAlcanza(usuario.rol, 'instructor')) {
+      codigoError.textContent = 'Ese código no tiene permisos para registrar clases.';
+      return;
+    }
+    if (flujoPendienteCodigo === 'clase' && !rolAlcanza(usuario.rol, 'evaluador')) {
+      codigoError.textContent = 'Solo evaluadores o administradores pueden registrar clases de Procedimientos.';
+      return;
+    }
   }
   registradorActual = usuario.nombre;
   registradorActualRol = usuario.rol;
   cerrarModalCodigo();
   if (flujoPendienteCodigo === 'bodycam') {
     abrirModalRegistroBodycam();
+  } else if (flujoPendienteCodigo === 'reporte-bodycam') {
+    abrirModalReporteBodycam();
   } else {
     abrirModalRegistro();
   }
@@ -1520,6 +1576,62 @@ btnConfirmarRegistroBodycam.addEventListener('click', async () => {
   }
 });
 
+// -------------------- modal 2c: reporte de BodyCams --------------------
+const modalReporteBodycam = document.getElementById('modalReporteBodycam');
+const reporteBodycamTexto = document.getElementById('reporteBodycamTexto');
+const btnCopiarReporteBodycam = document.getElementById('btnCopiarReporteBodycam');
+
+// Formato pedido:
+// Rango - Nombre: (número de bodycams aprobadas)
+// #1(fecha): observación
+// #2(fecha): observación
+function textoReporteBodycams() {
+  const personas = tenientes
+    .filter(p => bodycamsDe(p).length > 0)
+    .slice()
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  if (personas.length === 0) return '(Todavía nadie tiene BodyCams aprobadas.)';
+  return personas.map(p => {
+    const cams = bodycamsDe(p);
+    const encabezado = `${p.rango} - ${p.nombre}: (${cams.length})`;
+    const lineas = cams.map((b, i) => `#${i + 1}(${b.fecha || '—'}): ${b.observaciones ? b.observaciones : '(sin observaciones)'}`);
+    return [encabezado, ...lineas].join('\n');
+  }).join('\n\n');
+}
+
+function abrirModalReporteBodycam() {
+  reporteBodycamTexto.textContent = textoReporteBodycams();
+  modalReporteBodycam.classList.remove('hidden');
+}
+function cerrarModalReporteBodycam() {
+  modalReporteBodycam.classList.add('hidden');
+}
+document.getElementById('btnCerrarReporteBodycam').addEventListener('click', cerrarModalReporteBodycam);
+modalReporteBodycam.addEventListener('click', e => { if (e.target === modalReporteBodycam) cerrarModalReporteBodycam(); });
+
+btnCopiarReporteBodycam.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(reporteBodycamTexto.textContent);
+    const textoOriginal = btnCopiarReporteBodycam.textContent;
+    btnCopiarReporteBodycam.textContent = '✅ Copiado';
+    setTimeout(() => { btnCopiarReporteBodycam.textContent = textoOriginal; }, 1500);
+  } catch (e) {
+    /* portapapeles no disponible (ej. sin HTTPS): no rompemos nada */
+  }
+});
+
+document.getElementById('btnDescargarReporteBodycam').addEventListener('click', () => {
+  const blob = new Blob([reporteBodycamTexto.textContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'reporte-bodycams-tenientes.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
 // -------------------- modal 3: código de edición --------------------
 const modalCodigoEditar = document.getElementById('modalCodigoEditar');
 const inputCodigoEditar = document.getElementById('inputCodigoEditar');
@@ -1888,7 +2000,11 @@ function opcionesInstructor(seleccionado, restringir) {
     + `<optgroup label="Evaluadores">${NOMBRES_EVALUADORES.map(opcion).join('')}</optgroup>`;
 }
 
-function actualizarBotonEvaluacion() {
+// Calcula si la persona que se está editando cumple los requisitos para
+// evaluar. Se usa tanto para el título/aviso de los botones como para el
+// chequeo real en validarCodigoEvaluar() — ahí es donde un administrador
+// puede saltarse el requisito, cosa que un botón deshabilitado no permite.
+function estadoRequisitosEvaluacion() {
   const personaReal = tenientes.find(p => p.nombre.toLowerCase() === (personaEditando || '').toLowerCase());
   const cantLlamadas = personaReal ? llamadasDe(personaReal).length : 0;
   const procActuales = procedimientosDe({ registros: clasesLocal });
@@ -1912,12 +2028,19 @@ function actualizarBotonEvaluacion() {
       tituloBoton = `Le falta${faltantes.length > 1 ? 'n' : ''} ${faltantes.join(' y ')} para poder evaluar${avisoLlamadas}.`;
     }
   }
+  return { cumple, tituloBoton, esRangoTenientes };
+}
+
+function actualizarBotonEvaluacion() {
+  const { cumple, tituloBoton } = estadoRequisitosEvaluacion();
+  // Ya no deshabilitamos los botones por no cumplir los requisitos: un
+  // administrador puede evaluar igual. El título sigue avisando qué falta.
   if (btnAbrirEvaluacion) {
-    btnAbrirEvaluacion.disabled = !cumple;
-    btnAbrirEvaluacion.title = tituloBoton;
+    btnAbrirEvaluacion.disabled = false;
+    btnAbrirEvaluacion.title = cumple ? '' : `${tituloBoton} Como administrador, podés evaluar igual.`;
   }
   if (btnEvaluarVista) {
-    btnEvaluarVista.disabled = !cumple;
+    btnEvaluarVista.disabled = false;
     btnEvaluarVista.title = tituloBoton;
   }
 }
@@ -2198,6 +2321,15 @@ async function validarCodigoEvaluar() {
     codigoEvaluarError.textContent = 'Ese código no tiene permisos para evaluar.';
     return;
   }
+  // Un evaluador (no administrador) todavía necesita que la persona cumpla
+  // los requisitos. Un administrador puede evaluar aunque no los cumpla.
+  if (usuario.rol !== 'administrador') {
+    const { cumple, tituloBoton } = estadoRequisitosEvaluacion();
+    if (!cumple) {
+      codigoEvaluarError.textContent = tituloBoton || 'Todavía no cumple los requisitos para evaluar.';
+      return;
+    }
+  }
   evaluadorIdentificado = usuario.nombre;
   evaluadorIdentificadoRol = usuario.rol;
   cerrarModalCodigoEvaluar();
@@ -2366,7 +2498,7 @@ document.addEventListener('mouseout', e => {
 });
 
 // -------------------- avisarle al padre (iframe) la altura real --------------------
-const modalesTodos = [modalCodigo, modalRegistro, modalRegistroBodycam, modalCodigoEditar, modalEditar, modalReporte, modalCodigoEvaluar, modalEvaluacion];
+const modalesTodos = [modalCodigo, modalRegistro, modalRegistroBodycam, modalReporteBodycam, modalCodigoEditar, modalEditar, modalReporte, modalCodigoEvaluar, modalEvaluacion];
 
 function avisarAltura() {
   if (window.parent === window) return;
