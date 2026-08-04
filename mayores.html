@@ -42,13 +42,22 @@
     z-index: -1;
     pointer-events: none;
   }
-  h1 {
+   h1 {
     font-family: 'Bebas Neue', -apple-system, sans-serif;
     font-size: 1.8rem;
     letter-spacing: 0.04em;
     color: var(--accent2);
     text-align: center;
     margin: 4px 0 2px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .title-icon {
+    width: 32px;
+    height: 32px;
   }
   .subtitle {
     text-align: center;
@@ -512,7 +521,10 @@
 </head>
 <body>
 
-<h1>🎖️ Lista de Mayores</h1>
+<h1>
+    <img src="4-Mayor.svg" alt="" class="title-icon">
+    Mayores
+</h1>
 <div class="subtitle">Departamento de Policía de Laguna</div>
 
 <div class="accion-bar">

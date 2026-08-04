@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lista de Asistencias — Academia WSPD</title>
+<title>Lista de Uniformados — Academia WSPD</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -42,13 +42,22 @@
     z-index: -1;
     pointer-events: none;
   }
-  h1 {
+    h1 {
     font-family: 'Bebas Neue', -apple-system, sans-serif;
     font-size: 1.8rem;
     letter-spacing: 0.04em;
     color: var(--accent2);
     text-align: center;
     margin: 4px 0 2px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .title-icon {
+    width: 32px;
+    height: 32px;
   }
   .subtitle {
     text-align: center;
@@ -481,7 +490,10 @@
 </head>
 <body>
 
-<h1>📋 Lista de Asistencias</h1>
+<h1>
+    <img src="1-Uniformado.svg" alt="" class="title-icon">
+    Reclutas - Sargento Mayor
+</h1>
 <div class="subtitle">Academia de Policía — Departamento de Policía de Laguna</div>
 
 <div class="accion-bar">

@@ -951,8 +951,8 @@ h1 {
   border-radius: 6px 6px 0 0;
   color: var(--muted);
   padding: 9px 18px;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.90rem;
+  font-weight: 750;
   letter-spacing: 0.03em;
   cursor: pointer;
 }
@@ -1180,6 +1180,9 @@ body.mapa-fullscreen .academia-placeholder {
   .map-marker-label { font-size: 0.8rem; padding: 4px 10px; }
   .map-marker-wrap { width: 42px; height: 42px; margin: -21px 0 0 -21px; }
 }
+.title-icon {
+  height: 14px;
+}
 </style>
 </head>
 <body>
@@ -1318,11 +1321,11 @@ body.mapa-fullscreen .academia-placeholder {
     <div class="academia-map" id="academiaAttendance">
       <button class="map-back-btn" id="closeAttendanceBtn">← VOLVER</button>
       <div class="evaluaciones-tabs">
-        <button class="eval-tab active" data-lista="asistencias.html">Asistencias</button>
-        <button class="eval-tab" data-lista="tenientes.html">Tenientes</button>
-        <button class="eval-tab" data-lista="capitanes.html">Capitanes</button>
-        <button class="eval-tab" data-lista="mayores.html">Mayores</button>
-        <button class="eval-tab" data-lista="coroneles.html">Coroneles</button>
+        <button class="eval-tab active" data-lista="asistencias.html"><img src="1-Uniformado.svg" alt="" class="title-icon"> Uniformados</button>
+        <button class="eval-tab" data-lista="tenientes.html"><img src="2-Teniente.svg" alt="" class="title-icon"> Tenientes</button>
+        <button class="eval-tab" data-lista="capitanes.html"><img src="3-Capitan.svg" alt="" class="title-icon"> Capitanes</button>
+        <button class="eval-tab" data-lista="mayores.html"><img src="4-Mayor.svg" alt="" class="title-icon"> Mayores</button>
+        <button class="eval-tab" data-lista="coroneles.html"><img src="5-Coronel.svg" alt="" class="title-icon"> Coroneles</button>
       </div>
       <div class="map-frame attendance-frame">
         <iframe src="asistencias.html" class="attendance-iframe"></iframe>
