@@ -31,6 +31,10 @@
 //   POST / { recurso:"noticias", accion:"eliminar", codigoAdmin, id }                       -> borra (solo admin/líder/sublíder)
 //   POST / { recurso:"noticias", accion:"like", id, nombre }                                -> da/quita 👍 (cualquiera)
 //   POST / { recurso:"noticias", accion:"comentar", id, nombre, texto }                     -> comenta (cualquiera)
+// Si está configurado el secret DISCORD_WEBHOOK_URL (Settings → Variables
+// del Worker, nunca en el código), "publicar" y "comentar" además avisan a
+// ese canal de Discord con un embed. Si no está configurado, simplemente
+// no manda nada — no rompe el guardado normal.
 //
 // Recursos disponibles: "asistencias", "tenientes", "capitanes", "mayores", "coroneles".
 // Mayores es el techo por ahora (no tiene rango siguiente configurado), así
@@ -548,6 +552,37 @@ async function guardarNoticias(env, noticias) {
   return estado;
 }
 
+// Aviso a Discord (opcional): si está configurado el secret
+// DISCORD_WEBHOOK_URL en el Worker (Settings → Variables → Add secret,
+// NUNCA escrito acá en el código), se manda un embed cada vez que se
+// publica una noticia o se comenta una. Si no está configurado, o si
+// Discord falla por lo que sea, no rompe nada — la noticia/comentario ya
+// se guardó en el KV de todos modos.
+async function notificarDiscord(env, embed) {
+  if (!env.DISCORD_WEBHOOK_URL) return;
+  try {
+    await fetch(env.DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ embeds: [embed] }),
+    });
+  } catch (e) {
+    // No propagamos el error: un webhook caído no puede tumbar la publicación real.
+  }
+}
+
+const COLOR_POR_DIVISION = {
+  "Academia Policial": 0xd4922a,
+  "División O.P.E.": 0x4ade80,
+  "División SWAT": 0x3b82f6,
+  "Centro de Mando": 0xffb84d,
+  "División de Reclutamiento": 0xff6b6b,
+};
+
+function recortar(texto, max) {
+  return texto.length > max ? texto.slice(0, max - 1) + "…" : texto;
+}
+
 async function manejarNoticias(request, env, payload) {
   if (request.method === "GET") {
     const { noticias, ultimaActualizacion } = await cargarNoticias(env);
@@ -584,6 +619,14 @@ async function manejarNoticias(request, env, payload) {
     );
     const actualizado = [nueva, ...noticias];
     const estado = await guardarNoticias(env, actualizado);
+    await notificarDiscord(env, {
+      title: `📢 Nueva noticia — ${nueva.division}`,
+      description: recortar(nueva.texto, 1500),
+      color: COLOR_POR_DIVISION[nueva.division] || 0xd4922a,
+      image: nueva.imagen ? { url: nueva.imagen } : undefined,
+      footer: { text: `Publicado por ${nueva.autor}` },
+      timestamp: nueva.fecha,
+    });
     return json({ ok: true, noticias: estado.noticias, ultimaActualizacion: estado.ultimaActualizacion });
   }
 
@@ -618,12 +661,22 @@ async function manejarNoticias(request, env, payload) {
     const nombre = String(payload.nombre || "").trim().slice(0, 60);
     const texto = String(payload.texto || "").trim();
     if (!nombre || !texto) return json({ error: "Falta el nombre o el comentario." }, 400);
+    const noticiaOriginal = noticias.find((n) => n.id === id);
     const actualizado = noticias.map((n) => {
       if (n.id !== id) return n;
       const comentario = limpiarComentarioNoticia({ autor: nombre, texto }, n.comentarios.length);
       return { ...n, comentarios: [...n.comentarios, comentario] };
     });
     const estado = await guardarNoticias(env, actualizado);
+    if (noticiaOriginal) {
+      await notificarDiscord(env, {
+        title: `💬 Nuevo comentario — ${noticiaOriginal.division}`,
+        description: `**${nombre}:** ${recortar(texto, 1000)}`,
+        color: COLOR_POR_DIVISION[noticiaOriginal.division] || 0xd4922a,
+        footer: { text: `En la noticia: ${recortar(noticiaOriginal.texto, 80)}` },
+        timestamp: new Date().toISOString(),
+      });
+    }
     return json({ ok: true, noticias: estado.noticias, ultimaActualizacion: estado.ultimaActualizacion });
   }
 
