@@ -1709,7 +1709,11 @@ function opcionesInstructor(seleccionado, restringir) {
     + `<optgroup label="Evaluadores">${NOMBRES_EVALUADORES.map(opcion).join('')}</optgroup>`;
 }
 
-function actualizarBotonEvaluacion() {
+// Calcula si la persona que se está editando cumple los requisitos para
+// evaluar. Se usa tanto para el título/aviso de los botones como para el
+// chequeo real en validarCodigoEvaluar() — ahí es donde un administrador
+// puede saltarse el requisito, cosa que un botón deshabilitado no permite.
+function estadoRequisitosEvaluacion() {
   const personaReal = asistencias.find(a => a.nombre.toLowerCase() === (personaEditando || '').toLowerCase());
   const cantLlamadas = personaReal ? llamadasDe(personaReal).length : 0;
   const puntosActuales = puntos({ registros: clasesLocal });
@@ -1727,12 +1731,19 @@ function actualizarBotonEvaluacion() {
       tituloBoton = 'Le falta la clase de Procedimientos para poder evaluar.';
     }
   }
+  return { cumple, tituloBoton };
+}
+
+function actualizarBotonEvaluacion() {
+  const { cumple, tituloBoton } = estadoRequisitosEvaluacion();
+  // Ya no deshabilitamos los botones por no cumplir los requisitos: un
+  // administrador puede evaluar igual. El título sigue avisando qué falta.
   if (btnAbrirEvaluacion) {
-    btnAbrirEvaluacion.disabled = !cumple;
-    btnAbrirEvaluacion.title = tituloBoton;
+    btnAbrirEvaluacion.disabled = false;
+    btnAbrirEvaluacion.title = cumple ? '' : `${tituloBoton} Como administrador, podés evaluar igual.`;
   }
   if (btnEvaluarVista) {
-    btnEvaluarVista.disabled = !cumple;
+    btnEvaluarVista.disabled = false;
     btnEvaluarVista.title = tituloBoton;
   }
 }
@@ -1994,6 +2005,15 @@ async function validarCodigoEvaluar() {
   if (!rolAlcanza(usuario.rol, 'evaluador')) {
     codigoEvaluarError.textContent = 'Ese código no tiene permisos para evaluar.';
     return;
+  }
+  // Un evaluador (no administrador) todavía necesita que la persona cumpla
+  // los requisitos. Un administrador puede evaluar aunque no los cumpla.
+  if (usuario.rol !== 'administrador') {
+    const { cumple, tituloBoton } = estadoRequisitosEvaluacion();
+    if (!cumple) {
+      codigoEvaluarError.textContent = tituloBoton || 'Todavía no cumple los requisitos para evaluar.';
+      return;
+    }
   }
   evaluadorIdentificado = usuario.nombre;
   evaluadorIdentificadoRol = usuario.rol;
