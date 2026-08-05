@@ -202,6 +202,21 @@
     font-weight: 700;
     letter-spacing: 0.02em;
   }
+  .marca-llamada {
+    display: inline-block;
+    margin-left: 6px;
+    color: var(--red);
+    font-weight: 900;
+    font-size: 1.15rem;
+    line-height: 1;
+    vertical-align: middle;
+  }
+  .nombre-cell.tiene-llamada {
+    color: var(--red);
+  }
+  .nombre-cell.tiene-llamada:hover {
+    color: var(--red);
+  }
   .badge-aprobado {
     display: inline-block;
     margin-left: 6px;
@@ -1117,7 +1132,7 @@ function render() {
     return `
     <tr class="${top ? 'destacada' : ''}">
       <td class="rank">${i + 1}</td>
-      <td class="nombre-cell" data-nombre="${escapeAttr(a.nombre)}">${escapeHtml(a.nombre)}${top ? '<span class="badge-lista">✔ LISTO PARA EVALUAR</span>' : ''}${a.evaluacionAprobada ? '<span class="badge-aprobado">🌟 EVALUACIÓN APROBADA</span>' : ''}</td>
+      <td class="nombre-cell${llamadasDe(a).length > 0 ? ' tiene-llamada' : ''}" data-nombre="${escapeAttr(a.nombre)}">${escapeHtml(a.nombre)}${llamadasDe(a).length > 0 ? '<span class="marca-llamada" title="Tiene llamada(s) de atención registrada(s) — se quita al ascender">!</span>' : ''}${top ? '<span class="badge-lista">✔ LISTO PARA EVALUAR</span>' : ''}${a.evaluacionAprobada ? '<span class="badge-aprobado">🌟 EVALUACIÓN APROBADA</span>' : ''}</td>
       <td class="num col-verde">
         <span class="dots-desktop">${dotsFor(a, 'verde', '🛡️')}</span>
         <span class="count-mobile count-procedimientos">${verdesDe(a)}</span>
