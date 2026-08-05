@@ -452,6 +452,197 @@ h1 {
 .instructor-btn-primario:hover { filter: brightness(1.08); }
 .instructor-btn-secundario:hover { border-color: var(--accent2); color: var(--accent2); }
 
+/* ---- Noticias (feed) ---- */
+.noticias-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.noticias-publicar-btn {
+  flex: none;
+  padding: 8px 14px;
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  border: 1px solid var(--accent2);
+  background: transparent;
+  color: var(--accent2);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.noticias-publicar-btn:hover { background: var(--accent2); color: #0f1115; }
+.noticias-composer {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.noticias-composer.hidden { display: none; }
+.noticias-composer select,
+.noticias-composer textarea,
+.noticias-composer input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+}
+.noticias-composer select:focus,
+.noticias-composer textarea:focus,
+.noticias-composer input[type="text"]:focus { outline: none; border-color: var(--accent); }
+.noticias-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.noticias-composer-error {
+  flex: 1;
+  color: var(--danger);
+  font-size: 0.75rem;
+}
+.noticias-btn-primario,
+.noticias-btn-secundario {
+  padding: 7px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: #22252e;
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.noticias-btn-primario {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #0f1115;
+  font-weight: 700;
+}
+.noticias-btn-primario:hover { filter: brightness(1.08); }
+.noticias-btn-secundario:hover { border-color: var(--accent2); color: var(--accent2); }
+.noticias-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.noticia-card {
+  position: relative;
+  background: rgba(26, 29, 36, 0.65);
+  backdrop-filter: blur(3px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.noticia-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.noticia-division {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(212, 146, 42, 0.18);
+  color: var(--accent2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.noticia-borrar-btn {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+}
+.noticia-borrar-btn:hover { color: var(--danger); }
+.noticia-autor {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.noticia-texto {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+.noticia-imagen {
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: block;
+}
+.noticia-acciones {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.noticia-like-btn,
+.noticia-comentar-toggle {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 4px 2px;
+}
+.noticia-like-btn.liked { color: var(--accent2); font-weight: 700; }
+.noticia-like-btn:hover,
+.noticia-comentar-toggle:hover { color: var(--text); }
+.noticia-comentarios { margin-top: 10px; display: none; }
+.noticia-comentarios.open { display: block; }
+.noticia-comentario {
+  font-size: 0.78rem;
+  color: var(--text);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.noticia-comentario b { color: var(--accent2); }
+.noticia-comentario-form {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.noticia-comentario-form input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.78rem;
+}
+.noticia-comentario-form input:focus { outline: none; border-color: var(--accent); }
+.noticia-comentario-form button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--accent2);
+  background: transparent;
+  color: var(--accent2);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.noticia-comentario-form button:hover { background: var(--accent2); color: #0f1115; }
+
 @media (max-width: 700px) {
   .pd-banner { gap: 12px; }
   .pd-banner-left img { height: 70px; width: 70px; }
@@ -1204,6 +1395,7 @@ body.mapa-fullscreen .academia-placeholder {
   <div class="nav-btn active" data-section="reglas">Reglas</div>
   <div class="nav-btn" data-section="macros">Macros</div>
   <div class="nav-btn" data-section="academia">Academia</div>
+  <div class="nav-btn" data-section="noticias">Noticias</div>
   <div class="nav-btn" data-section="horario">Conversor de horario</div>
 </nav>
 
@@ -1237,6 +1429,42 @@ body.mapa-fullscreen .academia-placeholder {
     <div class="instructor-modal-actions">
       <button class="instructor-btn instructor-btn-secundario" id="btnCancelarInstructorCodigo">Cancelar</button>
       <button class="instructor-btn instructor-btn-primario" id="btnConfirmarInstructorCodigo">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SECCIÓN: NOTICIAS ===================== -->
+<section id="section-noticias" class="app-section">
+  <div class="noticias-header">
+    <div class="tabs" id="noticiasTabs"></div>
+    <button class="noticias-publicar-btn" id="btnAbrirNoticiasComposer">📢 Publicar noticia</button>
+  </div>
+  <div class="noticias-composer hidden" id="noticiasComposer">
+    <div class="noticias-composer-row">
+      <select id="noticiaDivisionInput"></select>
+    </div>
+    <textarea id="noticiaTextoInput" placeholder="Escribí la noticia..." maxlength="2000" rows="3"></textarea>
+    <input type="text" id="noticiaImagenInput" placeholder="URL de imagen (opcional)">
+    <div class="noticias-composer-actions">
+      <span class="noticias-composer-error" id="noticiaComposerError"></span>
+      <button class="noticias-btn-secundario" id="btnCancelarNoticia">Cancelar</button>
+      <button class="noticias-btn-primario" id="btnPublicarNoticia">Publicar</button>
+    </div>
+  </div>
+  <div id="noticiasFeed" class="noticias-feed">
+    <div class="empty-msg">Cargando noticias...</div>
+  </div>
+</section>
+
+<div class="instructor-modal-overlay hidden" id="noticiasLoginOverlay">
+  <div class="instructor-modal-box">
+    <div class="instructor-modal-title">🔒 Código de Administrador</div>
+    <div class="instructor-modal-sub">Solo administrador, líder o sublíder pueden publicar noticias.</div>
+    <input type="password" id="noticiasLoginCodeInput" placeholder="Código" inputmode="numeric" maxlength="12">
+    <div class="instructor-modal-error" id="noticiasLoginError"></div>
+    <div class="instructor-modal-actions">
+      <button class="instructor-btn instructor-btn-secundario" id="btnCancelarNoticiasLogin">Cancelar</button>
+      <button class="instructor-btn instructor-btn-primario" id="btnConfirmarNoticiasLogin">Confirmar</button>
     </div>
   </div>
 </div>
@@ -1990,6 +2218,256 @@ async function cargarHorariosAcademia() {
 }
 cargarHorariosAcademia();
 
+/* ============================================================
+   NOTICIAS (feed): publicar solo admin/líder/sublíder (mismo código de
+   la sección Macros de Instrucción, validado en el Worker). Dar 👍 y
+   comentar es libre, solo pide un nombre (se guarda en este navegador
+   para no repreguntarlo cada vez).
+   ============================================================ */
+const noticiasFeed = document.getElementById('noticiasFeed');
+const noticiasTabs = document.getElementById('noticiasTabs');
+const btnAbrirNoticiasComposer = document.getElementById('btnAbrirNoticiasComposer');
+const noticiasComposer = document.getElementById('noticiasComposer');
+const noticiaDivisionInput = document.getElementById('noticiaDivisionInput');
+const noticiaTextoInput = document.getElementById('noticiaTextoInput');
+const noticiaImagenInput = document.getElementById('noticiaImagenInput');
+const noticiaComposerError = document.getElementById('noticiaComposerError');
+const btnCancelarNoticia = document.getElementById('btnCancelarNoticia');
+const btnPublicarNoticia = document.getElementById('btnPublicarNoticia');
+const noticiasLoginOverlay = document.getElementById('noticiasLoginOverlay');
+const noticiasLoginCodeInput = document.getElementById('noticiasLoginCodeInput');
+const noticiasLoginError = document.getElementById('noticiasLoginError');
+const btnCancelarNoticiasLogin = document.getElementById('btnCancelarNoticiasLogin');
+const btnConfirmarNoticiasLogin = document.getElementById('btnConfirmarNoticiasLogin');
+
+let noticiasLista = [];
+let noticiasDivisiones = [];
+let noticiasFiltro = 'Todas';
+let noticiasCodigoAdmin = null; // se guarda en memoria (no persiste al recargar)
+let noticiasNombreAdmin = null;
+
+function noticiasNombreVisitante() {
+  return (localStorage.getItem('noticiasNombreVisitante') || '').trim();
+}
+function pedirNombreVisitante() {
+  let nombre = noticiasNombreVisitante();
+  if (nombre) return nombre;
+  nombre = (prompt('¿Con qué nombre querés participar? (se guarda en este navegador)') || '').trim();
+  if (nombre) localStorage.setItem('noticiasNombreVisitante', nombre);
+  return nombre;
+}
+
+function fmtFechaNoticia(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }) +
+      ' · ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+  } catch (e) { return ''; }
+}
+
+async function postNoticiaAccion(body) {
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recurso: 'noticias', ...body }),
+  });
+  let data = null;
+  try { data = await resp.json(); } catch (e) { /* no era JSON */ }
+  if (!resp.ok) throw new Error((data && data.error) || 'No se pudo completar la acción.');
+  return data;
+}
+
+function renderNoticiasTabs() {
+  const cats = ['Todas', ...noticiasDivisiones];
+  noticiasTabs.innerHTML = cats.map(c =>
+    `<div class="tab${c === noticiasFiltro ? ' active' : ''}" data-division="${escapeAttr(c)}">${escapeAttr(c)}</div>`
+  ).join('');
+  noticiasTabs.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      noticiasFiltro = t.dataset.division;
+      renderNoticiasTabs();
+      renderNoticiasFeed();
+    });
+  });
+}
+
+function renderNoticiaCard(n) {
+  const yaLeDioLike = n.likes.includes(noticiasNombreVisitante());
+  const imagenHtml = n.imagen ? `<img class="noticia-imagen" src="${escapeAttr(n.imagen)}" alt="" loading="lazy">` : '';
+  const borrarBtnHtml = noticiasCodigoAdmin
+    ? `<button class="noticia-borrar-btn" data-borrar="${escapeAttr(n.id)}" title="Borrar noticia">🗑️</button>`
+    : '';
+  const comentariosHtml = n.comentarios.map(c =>
+    `<div class="noticia-comentario"><b>${escapeAttr(c.autor)}:</b> ${escapeAttr(c.texto)}</div>`
+  ).join('') || '<div class="noticia-comentario" style="color:var(--muted); border:none;">Sé el primero en comentar.</div>';
+
+  return `<div class="noticia-card" data-id="${escapeAttr(n.id)}">
+    <div class="noticia-card-top">
+      <span class="noticia-division">${escapeAttr(n.division)}</span>
+      ${borrarBtnHtml}
+    </div>
+    <div class="noticia-autor">${escapeAttr(n.autor)} · ${fmtFechaNoticia(n.fecha)}</div>
+    <div class="noticia-texto">${escapeAttr(n.texto)}</div>
+    ${imagenHtml}
+    <div class="noticia-acciones">
+      <button class="noticia-like-btn${yaLeDioLike ? ' liked' : ''}" data-like="${escapeAttr(n.id)}">👍 ${n.likes.length}</button>
+      <button class="noticia-comentar-toggle" data-toggle="${escapeAttr(n.id)}">💬 ${n.comentarios.length} comentario${n.comentarios.length !== 1 ? 's' : ''}</button>
+    </div>
+    <div class="noticia-comentarios" id="comentarios-${escapeAttr(n.id)}">
+      ${comentariosHtml}
+      <div class="noticia-comentario-form">
+        <input type="text" maxlength="500" placeholder="Escribí un comentario..." data-comentar-input="${escapeAttr(n.id)}">
+        <button data-comentar-btn="${escapeAttr(n.id)}">Enviar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderNoticiasFeed() {
+  const lista = noticiasFiltro === 'Todas' ? noticiasLista : noticiasLista.filter(n => n.division === noticiasFiltro);
+  if (!lista.length) {
+    noticiasFeed.innerHTML = '<div class="empty-msg">No hay noticias para mostrar.</div>';
+    return;
+  }
+  noticiasFeed.innerHTML = lista.map(renderNoticiaCard).join('');
+}
+
+async function cargarNoticias() {
+  try {
+    const resp = await fetch(API_URL + (API_URL.includes('?') ? '&' : '?') + 'recurso=noticias', { method: 'GET' });
+    if (!resp.ok) throw new Error('No se pudo cargar');
+    const data = await resp.json();
+    noticiasLista = Array.isArray(data.noticias) ? data.noticias : [];
+    noticiasDivisiones = Array.isArray(data.divisiones) ? data.divisiones : [];
+    if (noticiaDivisionInput && !noticiaDivisionInput.children.length) {
+      noticiaDivisionInput.innerHTML = noticiasDivisiones.map(d => `<option value="${escapeAttr(d)}">${escapeAttr(d)}</option>`).join('');
+    }
+    renderNoticiasTabs();
+    renderNoticiasFeed();
+  } catch (e) {
+    noticiasFeed.innerHTML = '<div class="empty-msg">No se pudieron cargar las noticias. Recargá la página.</div>';
+  }
+}
+cargarNoticias();
+
+// ---- Publicar (pide código de administrador/líder/sublíder) ----
+btnAbrirNoticiasComposer.addEventListener('click', () => {
+  if (noticiasCodigoAdmin) {
+    noticiasComposer.classList.remove('hidden');
+    return;
+  }
+  noticiasLoginError.textContent = '';
+  noticiasLoginCodeInput.value = '';
+  noticiasLoginOverlay.classList.remove('hidden');
+  noticiasLoginCodeInput.focus();
+});
+btnCancelarNoticiasLogin.addEventListener('click', () => noticiasLoginOverlay.classList.add('hidden'));
+btnConfirmarNoticiasLogin.addEventListener('click', async () => {
+  const codigo = noticiasLoginCodeInput.value.trim();
+  if (!codigo) return;
+  try {
+    const { nombre, rol } = await validarCodigoEnServidor(codigo);
+    if (!rolAlcanza(rol, 'administrador')) {
+      noticiasLoginError.textContent = 'Ese código no tiene permisos para publicar noticias.';
+      return;
+    }
+    noticiasCodigoAdmin = codigo;
+    noticiasNombreAdmin = nombre;
+    noticiasLoginOverlay.classList.add('hidden');
+    noticiasComposer.classList.remove('hidden');
+    renderNoticiasFeed(); // para que aparezcan los botones de borrar
+  } catch (e) {
+    noticiasLoginError.textContent = e.message || 'Código incorrecto.';
+  }
+});
+noticiasLoginCodeInput.addEventListener('keydown', e => { if (e.key === 'Enter') btnConfirmarNoticiasLogin.click(); });
+
+btnCancelarNoticia.addEventListener('click', () => {
+  noticiasComposer.classList.add('hidden');
+  noticiaTextoInput.value = '';
+  noticiaImagenInput.value = '';
+  noticiaComposerError.textContent = '';
+});
+btnPublicarNoticia.addEventListener('click', async () => {
+  const division = noticiaDivisionInput.value;
+  const texto = noticiaTextoInput.value.trim();
+  const imagen = noticiaImagenInput.value.trim();
+  if (!texto) {
+    noticiaComposerError.textContent = 'Escribí el texto de la noticia.';
+    return;
+  }
+  noticiaComposerError.textContent = '';
+  try {
+    const data = await postNoticiaAccion({ accion: 'publicar', codigoAdmin: noticiasCodigoAdmin, division, texto, imagen });
+    noticiasLista = data.noticias;
+    noticiaTextoInput.value = '';
+    noticiaImagenInput.value = '';
+    noticiasComposer.classList.add('hidden');
+    renderNoticiasFeed();
+  } catch (e) {
+    noticiaComposerError.textContent = e.message || 'No se pudo publicar.';
+  }
+});
+
+// ---- Borrar / 👍 / comentar (delegado en el feed) ----
+noticiasFeed.addEventListener('click', async e => {
+  const borrarBtn = e.target.closest('[data-borrar]');
+  if (borrarBtn) {
+    if (!confirm('¿Borrar esta noticia?')) return;
+    try {
+      const data = await postNoticiaAccion({ accion: 'eliminar', codigoAdmin: noticiasCodigoAdmin, id: borrarBtn.dataset.borrar });
+      noticiasLista = data.noticias;
+      renderNoticiasFeed();
+    } catch (e2) { alert(e2.message || 'No se pudo borrar.'); }
+    return;
+  }
+
+  const likeBtn = e.target.closest('[data-like]');
+  if (likeBtn) {
+    const nombre = pedirNombreVisitante();
+    if (!nombre) return;
+    try {
+      const data = await postNoticiaAccion({ accion: 'like', id: likeBtn.dataset.like, nombre });
+      noticiasLista = data.noticias;
+      renderNoticiasFeed();
+    } catch (e2) { alert(e2.message || 'No se pudo dar 👍.'); }
+    return;
+  }
+
+  const toggleBtn = e.target.closest('[data-toggle]');
+  if (toggleBtn) {
+    const panel = document.getElementById('comentarios-' + toggleBtn.dataset.toggle);
+    if (panel) panel.classList.toggle('open');
+    return;
+  }
+
+  const comentarBtn = e.target.closest('[data-comentar-btn]');
+  if (comentarBtn) {
+    const id = comentarBtn.dataset.comentarBtn;
+    const input = noticiasFeed.querySelector(`[data-comentar-input="${id}"]`);
+    const texto = input ? input.value.trim() : '';
+    if (!texto) return;
+    const nombre = pedirNombreVisitante();
+    if (!nombre) return;
+    try {
+      const data = await postNoticiaAccion({ accion: 'comentar', id, nombre, texto });
+      noticiasLista = data.noticias;
+      renderNoticiasFeed();
+      const panel = document.getElementById('comentarios-' + id);
+      if (panel) panel.classList.add('open');
+    } catch (e2) { alert(e2.message || 'No se pudo comentar.'); }
+  }
+});
+noticiasFeed.addEventListener('keydown', e => {
+  const input = e.target.closest('[data-comentar-input]');
+  if (input && e.key === 'Enter') {
+    const id = input.dataset.comentarInput;
+    const btn = noticiasFeed.querySelector(`[data-comentar-btn="${id}"]`);
+    if (btn) btn.click();
+  }
+});
+
 function renderMacros() {
   const q = macroSearch.value.trim().toLowerCase();
   let filtered = macros;
@@ -2091,6 +2569,7 @@ const sections = {
   macros: document.getElementById('section-macros'),
   horario: document.getElementById('section-horario'),
   academia: document.getElementById('section-academia'),
+  noticias: document.getElementById('section-noticias'),
 };
 
 function showSection(name) {

@@ -24,6 +24,14 @@
 //   GET  /?recurso=horarios                                  -> { horarios: [...], ultimaActualizacion }
 //   POST / { recurso:"horarios", accion:"guardar", codigoAdmin, horarios: [...] } -> reemplaza la grilla completa (solo admin)
 //
+// "noticias" es el feed de la sección Noticias en index.html (posts tipo
+// feed, con 👍 y comentarios):
+//   GET  /?recurso=noticias                                          -> { noticias: [...], ultimaActualizacion, divisiones: [...] }
+//   POST / { recurso:"noticias", accion:"publicar", codigoAdmin, division, texto, imagen } -> publica (solo admin/líder/sublíder)
+//   POST / { recurso:"noticias", accion:"eliminar", codigoAdmin, id }                       -> borra (solo admin/líder/sublíder)
+//   POST / { recurso:"noticias", accion:"like", id, nombre }                                -> da/quita 👍 (cualquiera)
+//   POST / { recurso:"noticias", accion:"comentar", id, nombre, texto }                     -> comenta (cualquiera)
+//
 // Recursos disponibles: "asistencias", "tenientes", "capitanes", "mayores", "coroneles".
 // Mayores es el techo por ahora (no tiene rango siguiente configurado), así
 // que ahí no existe la acción de evaluarAscenso en el cliente.
@@ -33,6 +41,17 @@ const KV_KEY_EVALUACIONES = "evaluaciones"; // legacy, ya no lo usa nada activo
 const KV_KEY_CODIGOS = "codigos_acceso";
 const KV_KEY_HORARIOS = "horarios_academia";
 const KV_KEY_ASISTENCIA_INSTRUCTORES = "asistencia_instructores";
+const KV_KEY_NOTICIAS = "noticias";
+
+// Divisiones válidas para etiquetar una noticia (se muestran como filtro y
+// como badge en cada tarjeta del feed en index.html).
+const DIVISIONES_NOTICIAS = [
+  "Academia Policial",
+  "División O.P.E.",
+  "División SWAT",
+  "Centro de Mando",
+  "División de Reclutamiento",
+];
 
 // Semilla inicial de los horarios de Academia (la grilla que se ve en
 // index.html). Solo se usa la primera vez, si todavía no hay nada guardado
@@ -126,6 +145,58 @@ const HORARIOS_SEED = [
       { dia: "Miercoles", texto: "📜 Modulo A" },
       { dia: "Viernes", texto: "💬 Modulo B" },
     ],
+  },
+];
+
+// Semilla inicial del feed de Noticias (sección "Noticias" en index.html).
+// Igual que HORARIOS_SEED: solo se usa la primera vez, si todavía no hay
+// nada guardado en el KV bajo KV_KEY_NOTICIAS. Después de esa primera vez
+// el KV manda siempre, y todo se publica/borra desde el feed en vivo
+// (solo administrador/líder/sublíder pueden publicar o borrar).
+const NOTICIAS_SEED = [
+  {
+    id: "noticia_seed_1",
+    division: "Centro de Mando",
+    texto: "🚨 Bienvenidos a la sección de Noticias del Departamento. Acá vamos a publicar avisos, resultados de operativos y novedades de cada división. ¡Dejen sus 👍 y comentarios!",
+    imagen: "",
+    autor: "Centro de Mando",
+    rol: "administrador",
+    fecha: "2026-07-20T18:00:00.000Z",
+    likes: [],
+    comentarios: [],
+  },
+  {
+    id: "noticia_seed_2",
+    division: "Academia Policial",
+    texto: "📋 Se actualizó la grilla de horarios de instrucción. Revisen la sección Academia para ver sus turnos y módulos asignados.",
+    imagen: "",
+    autor: "Academia Policial",
+    rol: "lider",
+    fecha: "2026-07-22T21:30:00.000Z",
+    likes: [],
+    comentarios: [],
+  },
+  {
+    id: "noticia_seed_3",
+    division: "División SWAT",
+    texto: "🛡️ Operativo conjunto con la División O.P.E. programado para este fin de semana. Instructores: preséntense con equipo completo.",
+    imagen: "",
+    autor: "División SWAT",
+    rol: "sublider",
+    fecha: "2026-07-24T02:15:00.000Z",
+    likes: [],
+    comentarios: [],
+  },
+  {
+    id: "noticia_seed_4",
+    division: "División de Reclutamiento",
+    texto: "📣 Abrimos nueva tanda de reclutamiento. Se buscan cadetes comprometidos — hablen con su instructor para más info.",
+    imagen: "",
+    autor: "División de Reclutamiento",
+    rol: "administrador",
+    fecha: "2026-07-25T15:45:00.000Z",
+    likes: [],
+    comentarios: [],
   },
 ];
 
@@ -427,6 +498,136 @@ async function manejarHorarios(request, env, payload) {
   }
 
   return json({ error: "Acción de horarios no reconocida." }, 400);
+}
+
+// ==================== Noticias (feed de la sección "Noticias" en index.html) ====================
+// Publicar y borrar noticias: solo administrador/líder/sublíder (mismo
+// nivel que rolAlcanza(rol, "administrador"), ver codigos.js). Dar 👍 y
+// comentar: cualquiera, pidiendo solo un nombre (no hace falta código) —
+// es un feed informal, no un sistema de cuentas.
+function limpiarComentarioNoticia(c, i) {
+  return {
+    id: String((c && c.id) || "").trim() || `comentario_${Date.now()}_${i}`,
+    autor: String((c && c.autor) || "").trim().slice(0, 60) || "Anónimo",
+    texto: String((c && c.texto) || "").trim().slice(0, 500),
+    fecha: String((c && c.fecha) || "").trim() || new Date().toISOString(),
+  };
+}
+
+function limpiarNoticia(n, i) {
+  return {
+    id: String((n && n.id) || "").trim() || `noticia_${Date.now()}_${i}`,
+    division: DIVISIONES_NOTICIAS.includes(n && n.division) ? n.division : DIVISIONES_NOTICIAS[0],
+    texto: String((n && n.texto) || "").trim().slice(0, 2000),
+    imagen: String((n && n.imagen) || "").trim(),
+    autor: String((n && n.autor) || "").trim() || "Departamento",
+    rol: String((n && n.rol) || "").trim(),
+    fecha: String((n && n.fecha) || "").trim() || new Date().toISOString(),
+    likes: Array.isArray(n && n.likes) ? [...new Set(n.likes.map((l) => String(l).trim()).filter(Boolean))] : [],
+    comentarios: Array.isArray(n && n.comentarios) ? n.comentarios.map(limpiarComentarioNoticia) : [],
+  };
+}
+
+async function cargarNoticias(env) {
+  const raw = await env.ASISTENCIAS_KV.get(KV_KEY_NOTICIAS);
+  if (!raw) return { noticias: NOTICIAS_SEED, ultimaActualizacion: null };
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.noticias)) {
+      return { noticias: parsed.noticias, ultimaActualizacion: parsed.ultimaActualizacion || null };
+    }
+    return { noticias: NOTICIAS_SEED, ultimaActualizacion: null };
+  } catch (e) {
+    return { noticias: NOTICIAS_SEED, ultimaActualizacion: null };
+  }
+}
+
+async function guardarNoticias(env, noticias) {
+  const estado = { noticias, ultimaActualizacion: new Date().toISOString() };
+  await env.ASISTENCIAS_KV.put(KV_KEY_NOTICIAS, JSON.stringify(estado));
+  return estado;
+}
+
+async function manejarNoticias(request, env, payload) {
+  if (request.method === "GET") {
+    const { noticias, ultimaActualizacion } = await cargarNoticias(env);
+    return json({ noticias, ultimaActualizacion, divisiones: DIVISIONES_NOTICIAS });
+  }
+
+  const { noticias } = await cargarNoticias(env);
+
+  if (payload.accion === "publicar") {
+    const codigos = await cargarCodigos(env);
+    const admin = codigos[String(payload.codigoAdmin || "").trim()];
+    if (!admin || !rolAlcanza(admin.rol, "administrador")) {
+      return json({ error: "Ese código no tiene permisos para publicar noticias." }, 403);
+    }
+    if (!DIVISIONES_NOTICIAS.includes(payload.division)) {
+      return json({ error: "División inválida." }, 400);
+    }
+    const texto = String(payload.texto || "").trim();
+    if (!texto) {
+      return json({ error: "La noticia necesita texto." }, 400);
+    }
+    const nueva = limpiarNoticia(
+      {
+        division: payload.division,
+        texto,
+        imagen: payload.imagen,
+        autor: admin.nombre,
+        rol: admin.rol,
+        fecha: new Date().toISOString(),
+        likes: [],
+        comentarios: [],
+      },
+      noticias.length
+    );
+    const actualizado = [nueva, ...noticias];
+    const estado = await guardarNoticias(env, actualizado);
+    return json({ ok: true, noticias: estado.noticias, ultimaActualizacion: estado.ultimaActualizacion });
+  }
+
+  if (payload.accion === "eliminar") {
+    const codigos = await cargarCodigos(env);
+    const admin = codigos[String(payload.codigoAdmin || "").trim()];
+    if (!admin || !rolAlcanza(admin.rol, "administrador")) {
+      return json({ error: "Ese código no tiene permisos para borrar noticias." }, 403);
+    }
+    const id = String(payload.id || "").trim();
+    const actualizado = noticias.filter((n) => n.id !== id);
+    const estado = await guardarNoticias(env, actualizado);
+    return json({ ok: true, noticias: estado.noticias, ultimaActualizacion: estado.ultimaActualizacion });
+  }
+
+  if (payload.accion === "like") {
+    const id = String(payload.id || "").trim();
+    const nombre = String(payload.nombre || "").trim().slice(0, 60);
+    if (!nombre) return json({ error: "Falta el nombre para dar 👍." }, 400);
+    const actualizado = noticias.map((n) => {
+      if (n.id !== id) return n;
+      const yaDioLike = n.likes.includes(nombre);
+      const likes = yaDioLike ? n.likes.filter((l) => l !== nombre) : [...n.likes, nombre];
+      return { ...n, likes };
+    });
+    const estado = await guardarNoticias(env, actualizado);
+    return json({ ok: true, noticias: estado.noticias, ultimaActualizacion: estado.ultimaActualizacion });
+  }
+
+  if (payload.accion === "comentar") {
+    const id = String(payload.id || "").trim();
+    const nombre = String(payload.nombre || "").trim().slice(0, 60);
+    const texto = String(payload.texto || "").trim();
+    if (!nombre || !texto) return json({ error: "Falta el nombre o el comentario." }, 400);
+    const actualizado = noticias.map((n) => {
+      if (n.id !== id) return n;
+      const comentario = limpiarComentarioNoticia({ autor: nombre, texto }, n.comentarios.length);
+      return { ...n, comentarios: [...n.comentarios, comentario] };
+    });
+    const estado = await guardarNoticias(env, actualizado);
+    return json({ ok: true, noticias: estado.noticias, ultimaActualizacion: estado.ultimaActualizacion });
+  }
+
+  return json({ error: "Acción de noticias no reconocida." }, 400);
 }
 
 // ==================== asistencia de instructores ====================
@@ -973,6 +1174,9 @@ export default {
         if (recurso === "horarios") {
           return await manejarHorarios(request, env, {});
         }
+        if (recurso === "noticias") {
+          return await manejarNoticias(request, env, {});
+        }
         if (recurso === "asistenciaInstructores") {
           return await manejarAsistenciaInstructores(request, env, {});
         }
@@ -1001,6 +1205,9 @@ export default {
         }
         if (payload.recurso === "horarios") {
           return await manejarHorarios(request, env, payload);
+        }
+        if (payload.recurso === "noticias") {
+          return await manejarNoticias(request, env, payload);
         }
         if (payload.recurso === "asistenciaInstructores") {
           return await manejarAsistenciaInstructores(request, env, payload);
