@@ -1392,15 +1392,15 @@ body.mapa-fullscreen .academia-placeholder {
 </div>
 
 <nav class="main-nav" id="mainNav">
-  <div class="nav-btn active" data-section="reglas">Reglas</div>
+  <div class="nav-btn active" data-section="noticias">Noticias</div>
+  <div class="nav-btn" data-section="reglas">Reglas</div>
   <div class="nav-btn" data-section="macros">Macros</div>
   <div class="nav-btn" data-section="academia">Academia</div>
-  <div class="nav-btn" data-section="noticias">Noticias</div>
   <div class="nav-btn" data-section="horario">Conversor de horario</div>
 </nav>
 
 <!-- ===================== SECCIÓN: REGLAS ===================== -->
-<section id="section-reglas" class="app-section active">
+<section id="section-reglas" class="app-section">
   <input type="text" class="search-box" id="search" placeholder="Buscar código, palabra clave o castigo...">
   <div class="tabs" id="tabs"></div>
   <div class="count" id="count"></div>
@@ -1434,7 +1434,7 @@ body.mapa-fullscreen .academia-placeholder {
 </div>
 
 <!-- ===================== SECCIÓN: NOTICIAS ===================== -->
-<section id="section-noticias" class="app-section">
+<section id="section-noticias" class="app-section active">
   <div class="noticias-header">
     <div class="tabs" id="noticiasTabs"></div>
     <button class="noticias-publicar-btn" id="btnAbrirNoticiasComposer">📢 Publicar noticia</button>
@@ -2608,7 +2608,7 @@ mainNav.querySelectorAll('.nav-btn').forEach(btn => {
 buildTabs();
 renderRules();
 renderMacros();
-showSection('reglas');
+showSection('noticias');
 
 /* ============================================================
    ACADEMIA: visor de mapa por ubicación
