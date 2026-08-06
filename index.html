@@ -499,9 +499,18 @@ h1 {
   font-family: inherit;
   resize: vertical;
 }
+.noticias-composer textarea {
+  min-height: 200px;
+  line-height: 1.5;
+}
 .noticias-composer select:focus,
 .noticias-composer textarea:focus,
 .noticias-composer input[type="text"]:focus { outline: none; border-color: var(--accent); }
+.noticias-formato-ayuda {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
 .noticias-composer-actions {
   display: flex;
   align-items: center;
@@ -582,6 +591,43 @@ h1 {
   line-height: 1.5;
   white-space: pre-wrap;
   margin-bottom: 8px;
+}
+.noticia-texto code.noticia-inlinecode {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+}
+.noticia-texto pre.noticia-codeblock {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  margin: 4px 0;
+}
+.noticia-texto pre.noticia-codeblock code { background: none; border: none; padding: 0; }
+.noticia-texto .noticia-quote {
+  border-left: 3px solid var(--accent2);
+  padding: 2px 10px;
+  margin: 4px 0;
+  color: var(--muted);
+}
+.noticia-texto .noticia-spoiler {
+  background: #4a4d57;
+  color: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+.noticia-texto .noticia-spoiler.revelado {
+  background: rgba(255,255,255,0.08);
+  color: inherit;
 }
 .noticia-imagen {
   width: 100%;
@@ -1443,7 +1489,8 @@ body.mapa-fullscreen .academia-placeholder {
     <div class="noticias-composer-row">
       <select id="noticiaDivisionInput"></select>
     </div>
-    <textarea id="noticiaTextoInput" placeholder="Escribí la noticia..." maxlength="2000" rows="3"></textarea>
+    <textarea id="noticiaTextoInput" placeholder="Escribí la noticia..." maxlength="2000" rows="10"></textarea>
+    <div class="noticias-formato-ayuda">Formato: **negrita** · *cursiva* / _cursiva_ · __subrayado__ · ~~tachado~~ · `código` · &#96;&#96;&#96;bloque de código&#96;&#96;&#96; · &gt; cita · ||spoiler||</div>
     <input type="text" id="noticiaImagenInput" placeholder="URL de imagen (opcional)">
     <div class="noticias-composer-actions">
       <span class="noticias-composer-error" id="noticiaComposerError"></span>
@@ -2293,6 +2340,45 @@ function renderNoticiasTabs() {
   });
 }
 
+// Convierte formato estilo Discord a HTML. SIEMPRE se llama sobre texto
+// que ya pasó por escapeAttr (así & < > " ya están escapados) — acá solo
+// se agregan tags de formato conocidos (b/i/u/s/code/pre/span/div), nunca
+// se inserta HTML crudo del usuario, así que no hay riesgo de XSS.
+function formatNoticiaTexto(escapado) {
+  let text = escapado;
+  const bloques = [];
+  const inline = [];
+
+  // ```bloque de código``` (protegido primero: no se formatea por dentro)
+  text = text.replace(/```([\s\S]*?)```/g, (_, c) => {
+    const i = bloques.push(`<pre class="noticia-codeblock"><code>${c.replace(/^\n/, '')}</code></pre>`) - 1;
+    return `\u0000B${i}\u0000`;
+  });
+  // `código en línea`
+  text = text.replace(/`([^`\n]+)`/g, (_, c) => {
+    const i = inline.push(`<code class="noticia-inlinecode">${c}</code>`) - 1;
+    return `\u0000I${i}\u0000`;
+  });
+
+  text = text
+    .replace(/\*\*([^\n]+?)\*\*/g, '<b>$1</b>')          // **negrita**
+    .replace(/__([^\n]+?)__/g, '<u>$1</u>')                // __subrayado__
+    .replace(/~~([^\n]+?)~~/g, '<s>$1</s>')                // ~~tachado~~
+    .replace(/\*([^\n*]+?)\*/g, '<i>$1</i>')               // *cursiva*
+    .replace(/(?<![\w])_([^\n_]+?)_(?![\w])/g, '<i>$1</i>') // _cursiva_
+    .replace(/\|\|([^\n]+?)\|\|/g, '<span class="noticia-spoiler" onclick="this.classList.toggle(\'revelado\')">$1</span>'); // ||spoiler||
+
+  // > cita (una línea)
+  text = text.split('\n').map(linea => {
+    const m = linea.match(/^&gt;\s?(.*)$/);
+    return m ? `<div class="noticia-quote">${m[1]}</div>` : linea;
+  }).join('\n');
+
+  text = text.replace(/\u0000I(\d+)\u0000/g, (_, i) => inline[+i]);
+  text = text.replace(/\u0000B(\d+)\u0000/g, (_, i) => bloques[+i]);
+  return text;
+}
+
 function renderNoticiaCard(n) {
   const yaLeDioLike = n.likes.includes(noticiasNombreVisitante());
   const imagenHtml = n.imagen ? `<img class="noticia-imagen" src="${escapeAttr(n.imagen)}" alt="" loading="lazy">` : '';
@@ -2313,7 +2399,7 @@ function renderNoticiaCard(n) {
       ${borrarBtnHtml}
     </div>
     <div class="noticia-autor">${escapeAttr(n.autor)} · ${fmtFechaNoticia(n.fecha)}</div>
-    <div class="noticia-texto">${escapeAttr(n.texto)}</div>
+    <div class="noticia-texto">${formatNoticiaTexto(escapeAttr(n.texto))}</div>
     ${imagenHtml}
     <div class="noticia-acciones">
       <button class="noticia-like-btn${yaLeDioLike ? ' liked' : ''}" data-like="${escapeAttr(n.id)}">👍 ${n.likes.length}</button>
