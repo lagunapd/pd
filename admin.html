@@ -1157,7 +1157,16 @@ const codigosMsg = document.getElementById('codigosMsg');
 // advertencia) para no perder el dato hasta que se reasignen a una
 // división + puesto. Ver los comentarios de compatibilidad en codigos.js.
 const ROLES_LEGACY = ['bodycams', 'lider_bodycams'];
-const PUESTOS_LEGACY_SIN_DIVISION = ['lider', 'sublider']; // solo si el código no tiene división
+// Puestos que se siguen aceptando SIN división por compatibilidad con
+// códigos viejos (de antes de que existiera este sistema de
+// división+puesto) — hay que reasignarlos desde acá mismo. Los puestos
+// nuevos (líder de turno, reclutador, supervisor) no entran, esos siempre
+// necesitaron una división desde que existen.
+const PUESTOS_LEGACY_SIN_DIVISION = ['lider', 'sublider', 'evaluador', 'instructor', 'instructor_prueba'];
+const ETIQUETAS_LEGACY = {
+  lider: 'líder', sublider: 'sublíder', evaluador: 'evaluador',
+  instructor: 'instructor', instructor_prueba: 'instructor a prueba',
+};
 
 async function cargarCodigosDesdeServidor() {
   codigosMsg.textContent = 'Cargando...';
@@ -1174,10 +1183,11 @@ async function cargarCodigosDesdeServidor() {
 }
 
 // Arma las opciones del desplegable de Rol según la división ya elegida
-// para esa fila: sin división → roles generales (instructor, evaluador,
-// administrador, Federal General/Adjunto); con división → los puestos de
-// esa división en particular (líder, sublíder, y su tercer puesto —
-// puestosDeDivision viene de codigos.js).
+// para esa fila: sin división → roles generales (administrador, Federal
+// General/Adjunto); con división → los puestos de esa división en
+// particular (líder, sublíder, su tercer puesto, y en Academia Policial
+// además evaluador/instructor/instructor a prueba — puestosDeDivision
+// viene de codigos.js).
 function opcionesRolPara(c) {
   const opciones = c.division ? puestosDeDivision(c.division) : ROLES_GENERALES;
   let html = opciones.map(o => `<option value="${escapeAttr(o.valor)}" ${c.rol === o.valor ? 'selected' : ''}>${escapeAttr(o.etiqueta)}</option>`).join('');
@@ -1188,7 +1198,7 @@ function opcionesRolPara(c) {
   if (!yaListado && ROLES_LEGACY.includes(c.rol)) {
     html += `<option value="${escapeAttr(c.rol)}" selected>⚠️ ${escapeAttr(c.rol)} (rol viejo — reasignar a división BodyCams)</option>`;
   } else if (!yaListado && !c.division && PUESTOS_LEGACY_SIN_DIVISION.includes(c.rol)) {
-    html += `<option value="${escapeAttr(c.rol)}" selected>⚠️ ${c.rol === 'lider' ? 'líder' : 'sublíder'} (rol viejo, sin división — reasignar)</option>`;
+    html += `<option value="${escapeAttr(c.rol)}" selected>⚠️ ${escapeAttr(ETIQUETAS_LEGACY[c.rol] || c.rol)} (rol viejo, sin división — reasignar)</option>`;
   }
   return html;
 }
@@ -1242,7 +1252,7 @@ codigosBody.addEventListener('click', e => {
 });
 
 document.getElementById('btnAgregarCodigo').addEventListener('click', () => {
-  codigosLocal.push({ codigo: '', nombre: '', rol: 'instructor', division: '' });
+  codigosLocal.push({ codigo: '', nombre: '', rol: 'instructor', division: 'Academia Policial' });
   renderTablaCodigos();
 });
 
@@ -1261,12 +1271,19 @@ document.getElementById('btnGuardarCodigos').addEventListener('click', async () 
       codigosMsg.className = 'admin-msg error';
       return;
     }
-    // Los puestos (líder, sublíder, y el tercer puesto de cada división)
-    // necesitan la división elegida; los roles generales (instructor,
-    // evaluador, administrador, Federal General/Adjunto) no.
-    const puestosDeLaDivision = c.division ? puestosDeDivision(c.division) : [];
-    if (c.division && !puestosDeLaDivision.some(o => o.valor === c.rol) && !ROLES_LEGACY.includes(c.rol) && !(PUESTOS_LEGACY_SIN_DIVISION.includes(c.rol))) {
-      codigosMsg.textContent = `"${c.nombre || c.codigo}" tiene un rol que no corresponde a la división "${c.division}".`;
+    // Con división elegida: el rol tiene que ser uno de los puestos de esa
+    // división en particular (sin excepción — ni siquiera los roles/puestos
+    // "legacy sin división" valen acá, porque justamente tienen división).
+    // Sin división: tiene que ser uno de los roles generales, o alguno de
+    // los roles/puestos viejos que se siguen aceptando por compatibilidad.
+    const puestosDeLaDivision = c.division ? puestosDeDivision(c.division).map(o => o.valor) : [];
+    const rolValido = c.division
+      ? puestosDeLaDivision.includes(c.rol)
+      : ROLES_GENERALES.some(o => o.valor === c.rol) || ROLES_LEGACY.includes(c.rol) || PUESTOS_LEGACY_SIN_DIVISION.includes(c.rol);
+    if (!rolValido) {
+      codigosMsg.textContent = c.division
+        ? `"${c.nombre || c.codigo}" tiene un rol que no corresponde a la división "${c.division}".`
+        : `"${c.nombre || c.codigo}" necesita una división para el rol elegido.`;
       codigosMsg.className = 'admin-msg error';
       return;
     }

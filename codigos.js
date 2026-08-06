@@ -16,6 +16,12 @@
 // clases ni figura como instructor elegible) — su único permiso especial
 // (ver las Macros de Instrucción) se chequea aparte, explícitamente, en
 // index.html, no a través de este ranking.
+//
+// Estos tres viven organizativamente dentro de la división "Academia
+// Policial" (ver PUESTOS_POR_DIVISION más abajo), pero esta escalera de
+// niveles no cambia por eso: el nivel sale directo de acá, sin mirar la
+// división del código (el parámetro divisionActual de rolAlcanza no
+// afecta a estos tres, solo a "lider"/"sublider" — ver el comentario ahí).
 const NIVELES_ROL = {
   instructor_prueba: 1,
   instructor: 2,
@@ -41,11 +47,16 @@ const DIVISIONES_ROL = [
 // "sublider" están en todas; el tercer puesto cambia según la división
 // (líder de turno en SWAT/O.P.E./Centro de Mando, reclutador en
 // Reclutamiento, supervisor en BodyCams). Academia Policial es la única
-// que se queda solo con líder/sublíder (no tiene un tercer puesto).
+// que además tiene instructor a prueba/instructor/evaluador como puestos
+// propios (son la escalera de instrucción — ver NIVELES_ROL arriba —
+// pero organizativamente son parte de esta división).
 const PUESTOS_POR_DIVISION = {
   "Academia Policial": [
     { valor: "lider", etiqueta: "líder" },
     { valor: "sublider", etiqueta: "sublíder" },
+    { valor: "evaluador", etiqueta: "evaluador" },
+    { valor: "instructor", etiqueta: "instructor" },
+    { valor: "instructor_prueba", etiqueta: "instructor a prueba" },
   ],
   "División O.P.E.": [
     { valor: "lider", etiqueta: "líder" },
@@ -74,11 +85,10 @@ const PUESTOS_POR_DIVISION = {
   ],
 };
 
-// Roles "generales", sin división — los de siempre, que no cambiaron.
+// Roles "generales", sin división — solo quedan estos tres, porque
+// instructor/instructor a prueba/evaluador ahora son puestos de la
+// división Academia Policial (ver PUESTOS_POR_DIVISION arriba).
 const ROLES_GENERALES = [
-  { valor: "instructor_prueba", etiqueta: "instructor a prueba" },
-  { valor: "instructor", etiqueta: "instructor" },
-  { valor: "evaluador", etiqueta: "evaluador" },
   { valor: "administrador", etiqueta: "administrador" },
   { valor: "federal_adjunto", etiqueta: "Federal Adjunto (Oficina de FG)" },
   { valor: "federal_general", etiqueta: "Federal General (Oficina de FG)" },

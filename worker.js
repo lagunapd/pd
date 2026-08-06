@@ -267,9 +267,12 @@ function rolAlcanza(rolActual, rolRequerido, divisionActual) {
 // Puestos válidos dentro de cada división — mismo mapeo que
 // PUESTOS_POR_DIVISION en codigos.js (se usa acá para validar al
 // guardar códigos). "lider" y "sublider" están en todas; el tercer
-// puesto cambia según la división.
+// puesto cambia según la división. Academia Policial además tiene
+// evaluador/instructor/instructor_prueba como puestos propios (la
+// escalera de instrucción, ver NIVELES_ROL arriba, vive organizativamente
+// en esta división).
 const PUESTOS_POR_DIVISION = {
-  "Academia Policial": ["lider", "sublider"],
+  "Academia Policial": ["lider", "sublider", "evaluador", "instructor", "instructor_prueba"],
   "División O.P.E.": ["lider", "sublider", "lider_de_turno"],
   "División SWAT": ["lider", "sublider", "lider_de_turno"],
   "Centro de Mando": ["lider", "sublider", "lider_de_turno"],
@@ -458,16 +461,23 @@ async function manejarCodigos(request, env, payload) {
     if (!payload.codigos || typeof payload.codigos !== "object" || Array.isArray(payload.codigos)) {
       return json({ error: "Formato de códigos inválido." }, 400);
     }
-    // Puestos que existen dentro de alguna división (líder, sublíder, y el
-    // tercer puesto de cada división) — separado de los roles generales
-    // (instructor, evaluador, administrador, Federal General/Adjunto, que
-    // no llevan división).
-    const PUESTOS_TODOS = ["lider", "sublider", "lider_de_turno", "reclutador", "supervisor"];
+    // Puestos que existen dentro de alguna división (líder, sublíder, el
+    // tercer puesto de cada división, y evaluador/instructor/instructor a
+    // prueba dentro de Academia Policial) — separado de los roles
+    // generales de verdad (administrador, Federal General/Adjunto, que no
+    // llevan división nunca).
+    const PUESTOS_TODOS = ["lider", "sublider", "lider_de_turno", "reclutador", "supervisor", "evaluador", "instructor", "instructor_prueba"];
+    // Puestos que se siguen aceptando SIN división por compatibilidad con
+    // códigos viejos (de antes de que existiera este sistema de
+    // división+puesto) — hay que reasignarlos desde admin.html. Los
+    // puestos nuevos (líder de turno, reclutador, supervisor) no entran
+    // acá: esos siempre necesitaron una división desde que existen.
+    const PUESTOS_LEGACY_SIN_DIVISION = ["lider", "sublider", "evaluador", "instructor", "instructor_prueba"];
     for (const [cod, u] of Object.entries(payload.codigos)) {
       if (!cod || !u || !u.nombre || !u.rol) {
         return json({ error: `Entrada inválida para el código "${cod}".` }, 400);
       }
-      const esRolGeneral = !!NIVELES_ROL[u.rol] || ROLES_FEDERALES.includes(u.rol);
+      const esRolGeneral = u.rol === "administrador" || ROLES_FEDERALES.includes(u.rol);
       // COMPATIBILIDAD TEMPORAL: "bodycams"/"lider_bodycams" eran roles
       // planos de antes de que BodyCams fuera una división — se siguen
       // aceptando si ya estaban asignados, pero ya no se pueden elegir de
@@ -479,11 +489,11 @@ async function manejarCodigos(request, env, payload) {
           if (!DIVISIONES_NOTICIAS.includes(u.division) || !(PUESTOS_POR_DIVISION[u.division] || []).includes(u.rol)) {
             return json({ error: `El código "${cod}" (${u.rol}) no es un puesto válido para la división "${u.division}".` }, 400);
           }
-        } else if (u.rol !== "lider" && u.rol !== "sublider") {
+        } else if (!PUESTOS_LEGACY_SIN_DIVISION.includes(u.rol)) {
           // "lider_de_turno"/"reclutador"/"supervisor" son puestos nuevos:
-          // siempre necesitan una división. "lider"/"sublider" sin
-          // división son un código viejo — se aceptan por compatibilidad
-          // (ver el comentario largo en rolAlcanza, más arriba).
+          // siempre necesitan una división. Los demás, sin división, son
+          // un código viejo — se aceptan por compatibilidad (ver el
+          // comentario largo en rolAlcanza, más arriba).
           return json({ error: `El código "${cod}" es "${u.rol}" pero no tiene una división asignada.` }, 400);
         }
       } else if (!esRolGeneral && !esLegacyPlano) {
