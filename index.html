@@ -1392,15 +1392,15 @@ body.mapa-fullscreen .academia-placeholder {
 </div>
 
 <nav class="main-nav" id="mainNav">
-  <div class="nav-btn active" data-section="noticias">Noticias</div>
-  <div class="nav-btn" data-section="reglas">Reglas</div>
+  <div class="nav-btn active" data-section="reglas">Reglas</div>
   <div class="nav-btn" data-section="macros">Macros</div>
   <div class="nav-btn" data-section="academia">Academia</div>
+  <div class="nav-btn" data-section="noticias">Noticias</div>
   <div class="nav-btn" data-section="horario">Conversor de horario</div>
 </nav>
 
 <!-- ===================== SECCIÓN: REGLAS ===================== -->
-<section id="section-reglas" class="app-section">
+<section id="section-reglas" class="app-section active">
   <input type="text" class="search-box" id="search" placeholder="Buscar código, palabra clave o castigo...">
   <div class="tabs" id="tabs"></div>
   <div class="count" id="count"></div>
@@ -1434,7 +1434,7 @@ body.mapa-fullscreen .academia-placeholder {
 </div>
 
 <!-- ===================== SECCIÓN: NOTICIAS ===================== -->
-<section id="section-noticias" class="app-section active">
+<section id="section-noticias" class="app-section">
   <div class="noticias-header">
     <div class="tabs" id="noticiasTabs"></div>
     <button class="noticias-publicar-btn" id="btnAbrirNoticiasComposer">📢 Publicar noticia</button>
@@ -1458,8 +1458,8 @@ body.mapa-fullscreen .academia-placeholder {
 
 <div class="instructor-modal-overlay hidden" id="noticiasLoginOverlay">
   <div class="instructor-modal-box">
-    <div class="instructor-modal-title">🔒 Código de Administrador</div>
-    <div class="instructor-modal-sub">Solo administrador, líder o sublíder pueden publicar noticias.</div>
+    <div class="instructor-modal-title">🔒 Código para publicar</div>
+    <div class="instructor-modal-sub">Líder/sublíder de división (solo en la suya), Federal General/Adjunto o administrador (en cualquiera).</div>
     <input type="password" id="noticiasLoginCodeInput" placeholder="Código" inputmode="numeric" maxlength="12">
     <div class="instructor-modal-error" id="noticiasLoginError"></div>
     <div class="instructor-modal-actions">
@@ -2245,6 +2245,7 @@ let noticiasDivisiones = [];
 let noticiasFiltro = 'Todas';
 let noticiasCodigoAdmin = null; // se guarda en memoria (no persiste al recargar)
 let noticiasNombreAdmin = null;
+let noticiasRolAdmin = null; // { rol, division } de quien inició sesión para publicar/borrar
 
 function noticiasNombreVisitante() {
   return (localStorage.getItem('noticiasNombreVisitante') || '').trim();
@@ -2295,7 +2296,11 @@ function renderNoticiasTabs() {
 function renderNoticiaCard(n) {
   const yaLeDioLike = n.likes.includes(noticiasNombreVisitante());
   const imagenHtml = n.imagen ? `<img class="noticia-imagen" src="${escapeAttr(n.imagen)}" alt="" loading="lazy">` : '';
-  const borrarBtnHtml = noticiasCodigoAdmin
+  // El botón de borrar solo aparece si quien inició sesión puede gestionar
+  // Noticias justo en la división de ESTA noticia (líder/sublíder de
+  // división: solo la suya; Federal General/Adjunto y administrador:
+  // cualquiera — ver puedeGestionarNoticiasEnDivision en codigos.js).
+  const borrarBtnHtml = puedeGestionarNoticiasEnDivision(noticiasRolAdmin, n.division)
     ? `<button class="noticia-borrar-btn" data-borrar="${escapeAttr(n.id)}" title="Borrar noticia">🗑️</button>`
     : '';
   const comentariosHtml = n.comentarios.map(c =>
@@ -2340,9 +2345,7 @@ async function cargarNoticias() {
     const data = await resp.json();
     noticiasLista = Array.isArray(data.noticias) ? data.noticias : [];
     noticiasDivisiones = Array.isArray(data.divisiones) ? data.divisiones : [];
-    if (noticiaDivisionInput && !noticiaDivisionInput.children.length) {
-      noticiaDivisionInput.innerHTML = noticiasDivisiones.map(d => `<option value="${escapeAttr(d)}">${escapeAttr(d)}</option>`).join('');
-    }
+    poblarNoticiaDivisionInput();
     renderNoticiasTabs();
     renderNoticiasFeed();
   } catch (e) {
@@ -2351,7 +2354,18 @@ async function cargarNoticias() {
 }
 cargarNoticias();
 
-// ---- Publicar (pide código de administrador/líder/sublíder) ----
+// Llena el selector de división del composer solo con las divisiones en
+// las que la persona logueada puede publicar (ver
+// divisionesNoticiasPermitidas en codigos.js) — antes de loguearse, o si
+// no puede publicar en ninguna, queda vacío.
+function poblarNoticiaDivisionInput() {
+  if (!noticiaDivisionInput) return;
+  const todas = noticiasDivisiones.length ? noticiasDivisiones : DIVISIONES_ROL;
+  const permitidas = divisionesNoticiasPermitidas(noticiasRolAdmin, todas);
+  noticiaDivisionInput.innerHTML = permitidas.map(d => `<option value="${escapeAttr(d)}">${escapeAttr(d)}</option>`).join('');
+}
+
+// ---- Publicar (pide código de líder/sublíder de división, Federal General/Adjunto o administrador) ----
 btnAbrirNoticiasComposer.addEventListener('click', () => {
   if (noticiasCodigoAdmin) {
     noticiasComposer.classList.remove('hidden');
@@ -2367,16 +2381,19 @@ btnConfirmarNoticiasLogin.addEventListener('click', async () => {
   const codigo = noticiasLoginCodeInput.value.trim();
   if (!codigo) return;
   try {
-    const { nombre, rol } = await validarCodigoEnServidor(codigo);
-    if (!rolAlcanza(rol, 'administrador')) {
+    const usuario = await validarCodigoEnServidor(codigo);
+    const todas = noticiasDivisiones.length ? noticiasDivisiones : DIVISIONES_ROL;
+    if (divisionesNoticiasPermitidas(usuario, todas).length === 0) {
       noticiasLoginError.textContent = 'Ese código no tiene permisos para publicar noticias.';
       return;
     }
     noticiasCodigoAdmin = codigo;
-    noticiasNombreAdmin = nombre;
+    noticiasNombreAdmin = usuario.nombre;
+    noticiasRolAdmin = usuario;
+    poblarNoticiaDivisionInput();
     noticiasLoginOverlay.classList.add('hidden');
     noticiasComposer.classList.remove('hidden');
-    renderNoticiasFeed(); // para que aparezcan los botones de borrar
+    renderNoticiasFeed(); // para que aparezcan los botones de borrar que le correspondan
   } catch (e) {
     noticiasLoginError.textContent = e.message || 'Código incorrecto.';
   }
@@ -2530,7 +2547,7 @@ async function confirmarCodigoInstructor() {
   btnConfirmarInstructorCodigo.disabled = true;
   try {
     const usuario = await validarCodigoEnServidor(codigo);
-    if (usuario && (usuario.rol === 'instructor_prueba' || rolAlcanza(usuario.rol, 'instructor'))) {
+    if (usuario && (usuario.rol === 'instructor_prueba' || rolAlcanza(usuario.rol, 'instructor', usuario.division))) {
       instruccionDesbloqueada = true;
       cerrarModalInstructor();
       renderMacros();

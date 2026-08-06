@@ -1209,16 +1209,16 @@ async function validarCodigo() {
   // sigue exigiendo por lo menos "instructor" (y, para Procedimientos,
   // "evaluador").
   if (flujoPendienteCodigo === 'bodycam' || flujoPendienteCodigo === 'reporte-bodycam') {
-    if (!puedeRegistrarBodycams(usuario.rol)) {
+    if (!puedeRegistrarBodycams(usuario.rol, usuario.division)) {
       codigoError.textContent = 'Ese código no tiene permisos para BodyCams.';
       return;
     }
   } else {
-    if (!rolAlcanza(usuario.rol, 'instructor')) {
+    if (!rolAlcanza(usuario.rol, 'instructor', usuario.division)) {
       codigoError.textContent = 'Ese código no tiene permisos para registrar clases.';
       return;
     }
-    if (flujoPendienteCodigo === 'clase' && !rolAlcanza(usuario.rol, 'evaluador')) {
+    if (flujoPendienteCodigo === 'clase' && !rolAlcanza(usuario.rol, 'evaluador', usuario.division)) {
       codigoError.textContent = 'Solo evaluadores o administradores pueden registrar clases de Procedimientos.';
       return;
     }
@@ -1763,7 +1763,7 @@ async function validarCodigoEditar() {
     codigoEditarError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
-  if (!rolAlcanza(usuario.rol, 'administrador')) {
+  if (!rolAlcanza(usuario.rol, 'administrador', usuario.division)) {
     codigoEditarError.textContent = 'Ese código no tiene permisos de administrador.';
     return;
   }
@@ -2426,7 +2426,7 @@ async function validarCodigoEvaluar() {
     codigoEvaluarError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
-  if (!rolAlcanza(usuario.rol, 'evaluador')) {
+  if (!rolAlcanza(usuario.rol, 'evaluador', usuario.division)) {
     codigoEvaluarError.textContent = 'Ese código no tiene permisos para evaluar.';
     return;
   }

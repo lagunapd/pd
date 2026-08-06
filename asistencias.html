@@ -1040,6 +1040,7 @@ const codigoError = document.getElementById('codigoError');
 
 let registradorActual = null;
 let registradorActualRol = null;
+let registradorActualDivision = null;
 
 function abrirModalCodigo() {
   inputCodigo.value = '';
@@ -1058,6 +1059,7 @@ document.getElementById('btnAbrirCodigo').addEventListener('click', () => {
     // quien registra.
     registradorActual = editorActual;
     registradorActualRol = 'administrador';
+    registradorActualDivision = null;
     abrirModalRegistro();
   } else {
     abrirModalCodigo();
@@ -1075,12 +1077,13 @@ async function validarCodigo() {
     codigoError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
-  if (!rolAlcanza(usuario.rol, 'instructor')) {
+  if (!rolAlcanza(usuario.rol, 'instructor', usuario.division)) {
     codigoError.textContent = 'Ese código no tiene permisos para registrar asistencias.';
     return;
   }
   registradorActual = usuario.nombre;
   registradorActualRol = usuario.rol;
+  registradorActualDivision = usuario.division;
   cerrarModalCodigo();
   abrirModalRegistro();
 }
@@ -1401,7 +1404,7 @@ async function validarCodigoEditar() {
     codigoEditarError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
-  if (!rolAlcanza(usuario.rol, 'administrador')) {
+  if (!rolAlcanza(usuario.rol, 'administrador', usuario.division)) {
     codigoEditarError.textContent = 'Ese código no tiene permisos de administrador.';
     return;
   }
@@ -1704,7 +1707,7 @@ const TURNOS_CLASE = ["Primera Clase", "Segunda Clase", "Tercera Clase", "Cuarta
 // evaluadores o administradores. Los administradores (por ejemplo, en el
 // modo edición) siempre ven la lista completa.
 function opcionesTurno(seleccionado, restringir) {
-  const disponibles = (restringir && !rolAlcanza(registradorActualRol, 'evaluador'))
+  const disponibles = (restringir && !rolAlcanza(registradorActualRol, 'evaluador', registradorActualDivision))
     ? TURNOS_CLASE.filter(t => t !== TURNO_PROCEDIMIENTOS)
     : TURNOS_CLASE;
   return disponibles.map(t => `<option value="${escapeAttr(t)}" ${t === seleccionado ? 'selected' : ''}>${t}</option>`).join('');
@@ -2017,7 +2020,7 @@ async function validarCodigoEvaluar() {
     codigoEvaluarError.textContent = e && e.message ? e.message : 'Código inválido. Probá de nuevo.';
     return;
   }
-  if (!rolAlcanza(usuario.rol, 'evaluador')) {
+  if (!rolAlcanza(usuario.rol, 'evaluador', usuario.division)) {
     codigoEvaluarError.textContent = 'Ese código no tiene permisos para evaluar.';
     return;
   }
