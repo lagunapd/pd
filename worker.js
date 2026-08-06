@@ -48,13 +48,17 @@ const KV_KEY_ASISTENCIA_INSTRUCTORES = "asistencia_instructores";
 const KV_KEY_NOTICIAS = "noticias";
 
 // Divisiones válidas para etiquetar una noticia (se muestran como filtro y
-// como badge en cada tarjeta del feed en index.html).
+// como badge en cada tarjeta del feed en index.html), y también las
+// divisiones válidas para Códigos de acceso (líder/sublíder/tercer puesto
+// de cada una — ver PUESTOS_POR_DIVISION más abajo). Tienen que ser las
+// mismas que DIVISIONES_ROL en codigos.js.
 const DIVISIONES_NOTICIAS = [
   "Academia Policial",
   "División O.P.E.",
   "División SWAT",
   "Centro de Mando",
   "División de Reclutamiento",
+  "BodyCams",
 ];
 
 // Semilla inicial de los horarios de Academia (la grilla que se ve en
@@ -176,7 +180,7 @@ const NOTICIAS_SEED = [
     texto: "📋 Se actualizó la grilla de horarios de instrucción. Revisen la sección Academia para ver sus turnos y módulos asignados.",
     imagen: "",
     autor: "Academia Policial",
-    rol: "lider_division",
+    rol: "lider",
     fecha: "2026-07-22T21:30:00.000Z",
     likes: [],
     comentarios: [],
@@ -187,7 +191,7 @@ const NOTICIAS_SEED = [
     texto: "🛡️ Operativo conjunto con la División O.P.E. programado para este fin de semana. Instructores: preséntense con equipo completo.",
     imagen: "",
     autor: "División SWAT",
-    rol: "sublider_division",
+    rol: "sublider",
     fecha: "2026-07-24T02:15:00.000Z",
     likes: [],
     comentarios: [],
@@ -222,57 +226,66 @@ const CODIGOS_SEED = {
 // Mismo ranking que codigos.js (acá se necesita aparte porque el Worker no
 // puede importar ese archivo). "instructor_prueba" queda por debajo de
 // "instructor" a propósito (su único permiso, ver Macros de Instrucción, se
-// chequea aparte en el cliente). "bodycams" y "lider_bodycams" NO están acá
-// (son un permiso aparte, no un nivel — ver puedeRegistrarBodycams en
-// codigos.js); "lider_bodycams" tiene el mismo permiso que "bodycams", pero
-// como categoría separada tiene su propio tope de 1 (validado al guardar).
+// chequea aparte en el cliente).
 //
-// "lider_division"/"sublider_division" y "federal_general"/"federal_adjunto"
+// "lider"/"sublider" (con división) y "federal_general"/"federal_adjunto"
 // tampoco están en esta escalera — son el sistema de roles de Noticias (ver
 // puedeGestionarNoticiasEnDivision más abajo), con UNA excepción: el
-// líder/sublíder de la división "Academia Policial" son la continuación
-// directa de los viejos roles globales "líder"/"sublíder" y por eso SÍ
-// heredan el nivel de "administrador" para todo el sistema (no solo
-// Noticias) — se resuelve en rolAlcanza de abajo, no acá en la tabla,
-// porque depende de la división del código, no solo del rol.
+// líder/sublíder de la división "Academia Policial" SÍ heredan el nivel de
+// "administrador" para todo el sistema (no solo Noticias) — se resuelve en
+// rolAlcanza de abajo, no acá en la tabla, porque depende de la división
+// del código, no solo del rol.
 const NIVELES_ROL = {
   instructor_prueba: 1,
   instructor: 2,
   evaluador: 3,
   administrador: 4,
-  // COMPATIBILIDAD TEMPORAL — ver el comentario largo en codigos.js. Un
-  // código viejo con "lider"/"sublider" (plano, sin división) sigue
-  // teniendo permisos de administrador para todo, para no dejar a nadie
-  // afuera del sistema tras esta migración. Hay que reasignarlo desde
-  // admin.html a "líder/sublíder de división" o Federal General/Adjunto;
-  // mientras no se haga, ese código NO tiene el permiso especial de
-  // Noticias (puedeGestionarNoticiasEnDivision no reconoce estos dos).
-  lider: 4,
-  sublider: 4,
 };
 const DIVISION_CON_LIDERAZGO_ADMIN = "Academia Policial";
+
+// "lider"/"sublider" no son un nivel fijo: su nivel depende de la
+// división (ver PUESTOS_POR_DIVISION más abajo para qué puestos existen
+// en cada una).
+//
+// COMPATIBILIDAD TEMPORAL: si es "lider"/"sublider" SIN división (código
+// viejo, de antes de que existieran las divisiones), se lo trata como
+// administrador de todo, igual que antes — para no dejar a nadie afuera
+// del sistema. Hay que reasignarlo desde admin.html a una división +
+// puesto; mientras no se haga, ese código no tiene el permiso especial
+// de Noticias (puedeGestionarNoticiasEnDivision no reconoce un código
+// sin división asignada).
 function rolAlcanza(rolActual, rolRequerido, divisionActual) {
   let nivel = NIVELES_ROL[rolActual] || 0;
-  if (
-    (rolActual === "lider_division" || rolActual === "sublider_division") &&
-    divisionActual === DIVISION_CON_LIDERAZGO_ADMIN
-  ) {
-    nivel = NIVELES_ROL.administrador;
+  if (rolActual === "lider" || rolActual === "sublider") {
+    if (!divisionActual || divisionActual === DIVISION_CON_LIDERAZGO_ADMIN) {
+      nivel = NIVELES_ROL.administrador;
+    }
   }
   return nivel >= (NIVELES_ROL[rolRequerido] || 99);
 }
 
-// Roles válidos que NO están en NIVELES_ROL (permisos aparte, no niveles).
-const ROLES_LIDERAZGO_DIVISION = ["lider_division", "sublider_division"];
+// Puestos válidos dentro de cada división — mismo mapeo que
+// PUESTOS_POR_DIVISION en codigos.js (se usa acá para validar al
+// guardar códigos). "lider" y "sublider" están en todas; el tercer
+// puesto cambia según la división.
+const PUESTOS_POR_DIVISION = {
+  "Academia Policial": ["lider", "sublider"],
+  "División O.P.E.": ["lider", "sublider", "lider_de_turno"],
+  "División SWAT": ["lider", "sublider", "lider_de_turno"],
+  "Centro de Mando": ["lider", "sublider", "lider_de_turno"],
+  "División de Reclutamiento": ["lider", "sublider", "reclutador"],
+  "BodyCams": ["lider", "sublider", "supervisor"],
+};
 const ROLES_FEDERALES = ["federal_general", "federal_adjunto"];
 
 // Permisos de Noticias: publicar/borrar. Ver el mismo comentario largo en
 // codigos.js (puedeGestionarNoticiasEnDivision) — la lógica tiene que ser
-// idéntica en los dos lados.
+// idéntica en los dos lados. El tercer puesto de cada división (líder de
+// turno, reclutador, supervisor) NO tiene permiso de Noticias.
 function puedeGestionarNoticiasEnDivision(usuario, division) {
   if (!usuario || !usuario.rol) return false;
   if (usuario.rol === "administrador" || ROLES_FEDERALES.includes(usuario.rol)) return true;
-  if (ROLES_LIDERAZGO_DIVISION.includes(usuario.rol)) return usuario.division === division;
+  if (usuario.rol === "lider" || usuario.rol === "sublider") return !!usuario.division && usuario.division === division;
   return false;
 }
 
@@ -399,10 +412,10 @@ function nombresDeCodigos(codigos) {
   // división Academia Policial (para el roster de "Miembros de la Academia
   // Policial" en index.html) — no el de las otras divisiones.
   const lideres = Object.values(codigos)
-    .filter((u) => u.rol === "lider_division" && u.division === DIVISION_CON_LIDERAZGO_ADMIN)
+    .filter((u) => u.rol === "lider" && u.division === DIVISION_CON_LIDERAZGO_ADMIN)
     .map((u) => u.nombre);
   const sublideres = Object.values(codigos)
-    .filter((u) => u.rol === "sublider_division" && u.division === DIVISION_CON_LIDERAZGO_ADMIN)
+    .filter((u) => u.rol === "sublider" && u.division === DIVISION_CON_LIDERAZGO_ADMIN)
     .map((u) => u.nombre);
   return { todos, instructores, instructoresPrueba, evaluadores, soloEvaluadores, lideres, sublideres };
 }
@@ -423,9 +436,9 @@ async function manejarCodigos(request, env, payload) {
     const codigo = String(payload.codigo || "").trim();
     const usuario = codigos[codigo];
     if (!usuario) return json({ error: "Código inválido." }, 401);
-    // "division" solo aplica a lider_division/sublider_division, pero se
-    // manda siempre (null si no aplica) para que el cliente no tenga que
-    // adivinar.
+    // "division" solo aplica a puestos dentro de una división (lider,
+    // sublider, y el tercer puesto de cada una), pero se manda siempre
+    // (null si no aplica) para que el cliente no tenga que adivinar.
     return json({ nombre: usuario.nombre, rol: usuario.rol, division: usuario.division || null });
   }
 
@@ -445,35 +458,51 @@ async function manejarCodigos(request, env, payload) {
     if (!payload.codigos || typeof payload.codigos !== "object" || Array.isArray(payload.codigos)) {
       return json({ error: "Formato de códigos inválido." }, 400);
     }
+    // Puestos que existen dentro de alguna división (líder, sublíder, y el
+    // tercer puesto de cada división) — separado de los roles generales
+    // (instructor, evaluador, administrador, Federal General/Adjunto, que
+    // no llevan división).
+    const PUESTOS_TODOS = ["lider", "sublider", "lider_de_turno", "reclutador", "supervisor"];
     for (const [cod, u] of Object.entries(payload.codigos)) {
-      // "bodycams"/"lider_bodycams" y los roles de Noticias (líder/sublíder
-      // de división, Federal General/Adjunto) son válidos aparte de la
-      // escalera de NIVELES_ROL (no heredan ni son heredados por nadie —
-      // ver comentario en codigos.js), así que hay que aceptarlos acá
-      // explícitamente además de los que sí están en NIVELES_ROL.
-      const rolValido =
-        u &&
-        u.rol &&
-        (NIVELES_ROL[u.rol] ||
-          u.rol === "bodycams" ||
-          u.rol === "lider_bodycams" ||
-          ROLES_LIDERAZGO_DIVISION.includes(u.rol) ||
-          ROLES_FEDERALES.includes(u.rol));
-      if (!cod || !u || !u.nombre || !rolValido) {
+      if (!cod || !u || !u.nombre || !u.rol) {
         return json({ error: `Entrada inválida para el código "${cod}".` }, 400);
       }
-      // Líder/sublíder de división necesitan una división válida — sin
-      // límite de cuántos puede haber por división ni de cuántos Federal
-      // General/Adjunto puede haber (a diferencia de líder de BodyCams,
-      // que sigue con tope de 1 más abajo).
-      if (ROLES_LIDERAZGO_DIVISION.includes(u.rol) && !DIVISIONES_NOTICIAS.includes(u.division)) {
-        return json({ error: `El código "${cod}" es líder/sublíder de división pero no tiene una división válida asignada.` }, 400);
+      const esRolGeneral = !!NIVELES_ROL[u.rol] || ROLES_FEDERALES.includes(u.rol);
+      // COMPATIBILIDAD TEMPORAL: "bodycams"/"lider_bodycams" eran roles
+      // planos de antes de que BodyCams fuera una división — se siguen
+      // aceptando si ya estaban asignados, pero ya no se pueden elegir de
+      // nuevo desde admin.html (ahora es división "BodyCams" + puesto).
+      const esLegacyPlano = u.rol === "bodycams" || u.rol === "lider_bodycams";
+      const esPuesto = PUESTOS_TODOS.includes(u.rol);
+      if (esPuesto) {
+        if (u.division) {
+          if (!DIVISIONES_NOTICIAS.includes(u.division) || !(PUESTOS_POR_DIVISION[u.division] || []).includes(u.rol)) {
+            return json({ error: `El código "${cod}" (${u.rol}) no es un puesto válido para la división "${u.division}".` }, 400);
+          }
+        } else if (u.rol !== "lider" && u.rol !== "sublider") {
+          // "lider_de_turno"/"reclutador"/"supervisor" son puestos nuevos:
+          // siempre necesitan una división. "lider"/"sublider" sin
+          // división son un código viejo — se aceptan por compatibilidad
+          // (ver el comentario largo en rolAlcanza, más arriba).
+          return json({ error: `El código "${cod}" es "${u.rol}" pero no tiene una división asignada.` }, 400);
+        }
+      } else if (!esRolGeneral && !esLegacyPlano) {
+        return json({ error: `Entrada inválida para el código "${cod}".` }, 400);
       }
     }
+    // Como máximo un líder por división (sublíder y el tercer puesto de
+    // cada división, sin límite de cantidad).
     const entradas = Object.values(payload.codigos);
-    const cantLideresBodycams = entradas.filter((u) => u.rol === "lider_bodycams").length;
-    if (cantLideresBodycams > 1) {
-      return json({ error: "Solo puede haber un líder de BodyCams — hay más de uno marcado." }, 400);
+    const cantLideresPorDivision = {};
+    for (const u of entradas) {
+      if (u.rol === "lider" && u.division) {
+        cantLideresPorDivision[u.division] = (cantLideresPorDivision[u.division] || 0) + 1;
+      }
+    }
+    for (const [division, cant] of Object.entries(cantLideresPorDivision)) {
+      if (cant > 1) {
+        return json({ error: `Solo puede haber un líder por división — hay más de uno en "${division}".` }, 400);
+      }
     }
     await guardarCodigos(env, payload.codigos);
     return json({ ok: true, codigos: payload.codigos });

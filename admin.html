@@ -801,7 +801,7 @@
     <h2>📋 Códigos de acceso</h2>
     <div class="modal-sub">Los códigos viven en el servidor (KV del Worker), no en ningún archivo del repo — los cambios que hagas acá se guardan en vivo apenas tocás "Guardar cambios", sin descargar ni subir nada.</div>
     <table class="admin-tabla" id="tablaCodigos">
-      <thead><tr><th style="width:20%">Código</th><th>Nombre</th><th style="width:20%">Rol</th><th style="width:18%">División</th><th style="width:40px"></th></tr></thead>
+      <thead><tr><th style="width:20%">Código</th><th>Nombre</th><th style="width:18%">División</th><th style="width:20%">Rol</th><th style="width:40px"></th></tr></thead>
       <tbody id="codigosBody"></tbody>
     </table>
     <div class="admin-row">
@@ -1152,10 +1152,12 @@ let codigosLocal = [];
 const codigosBody = document.getElementById('codigosBody');
 const codigosMsg = document.getElementById('codigosMsg');
 
-// Roles que necesitan una división asignada (líder/sublíder de división,
-// para Noticias — ver codigos.js). El desplegable de división usa
-// DIVISIONES_ROL, que viene de codigos.js.
-const ROLES_CON_DIVISION = ['lider_division', 'sublider_division'];
+// Roles "planos" viejos que ya no se pueden elegir de nuevo desde acá,
+// pero si un código ya los tiene asignados se siguen mostrando (con
+// advertencia) para no perder el dato hasta que se reasignen a una
+// división + puesto. Ver los comentarios de compatibilidad en codigos.js.
+const ROLES_LEGACY = ['bodycams', 'lider_bodycams'];
+const PUESTOS_LEGACY_SIN_DIVISION = ['lider', 'sublider']; // solo si el código no tiene división
 
 async function cargarCodigosDesdeServidor() {
   codigosMsg.textContent = 'Cargando...';
@@ -1171,39 +1173,45 @@ async function cargarCodigosDesdeServidor() {
   }
 }
 
+// Arma las opciones del desplegable de Rol según la división ya elegida
+// para esa fila: sin división → roles generales (instructor, evaluador,
+// administrador, Federal General/Adjunto); con división → los puestos de
+// esa división en particular (líder, sublíder, y su tercer puesto —
+// puestosDeDivision viene de codigos.js).
+function opcionesRolPara(c) {
+  const opciones = c.division ? puestosDeDivision(c.division) : ROLES_GENERALES;
+  let html = opciones.map(o => `<option value="${escapeAttr(o.valor)}" ${c.rol === o.valor ? 'selected' : ''}>${escapeAttr(o.etiqueta)}</option>`).join('');
+  // Roles/puestos viejos: si el código ya los tiene, se agregan aparte
+  // (marcados) para no perderlos aunque no encajen en las opciones de
+  // arriba — desaparecen solos apenas se elige otro rol para esa fila.
+  const yaListado = opciones.some(o => o.valor === c.rol);
+  if (!yaListado && ROLES_LEGACY.includes(c.rol)) {
+    html += `<option value="${escapeAttr(c.rol)}" selected>⚠️ ${escapeAttr(c.rol)} (rol viejo — reasignar a división BodyCams)</option>`;
+  } else if (!yaListado && !c.division && PUESTOS_LEGACY_SIN_DIVISION.includes(c.rol)) {
+    html += `<option value="${escapeAttr(c.rol)}" selected>⚠️ ${c.rol === 'lider' ? 'líder' : 'sublíder'} (rol viejo, sin división — reasignar)</option>`;
+  }
+  return html;
+}
+
 function renderTablaCodigos() {
-  codigosBody.innerHTML = codigosLocal.map((c, i) => {
-    const necesitaDivision = ROLES_CON_DIVISION.includes(c.rol);
-    return `
+  codigosBody.innerHTML = codigosLocal.map((c, i) => `
     <tr>
       <td><input type="text" class="cod-campo-codigo" data-idx="${i}" value="${escapeAttr(c.codigo)}"></td>
       <td><input type="text" class="cod-campo-nombre" data-idx="${i}" value="${escapeAttr(c.nombre)}"></td>
       <td>
-        <select class="cod-campo-rol" data-idx="${i}">
-          <option value="instructor_prueba" ${c.rol === 'instructor_prueba' ? 'selected' : ''}>instructor a prueba</option>
-          <option value="instructor" ${c.rol === 'instructor' ? 'selected' : ''}>instructor</option>
-          <option value="bodycams" ${c.rol === 'bodycams' ? 'selected' : ''}>división BodyCams</option>
-          <option value="lider_bodycams" ${c.rol === 'lider_bodycams' ? 'selected' : ''}>líder de BodyCams</option>
-          <option value="evaluador" ${c.rol === 'evaluador' ? 'selected' : ''}>evaluador</option>
-          <option value="administrador" ${c.rol === 'administrador' ? 'selected' : ''}>administrador</option>
-          <option value="sublider_division" ${c.rol === 'sublider_division' ? 'selected' : ''}>sublíder de división</option>
-          <option value="lider_division" ${c.rol === 'lider_division' ? 'selected' : ''}>líder de división</option>
-          <option value="federal_adjunto" ${c.rol === 'federal_adjunto' ? 'selected' : ''}>Federal Adjunto (Oficina de FG)</option>
-          <option value="federal_general" ${c.rol === 'federal_general' ? 'selected' : ''}>Federal General (Oficina de FG)</option>
-          ${c.rol === 'lider' ? `<option value="lider" selected>⚠️ líder (rol viejo — reasignar)</option>` : ''}
-          ${c.rol === 'sublider' ? `<option value="sublider" selected>⚠️ sublíder (rol viejo — reasignar)</option>` : ''}
+        <select class="cod-campo-division" data-idx="${i}">
+          <option value="">— sin división (rol general) —</option>
+          ${DIVISIONES_ROL.map(d => `<option value="${escapeAttr(d)}" ${c.division === d ? 'selected' : ''}>${escapeAttr(d)}</option>`).join('')}
         </select>
       </td>
       <td>
-        <select class="cod-campo-division" data-idx="${i}" ${necesitaDivision ? '' : 'disabled'}>
-          <option value="">${necesitaDivision ? '— elegí división —' : '—'}</option>
-          ${DIVISIONES_ROL.map(d => `<option value="${escapeAttr(d)}" ${c.division === d ? 'selected' : ''}>${escapeAttr(d)}</option>`).join('')}
+        <select class="cod-campo-rol" data-idx="${i}">
+          ${opcionesRolPara(c)}
         </select>
       </td>
       <td><span class="quitar" data-idx="${i}" title="Quitar" style="cursor:pointer;color:var(--red);">✕</span></td>
     </tr>
-  `;
-  }).join('');
+  `).join('');
 }
 
 codigosBody.addEventListener('input', e => {
@@ -1215,14 +1223,16 @@ codigosBody.addEventListener('input', e => {
 codigosBody.addEventListener('change', e => {
   const idx = Number(e.target.dataset.idx);
   if (Number.isNaN(idx)) return;
-  if (e.target.classList.contains('cod-campo-rol')) {
-    codigosLocal[idx].rol = e.target.value;
-    // Si el nuevo rol no necesita división, se le limpia lo que tuviera
-    // cargado — así no queda una división vieja "fantasma" sin usarse.
-    if (!ROLES_CON_DIVISION.includes(e.target.value)) codigosLocal[idx].division = '';
-    renderTablaCodigos(); // para habilitar/deshabilitar el select de división de esa fila
+  if (e.target.classList.contains('cod-campo-division')) {
+    codigosLocal[idx].division = e.target.value;
+    // Cambiar la división invalida el rol que tenía elegido (los puestos
+    // son distintos en cada división) — se limpia y se elige el primero
+    // que corresponda a la división nueva (o al modo "sin división").
+    const opciones = codigosLocal[idx].division ? puestosDeDivision(codigosLocal[idx].division) : ROLES_GENERALES;
+    codigosLocal[idx].rol = opciones.length ? opciones[0].valor : '';
+    renderTablaCodigos(); // para refrescar las opciones de Rol de esa fila
   }
-  if (e.target.classList.contains('cod-campo-division')) codigosLocal[idx].division = e.target.value;
+  if (e.target.classList.contains('cod-campo-rol')) codigosLocal[idx].rol = e.target.value;
 });
 codigosBody.addEventListener('click', e => {
   const btn = e.target.closest('.quitar');
@@ -1251,22 +1261,32 @@ document.getElementById('btnGuardarCodigos').addEventListener('click', async () 
       codigosMsg.className = 'admin-msg error';
       return;
     }
-    if (ROLES_CON_DIVISION.includes(c.rol) && !DIVISIONES_ROL.includes(c.division)) {
-      codigosMsg.textContent = `"${c.nombre || c.codigo}" es líder/sublíder de división — falta elegirle una división.`;
+    // Los puestos (líder, sublíder, y el tercer puesto de cada división)
+    // necesitan la división elegida; los roles generales (instructor,
+    // evaluador, administrador, Federal General/Adjunto) no.
+    const puestosDeLaDivision = c.division ? puestosDeDivision(c.division) : [];
+    if (c.division && !puestosDeLaDivision.some(o => o.valor === c.rol) && !ROLES_LEGACY.includes(c.rol) && !(PUESTOS_LEGACY_SIN_DIVISION.includes(c.rol))) {
+      codigosMsg.textContent = `"${c.nombre || c.codigo}" tiene un rol que no corresponde a la división "${c.division}".`;
       codigosMsg.className = 'admin-msg error';
       return;
     }
     codigosVistos.add(c.codigo);
-    codigosObj[c.codigo] = ROLES_CON_DIVISION.includes(c.rol)
+    codigosObj[c.codigo] = c.division
       ? { nombre: c.nombre, rol: c.rol, division: c.division }
       : { nombre: c.nombre, rol: c.rol };
   }
 
-  // Líder/sublíder de división y Federal General/Adjunto: sin límite de
-  // cantidad. Solo sigue con tope el líder de BodyCams.
-  const cantLideresBodycams = codigosLocal.filter(c => c.rol === 'lider_bodycams').length;
-  if (cantLideresBodycams > 1) {
-    codigosMsg.textContent = 'Solo puede haber un líder de BodyCams — hay más de uno marcado.';
+  // Como máximo un líder por división (sublíder y el tercer puesto de
+  // cada división, sin límite de cantidad).
+  const cantLideresPorDivision = {};
+  for (const c of codigosLocal) {
+    if (c.rol === 'lider' && c.division) {
+      cantLideresPorDivision[c.division] = (cantLideresPorDivision[c.division] || 0) + 1;
+    }
+  }
+  const divisionConVariosLideres = Object.entries(cantLideresPorDivision).find(([, cant]) => cant > 1);
+  if (divisionConVariosLideres) {
+    codigosMsg.textContent = `Solo puede haber un líder por división — hay más de uno en "${divisionConVariosLideres[0]}".`;
     codigosMsg.className = 'admin-msg error';
     return;
   }
